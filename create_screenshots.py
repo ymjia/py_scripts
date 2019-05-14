@@ -8,8 +8,15 @@ import math
 from paraview.simple import *
 from paraview.simple import _active_objects
 
-from docx import Document
-from docx.shared import Inches
+# input data
+list_case = ["case1", "case2"]
+# versions to be compared
+list_ver = ["input", "v1.1", "v1.2"]
+# compare alg list
+list_alg = ["rm_bd", "mereg"]
+# screen shot view list
+list_view = [1, 2, 3]
+
 
 
 class ScreenShotHelper:
@@ -61,19 +68,4 @@ snFill = SnFillHole(Input=snDenoiseBilateral)
 #Show(snFill, cur_v)
 RenameSource("{}_smooth".format(s_name), snFill)
 ss.take_shot(cur_v, snFill, 'D:/tmp/ss_smooth.png')
-
-document = Document()
-
-document.add_header("对比图", 0)
-document.add_paragraph(
-    'after denoise', style='List Bullet'
-)
-
-document.add_picture('d:/tmp/ss_denoise.png', width=Inches(1.25))
-document.add_paragraph(
-    'after smooth', style='List Number'
-)
-document.add_picture('d:/tmp/ss_denoise.png', width=Inches(2.25))
-document.add_picture('d:/tmp/ss_smooth.png', width=Inches(2.25))
-document.save('d:/tmp/compare.docx')
 
