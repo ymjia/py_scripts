@@ -23,10 +23,14 @@ idx += fill_list(camera_pos, idx, v.CameraPosition)
 idx += fill_list(camera_pos, idx, v.CameraViewAngle)
 idx += fill_list(camera_pos, idx, v.CameraViewUp)
 
-print(*camera_pos, sep=", ")
+print(*camera_pos, sep=",")
+
+clip_str = str(camera_pos[0])
+for i in range(1, len(camera_pos)):
+    clip_str += ", {}".format(camera_pos[i])
 r = Tk()
 r.withdraw()
 r.clipboard_clear()
-r.clipboard_append('i can has clipboardz?')
+r.clipboard_append(clip_str)
 r.update()
 r.destroy()
