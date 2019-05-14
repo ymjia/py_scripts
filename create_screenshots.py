@@ -15,28 +15,38 @@ list_ver = ["input", "v1.1", "v1.2"]
 # compare alg list
 list_alg = ["rm_bd", "mereg"]
 # screen shot view list
-list_view = [1, 2, 3]
 
+list_view = [
+    [21.592487625427918, -3.9409709513281155, 14.064178593924428, 0, 31.229605061218003, -10.201408793119702, -84.26875223772231, 63.87174977105823, 30.0, -0.3711922959164563, 0.5909988812878556, 0.7161959241497909],
+    [17.751875930449856, -1.708730201723125, 16.386248894128883, 0, 31.229605061218003, 65.8207005083766, 29.988416576619034, -65.03166947917572, 30.0, -0.071392276098892, -0.9145222379034997, -0.3981861616045869],
+    [10.875073976381433, -2.5383559980146932, -10.683993265910901, 0, 31.229605061218003, -168.8604479975359, -36.20012032697253, -121.38788198253197, 30.0, -0.02947648613752865, -0.9420078679310953, 0.3342937533381327]]
+
+def fill_var(in_list, idx, var):
+    if isinstance(var, int) or isinstance(var, float):
+        var = in_list[idx]
+        return 1
+    ac = len(var)
+    var[:] = in_list[idx: idx + len(var)]
+    return ac
 
 
 class ScreenShotHelper:
     def __init__(self):
         paraview.simple._DisableFirstRenderCameraReset()
 
-    CameraPosition = [0, 0, 0]
-    CameraFocalPoint = [0, 0, 0]
-    CameraViewUp = [0, 0, 0]
-    CameraParallelScale = 25.46296403946468
-    def set_view_pos(self, view):
-        view.CameraPosition = self.CameraPosition
-        view.CameraFocalPoint = self.CameraFocalPoint
-        view.CameraViewUp = self.CameraViewUp
-        view.CameraParallelScale = self.CameraParallelScale
+    def set_camera(self, v, camera_pos):
+        idx = 0
+        idx += fill_var(camera_pos, idx, v.CameraFocalPoint)
+        idx += fill_var(camera_pos, idx, v.CameraParallelProjection)
+        idx += fill_var(camera_pos, idx, v.CameraParallelScale)
+        idx += fill_var(camera_pos, idx, v.CameraPosition)
+        idx += fill_var(camera_pos, idx, v.CameraViewAngle)
+        idx += fill_var(camera_pos, idx, v.CameraViewUp)
 
-    def take_shot(self, view, source, filename):
+    def take_shot(self, view, cam, source, filename):
         HideAll(view)
         Show(source, view)
-        self.set_view_pos(view)
+        self.set_camera(view, cam)
         view.Update()
         v_size = cur_v.ViewSize
         SaveScreenshot(filename, cur_v, ImageResolution=v_size, TransparentBackground=1)
@@ -52,20 +62,8 @@ s_list = active_obj.get_selected_sources()
 pxm = servermanager.ProxyManager();
 s_name = os.path.splitext(pxm.GetProxyName("sources", cur_s))[0]
 ss = ScreenShotHelper()
-ss.CameraPosition = cur_v.CameraPosition
-ss.CameraFocalPoint = cur_v.CameraFocalPoint
-ss.CameraViewUp = cur_v.CameraViewUp
-ss.CameraParallelScale = cur_v.CameraParallelScale
 
 # create a new 'SnDenoiseBilateral'
-snDenoiseBilateral = SnDenoiseBilateral(Input=cur_s)
-snDenoiseBilateral.NormalIteration = 2
-RenameSource("{}_denoise".format(s_name), snDenoiseBilateral)
-ss.take_shot(cur_v, snDenoiseBilateral, "D:/tmp/ss_denoise.png")
-
-# create a new 'SnSmooth'
-snFill = SnFillHole(Input=snDenoiseBilateral)
-#Show(snFill, cur_v)
-RenameSource("{}_smooth".format(s_name), snFill)
-ss.take_shot(cur_v, snFill, 'D:/tmp/ss_smooth.png')
-
+ss.take_shot(cur_v, list_view[0], cur_s, "c:/tmp/view0.png")
+ss.take_shot(cur_v, list_view[1], cur_s, "c:/tmp/view1.png")
+ss.take_shot(cur_v, list_view[2], cur_s, "c:/tmp/view2.png")
