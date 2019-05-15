@@ -12,26 +12,16 @@ def get_sub_dir(cur):
     return [name for name in os.listdir(cur)
             if os.path.isdir(os.path.join(cur, name))]
 
-dir_input = ""
-dir_output = "c:/output/"
+dir_input = "c:/data/test_framwork/input/"
+dir_output = "c:/data/test_framwork/output/"
 # versions to be compared
-list_ver = ["input", "v11", "v12"]
+list_ver = ["v11", "v12"]
 # input data
 list_case = ["case1", "case2"]
 # compare alg list
-list_alg = ["rm_bd", "merge"]
-# screen shot view list
+list_alg = ["smooth", "merge"]
 
-# read view list from input config file
-# use file.read() to get line strings from file
-file_str = [
-    "21.592487625427918, -3.9409709513281155, 14.064178593924428, 0, 31.229605061218003, -10.201408793119702, -84.26875223772231, 63.87174977105823, 30.0, -0.3711922959164563, 0.5909988812878556, 0.7161959241497909",
-    "17.751875930449856, -1.708730201723125, 16.386248894128883, 0, 31.229605061218003, 65.8207005083766, 29.988416576619034, -65.03166947917572, 30.0, -0.071392276098892, -0.9145222379034997, -0.3981861616045869",
-    "10.875073976381433, -2.5383559980146932, -10.683993265910901, 0, 31.229605061218003, -168.8604479975359, -36.20012032697253, -121.38788198253197, 30.0, -0.02947648613752865, -0.9420078679310953, 0.3342937533381327"]
-
-list_view = [line.split(", ") for line in file_str]
-list_number = [[float(str) for str in item] for item in list_view]
-
+# fill camera variable from number list
 def fill_var(in_list, idx, var):
     if isinstance(var, int) or isinstance(var, float):
         var = in_list[idx]
@@ -40,7 +30,7 @@ def fill_var(in_list, idx, var):
     var[:] = in_list[idx: idx + len(var)]
     return ac
 
-
+# class for screenshots
 class ScreenShotHelper:
     def __init__(self):
         paraview.simple._DisableFirstRenderCameraReset()
@@ -62,6 +52,8 @@ class ScreenShotHelper:
         v_size = cur_v.ViewSize
         SaveScreenshot(filename, cur_v, ImageResolution=v_size, TransparentBackground=1)
 
+
+# read models to paraview
 def read_files(file_list):
     if len(file_list) < 1:
         return None
@@ -73,6 +65,8 @@ def read_files(file_list):
     RenameSource(stem, reader)
     return reader
 
+
+# remove number from string tail
 def trim_last_number(name_str):
     c_num = len(name_str)
     idx = 1
@@ -103,53 +97,51 @@ def read_and_render(file_list, cur_view):
     Render()
     return reader
 
-    
+# create screenshots for given file from given cam_list    
 def create_shot(file_list, cam_list, out_dir):
-    cur_view = CreateRenderView()
+    cur_view = GetActiveViewOrCreate()
     cur_source = read_and_render(file_list, cur_view)
-    ScreenShotHelper ss
+    ss = ScreenShotHelper()
     for i in range(0, len(cam_list)):
         ss.take_shot(cur_view, cam_list[i], cur_source,
-                     "{}_v{}.png".format(out_dir, i))_
-    
+                     "{}_v{}.png".format(out_dir, i))
 
+# read cam position from config file
 def read_cam(case_name):
     case_file = os.path.join(dir_input, case_name, "config.txt")
     content = None
     with open(case_file) as f:
         content = f.readlines()
-    return [l.strip() for l in content]
+    str_list = [l.strip() for l in content]
+    str_lines = [line.split(", ") for line in str_list]
+    return [[float(s) for s in item] for item in str_lines]
 
-#setup active object
+
+# setup active object
 # get all concerned file names
 # case/version/alg
-file_dir = [[ci, vi, [os.path.join(dir_output, ci, vi)
-                      for vi in list_ver]] for ci in list_case]
+file_dir = []
+for ci in list_case:
+    for vi in list_ver:
+        file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
 
+
+#[[[ci, vi, os.path.join(dir_output, ci, vi)] for vi in list_ver] for ci in list_case]
 
 #create shot
 for case in file_dir:
+    print(case)
     case_name = case[0]
     ver_name = case[1]
     case_files = case[2]
     cam_list = read_cam(case_name)
     for alg in list_alg:
-        file_alg = os.path.join(file_dir, alg)
+        file_alg = os.path.join(case_files, alg)
         file_list = file_alg
         if os.path.isdir(file_alg):
             file_list = os.path.listdir(file_alg)
-        create_shot(file_list, read_cam(case_name), os.path.join(dir_output, case_name, ver_name, "ss")
+            print(file_list)
+        else:
+            print(file_list)
+        #create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name, "ss"))
 
-print(file_dir)
-
-
-# read data
-
-# pxm = servermanager.ProxyManager();
-# s_name = os.path.splitext(pxm.GetProxyName("sources", cur_s))[0]
-# ss = ScreenShotHelper()
-
-# create a new 'SnDenoiseBilateral'
-#ss.take_shot(cur_v, list_number[0], cur_s, "c:/tmp/view0.png")
-#ss.take_shot(cur_v, list_number[1], cur_s, "c:/tmp/view1.png")
-#ss.take_shot(cur_v, list_number[2], cur_s, "c:/tmp/view2.png")
