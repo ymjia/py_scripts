@@ -62,24 +62,92 @@ class ScreenShotHelper:
         v_size = cur_v.ViewSize
         SaveScreenshot(filename, cur_v, ImageResolution=v_size, TransparentBackground=1)
 
+def read_files(file_list):
+    if len(file_list) < 1:
+        return None
+    file_name = os.path.split(file_list[0])[1]
+    stem = os.path.splitext(os.fsdecode(file_name))[0]
+    ext = os.path.splitext(os.fsdecode(file_name))[1]
+    reader = OpenDataFile(file_list)
+    if reader is None: return None
+    RenameSource(stem, reader)
+    return reader
+
+def trim_last_number(name_str):
+    c_num = len(name_str)
+    idx = 1
+    while idx < c_num:
+        sub_tail = str(name_str[-1 * idx:])
+        if not sub_tail.isdigit():
+            break
+        idx += 1
+    if idx == c_num:
+        return name_str
+    return str(name_str[:-1 * idx + 1])
+
+# read file or file list and render in given view
+def read_and_render(file_list, cur_view):
+    reader = read_files(file_list)
+    if reader is None:
+        return None
+    if len(file_list) > 1:
+        name = pxm.GetProxyName("sources", reader)
+        gd = GroupTimeSteps(Input=cur_source)
+        RenameSource("{}_list".format(trim_last_number(name)), gd)
+        HideAll(cur_view)
+        reader = gd
+    gd_display = Show(reader, cur_view)
+    ColorBy(gd_display, ['POINTS', 'tmp'])
+    ColorBy(gd_display, ['POINTS', ''])
+    cur_view.ResetCamera()
+    Render()
+    return reader
+
+    
+def create_shot(file_list, cam_list, out_dir):
+    cur_view = CreateRenderView()
+    cur_source = read_and_render(file_list, cur_view)
+    ScreenShotHelper ss
+    for i in range(0, len(cam_list)):
+        ss.take_shot(cur_view, cam_list[i], cur_source,
+                     "{}_v{}.png".format(out_dir, i))_
+    
+
+def read_cam(case_name):
+    case_file = os.path.join(dir_input, case_name, "config.txt")
+    content = None
+    with open(case_file) as f:
+        content = f.readlines()
+    return [l.strip() for l in content]
 
 #setup active object
-# get data/screen_shot filename
-file_data = [[os.path.join(dir_output, vi, ci)
-              for ci in list_case] for vi in list_ver]
-print(file_data)
-#file_ss
+# get all concerned file names
+# case/version/alg
+file_dir = [[ci, vi, [os.path.join(dir_output, ci, vi)
+                      for vi in list_ver]] for ci in list_case]
+
+
+#create shot
+for case in file_dir:
+    case_name = case[0]
+    ver_name = case[1]
+    case_files = case[2]
+    cam_list = read_cam(case_name)
+    for alg in list_alg:
+        file_alg = os.path.join(file_dir, alg)
+        file_list = file_alg
+        if os.path.isdir(file_alg):
+            file_list = os.path.listdir(file_alg)
+        create_shot(file_list, read_cam(case_name), os.path.join(dir_output, case_name, ver_name, "ss")
+
+print(file_dir)
+
+
 # read data
-# 
-active_obj = _active_objects()
-cur_s = active_obj.get_source()
-cur_v = active_obj.get_view()
-s_list = active_obj.get_selected_sources()
 
-
-pxm = servermanager.ProxyManager();
-s_name = os.path.splitext(pxm.GetProxyName("sources", cur_s))[0]
-ss = ScreenShotHelper()
+# pxm = servermanager.ProxyManager();
+# s_name = os.path.splitext(pxm.GetProxyName("sources", cur_s))[0]
+# ss = ScreenShotHelper()
 
 # create a new 'SnDenoiseBilateral'
 #ss.take_shot(cur_v, list_number[0], cur_s, "c:/tmp/view0.png")
