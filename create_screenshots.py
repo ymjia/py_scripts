@@ -8,9 +8,29 @@ import math
 from paraview.simple import *
 from paraview.simple import _active_objects
 
+pxm = servermanager.ProxyManager()
+
+# directory operations
 def get_sub_dir(cur):
     return [name for name in os.listdir(cur)
             if os.path.isdir(os.path.join(cur, name))]
+
+
+def get_file(folder, stem):
+    if not os.path.exists(folder):
+        return None
+    for f in os.listdir(folder):
+        cur_stem = os.path.splitext(f)[0]
+        if cur_stem == stem:
+            return os.path.join(folder, f)
+    return None
+
+
+def get_file_list(folder):
+    return [name for name in os.listdir(folder)
+            if not os.path.isdir(os.path.join(folder, name))]
+    
+
 
 dir_input = "c:/data/test_framwork/input/"
 dir_output = "c:/data/test_framwork/output/"
@@ -49,8 +69,8 @@ class ScreenShotHelper:
         Show(source, view)
         self.set_camera(view, cam)
         view.Update()
-        v_size = cur_v.ViewSize
-        SaveScreenshot(filename, cur_v, ImageResolution=v_size, TransparentBackground=1)
+        v_size = view.ViewSize
+        SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=1)
 
 
 # read models to paraview
@@ -86,7 +106,7 @@ def read_and_render(file_list, cur_view):
         return None
     if len(file_list) > 1:
         name = pxm.GetProxyName("sources", reader)
-        gd = GroupTimeSteps(Input=cur_source)
+        gd = GroupTimeSteps(Input=reader)
         RenameSource("{}_list".format(trim_last_number(name)), gd)
         HideAll(cur_view)
         reader = gd
@@ -99,7 +119,7 @@ def read_and_render(file_list, cur_view):
 
 # create screenshots for given file from given cam_list    
 def create_shot(file_list, cam_list, out_dir):
-    cur_view = GetActiveViewOrCreate()
+    cur_view = GetActiveViewOrCreate("RenderView")
     cur_source = read_and_render(file_list, cur_view)
     ss = ScreenShotHelper()
     for i in range(0, len(cam_list)):
@@ -136,12 +156,12 @@ for case in file_dir:
     case_files = case[2]
     cam_list = read_cam(case_name)
     for alg in list_alg:
-        file_alg = os.path.join(case_files, alg)
-        file_list = file_alg
-        if os.path.isdir(file_alg):
-            file_list = os.path.listdir(file_alg)
-            print(file_list)
-        else:
-            print(file_list)
-        #create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name, "ss"))
+        file_alg = get_file(case_files, alg)
+        if file_alg is None:
+            if os.path.isdir(file_alg):
+                file_alg = get_file_list(file_alg)
+            else:
+                continue
+                    
+        create_shot(file_alg, cam_list, os.path.join(dir_output, case_name, ver_name, "ss"))
 
