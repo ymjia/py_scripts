@@ -16,19 +16,24 @@ def get_sub_dir(cur):
             if os.path.isdir(os.path.join(cur, name))]
 
 
+# get all file from folder except subdir
+def get_file_list(folder):
+    return [os.path.join(folder, name) for name in os.listdir(folder)
+            if not os.path.isdir(os.path.join(folder, name))]
+
+
 def get_file(folder, stem):
     if not os.path.exists(folder):
         return None
     for f in os.listdir(folder):
         cur_stem = os.path.splitext(f)[0]
         if cur_stem == stem:
-            return os.path.join(folder, f)
+            find_res = os.path.join(folder, f)
+            if os.path.isdir(find_res):
+                return get_file_list(find_res)
+            else:
+                return [find_res]
     return None
-
-# get all file from folder except subdir
-def get_file_list(folder):
-    return [name for name in os.listdir(folder)
-            if not os.path.isdir(os.path.join(folder, name))]
 
 
 dir_input = "c:/data/test_framwork/input/"
@@ -74,14 +79,14 @@ class ScreenShotHelper:
 
 # read models to paraview
 def read_files(file_list):
+    if not isinstance(file_list, list):
+        print("Error: read file input not list: {}".format(file_list))
+        return None
     if len(file_list) < 1:
         return None
-    file_name = os.path.split(file_list[0])[1]
-    stem = os.path.splitext(os.fsdecode(file_name))[0]
-    ext = os.path.splitext(os.fsdecode(file_name))[1]
     reader = OpenDataFile(file_list)
     if reader is None: return None
-    RenameSource(stem, reader)
+    #RenameSource(stem, reader)
     return reader
 
 
@@ -153,13 +158,7 @@ for case in file_dir:
     cam_list = read_cam(case_name)
     for alg in list_alg:
         print("alg: {}".format(case_files))
-        file_list = []
-        file_alg = get_file(case_files, alg)
-        if file_alg is None:
-            if os.path.isdir(file_alg):
-                file_list = get_file_list(file_alg)
-            else:
-                continue
-        else:
-            file_list.append(file_alg)
+        file_list = get_file(case_files, alg)
+        if file_list is None:
+            continue
         create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)

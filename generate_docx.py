@@ -24,8 +24,6 @@ cam_num = 3
 col_num = len(list_ver)
 document = Document()
 
-document.add_heading("compare", 0)
-
 def add_cell_content(cell, text, pic):
     pg = cell.paragraphs[0]
     run = pg.add_run()
@@ -42,15 +40,17 @@ def add_case_table(doc, case):
         for cam in range(0, cam_num):
             row_cells = table.add_row().cells
             for vi in range(0, col_num):
-                cur_ver = list_ver[vi]
-                dir_pic = os.path.join(dir_output, case, cur_ver)
-                file_pic = "{}/ss_{}_v{}.png".format(dir_pic, alg, cam)
-                add_cell_content(row_cells[vi], list_ver[vi], file_pic)
+                ver = list_ver[vi]
+                dir_pic = os.path.join(dir_output, case, ver)
+                name_pic = "ss_{}_v{}.png".format(alg, cam)
+                file_pic = os.path.join(dir_pic, name_pic)
+                add_cell_content(row_cells[vi], ver, file_pic)
 
+
+document.add_heading("compare", 0)
 for case in list_case:
     document.add_paragraph(
     case, style='List Bullet')
     add_case_table(document, case)
-    
-document.save("c:/tmp/compare.docx")
 
+document.save("c:/tmp/compare.docx")
