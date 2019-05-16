@@ -13,12 +13,6 @@ from paraview.simple import _active_objects
 
 dir_in = "d:/data/test_framwork/output/"
 
-# input data read from config file
-list_case = ["case1", "case2"]
-# versions to be compared
-list_ver = ["v11", "v12"]
-# compare alg list
-list_alg = ["smooth", "merge"]
 
 # get all file from folder except subdir
 def get_file_list(folder):
@@ -87,7 +81,7 @@ def generate_view(l, s_num):
 
 
 # generate paraview project for given data
-def get_paraview_project(dir_in, case, list_v, alg):
+def load_state_files(dir_in, case, alg, list_v):
     # get source list
     list_dir = [os.path.join(dir_in, case, v) for v in list_v]
     list_annot = ["{}_{}_{}".format(case, v, alg) for v in list_v]
@@ -122,5 +116,12 @@ def get_paraview_project(dir_in, case, list_v, alg):
     v0.ResetCamera()
     Render()
 
-get_paraview_project(dir_in, "case1", ["v11", "v12"], "smooth")
-get_paraview_project(dir_in, "case2", ["v11", "v12"], "merge")
+# input data read from config file
+list_case = ["case1", "case2"]
+# versions to be compared
+list_ver = ["v11", "v12"]
+# compare alg list
+list_alg = ["smooth", "merge"]
+
+load_state_files(dir_in, "case1", "smooth", ["v11", "v12"])
+load_state_files(dir_in, "case2", "merge", ["v11", "v12"])
