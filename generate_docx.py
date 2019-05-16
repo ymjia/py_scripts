@@ -49,6 +49,7 @@ def add_cell_content(cell, text, pic):
 def add_case_table(doc, case):
     for alg in list_alg:
         table = document.add_table(rows=1, cols=col_num)
+        table.style = 'Table Grid'
         row1 = table.rows[0]
         row1.cells[0].merge(row1.cells[col_num - 1])
         row1.cells[0].text = alg
