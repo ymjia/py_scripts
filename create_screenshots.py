@@ -159,11 +159,17 @@ def read_and_render(file_list, v):
     v.Update()
     return reader
 
+# if data_file newer than ss_file, need update
+def screenshot_need_update(data_file, ss_file):
+    
+    return True
+
 # create screenshots for given file from given cam_list    
 def create_shot(file_list, cam_list, out_dir, pattern):
     cur_view = GetActiveViewOrCreate("RenderView")
     cur_source = read_and_render(file_list, cur_view)
     ss = ScreenShotHelper()
+    
     for i in range(0, len(cam_list)):
         ss.take_shot(cur_view, cam_list[i],
                      "{}/ss_{}_v{}.png".format(out_dir, pattern, i))
