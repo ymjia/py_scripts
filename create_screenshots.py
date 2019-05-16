@@ -21,7 +21,7 @@ def get_file_list(folder):
     return [os.path.join(folder, name) for name in os.listdir(folder)
             if not os.path.isdir(os.path.join(folder, name))]
 
-
+# read file name with stem in folder, return *list*
 def get_file(folder, stem):
     if not os.path.exists(folder):
         return None
@@ -34,48 +34,6 @@ def get_file(folder, stem):
             else:
                 return [find_res]
     return None
-
-
-dir_input = "c:/data/test_framwork/input/"
-dir_output = "c:/data/test_framwork/output/"
-# versions to be compared
-list_ver = ["v11", "v12"]
-# input data
-list_case = ["case1", "case2"]
-# compare alg list
-list_alg = ["smooth", "merge"]
-
-# fill camera variable from number list
-def fill_var(in_list, idx, var):
-    if isinstance(var, int) or isinstance(var, float):
-        var = in_list[idx]
-        return 1
-    ac = len(var)
-    var[:] = in_list[idx: idx + len(var)]
-    return ac
-
-# class for screenshots
-class ScreenShotHelper:
-    def __init__(self):
-        paraview.simple._DisableFirstRenderCameraReset()
-
-    def set_camera(self, v, camera_pos):
-        idx = 0
-        idx += fill_var(camera_pos, idx, v.CameraFocalPoint)
-        idx += fill_var(camera_pos, idx, v.CameraParallelProjection)
-        idx += fill_var(camera_pos, idx, v.CameraParallelScale)
-        idx += fill_var(camera_pos, idx, v.CameraPosition)
-        idx += fill_var(camera_pos, idx, v.CameraViewAngle)
-        idx += fill_var(camera_pos, idx, v.CameraViewUp)
-
-    def take_shot(self, view, cam, source, filename):
-        HideAll(view)
-        Show(source, view)
-        self.set_camera(view, cam)
-        view.Update()
-        v_size = view.ViewSize
-        SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=1)
-
 
 # read models to paraview
 def read_files(file_list):
@@ -99,25 +57,88 @@ def trim_last_number(name_str):
         if not sub_tail.isdigit():
             break
         idx += 1
-    if idx == c_num:
+    if idx == c_num or idx == 1:
         return name_str
     return str(name_str[:-1 * idx + 1])
 
+
+dir_input = "c:/data/test_framwork/input/"
+dir_output = "c:/data/test_framwork/output/"
+# versions to be compared
+list_ver = ["v11", "v12"]
+# input data
+list_case = ["case1", "case2"]
+# compare alg list
+list_alg = ["smooth", "merge"]
+
+
+# class for screenshots
+class ScreenShotHelper:
+    def __init__(self):
+        paraview.simple._DisableFirstRenderCameraReset()
+
+    # fill camera variable from number list
+    def fill_var(self, in_list, idx, var):
+        if isinstance(var, int) or isinstance(var, float):
+            var = in_list[idx]
+            return 1
+        ac = len(var)
+        var[:] = in_list[idx: idx + len(var)]
+        return ac
+
+    def set_camera(self, v, cam):
+        idx = 0
+        idx += self.fill_var(cam, idx, v.CameraFocalPoint)
+        idx += self.fill_var(cam, idx, v.CameraParallelProjection)
+        idx += self.fill_var(cam, idx, v.CameraParallelScale)
+        idx += self.fill_var(cam, idx, v.CameraPosition)
+        idx += self.fill_var(cam, idx, v.CameraViewAngle)
+        idx += self.fill_var(cam, idx, v.CameraViewUp)
+
+    def take_shot(self, view, cam, filename):
+        self.set_camera(view, cam)
+        view.Update()
+        v_size = view.ViewSize
+        SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=1)
+
+def add_annotation(view, text, size):
+    annot = Text()
+    annot.Text = text
+    dis = Show(annot, view)
+    dis.FontFile = ''
+    dis.FontSize = 2
+    dis.FontSize = size
+    dis.Color = [0.0, 0.0, 0.0]
+    dis.Interactivity = 0
+    dis.Shadow = 1
+
+
 # read file or file list and render in given view
-def read_and_render(file_list, cur_view):
+def read_and_render(file_list, v):
     reader = read_files(file_list)
     if reader is None:
         return None
+
     if len(file_list) > 1:
         name = pxm.GetProxyName("sources", reader)
         gd = GroupTimeSteps(Input=reader)
         RenameSource("{}_list".format(trim_last_number(name)), gd)
-        HideAll(cur_view)
         reader = gd
-    gd_display = Show(reader, cur_view)
+    HideAll(v)
+    gd_display = Show(reader, v)
     ColorBy(gd_display, ['POINTS', 'tmp'])
     ColorBy(gd_display, ['POINTS', ''])
-    cur_view.ResetCamera()
+    v.ResetCamera()
+    # add anotation
+    f = file_list[0]
+    path, filename = os.path.split(f)
+    if len(file_list) > 1: # file list, fetch parent dir
+        path, filename = os.path.split(path)
+    stem = trim_last_number(os.path.splitext(filename)[0])
+    path, ver = os.path.split(path)
+    path, case = os.path.split(path)
+    add_annotation(v, "{}_{}_{}".format(case, ver, stem), 28)
+    #v.Update()
     Render()
     return reader
 
@@ -127,7 +148,7 @@ def create_shot(file_list, cam_list, out_dir, pattern):
     cur_source = read_and_render(file_list, cur_view)
     ss = ScreenShotHelper()
     for i in range(0, len(cam_list)):
-        ss.take_shot(cur_view, cam_list[i], cur_source,
+        ss.take_shot(cur_view, cam_list[i],
                      "{}/ss_{}_v{}.png".format(out_dir, pattern, i))
 
 # read cam position from config file
@@ -157,7 +178,6 @@ for case in file_dir:
     case_files = case[2]
     cam_list = read_cam(case_name)
     for alg in list_alg:
-        print("alg: {}".format(case_files))
         file_list = get_file(case_files, alg)
         if file_list is None:
             continue
