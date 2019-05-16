@@ -64,8 +64,8 @@ def trim_last_number(name_str):
     return str(name_str[:-1 * idx + 1])
 
 
-dir_input = "c:/data/test_framwork/input/"
-dir_output = "c:/data/test_framwork/output/"
+dir_input = "d:/data/test_framwork/input/"
+dir_output = "d:/data/test_framwork/output/"
 # versions to be compared
 list_ver = ["v11", "v12"]
 # input data
