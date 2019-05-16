@@ -5,6 +5,8 @@
 import os
 import os.path
 import math
+import time
+import datetime
 from paraview.simple import *
 from paraview.simple import _active_objects
 
@@ -106,8 +108,23 @@ def add_annotation(view, text, size):
     annot.Text = text
     dis = Show(annot, view)
     dis.FontFile = ''
-    dis.FontSize = 2
     dis.FontSize = size
+    dis.Color = [0.0, 0.0, 0.0]
+    dis.Interactivity = 0
+    dis.Shadow = 1
+
+
+def add_time_annotation(view, tfile):
+    t = time.ctime(os.path.getmtime(tfile))
+    file_time = str(datetime.datetime.strptime(t, "%a %b %d %H:%M:%S %Y"))
+    cur_time = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    annot = Text()
+    annot.Text = "Data time: {}\nCamera Time: {}".format(file_time, cur_time)
+    dis = Show(annot, view)
+    dis.WindowLocation = 'LowerRightCorner'
+    dis.Justification = 'Right'
+    dis.FontSize = 14
+    dis.FontFile = ''
     dis.Color = [0.0, 0.0, 0.0]
     dis.Interactivity = 0
     dis.Shadow = 1
@@ -138,8 +155,8 @@ def read_and_render(file_list, v):
     path, ver = os.path.split(path)
     path, case = os.path.split(path)
     add_annotation(v, "{}_{}_{}".format(case, ver, stem), 28)
-    #v.Update()
-    Render()
+    add_time_annotation(v, f)
+    v.Update()
     return reader
 
 # create screenshots for given file from given cam_list    
