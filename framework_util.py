@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-## @file open_case.py
-## @brief open case file from test framework
+## @file framework_util.py
+## @brief utilize functions for test framework
 ## @author jiayanming
 import os
 import os.path
@@ -9,10 +9,6 @@ import time
 import datetime
 from paraview.simple import *
 from paraview.simple import _active_objects
-
-
-dir_in = "d:/data/test_framwork/output/"
-
 
 # get all file from folder except subdir
 def get_file_list(folder):
@@ -115,13 +111,3 @@ def load_state_files(dir_in, case, alg, list_v):
     SetActiveView(v0)
     v0.ResetCamera()
     Render()
-
-# input data read from config file
-list_case = ["case1", "case2"]
-# versions to be compared
-list_ver = ["v11", "v12"]
-# compare alg list
-list_alg = ["smooth", "merge"]
-
-load_state_files(dir_in, "case1", "smooth", ["v11", "v12"])
-load_state_files(dir_in, "case2", "merge", ["v11", "v12"])
