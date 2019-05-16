@@ -159,24 +159,20 @@ def read_and_render(file_list, v):
     v.Update()
     return reader
 
-# if data_file newer than ss_file, need update
-def screenshot_need_update(data_file, ss_file):
-    
-    return True
 
 # create screenshots for given file from given cam_list    
 def create_shot(file_list, cam_list, out_dir, pattern):
     cur_view = GetActiveViewOrCreate("RenderView")
     cur_source = read_and_render(file_list, cur_view)
     ss = ScreenShotHelper()
-    
     for i in range(0, len(cam_list)):
         ss.take_shot(cur_view, cam_list[i],
                      "{}/ss_{}_v{}.png".format(out_dir, pattern, i))
 
 # read cam position from config file
-def read_cam(case_name):
-    case_file = os.path.join(dir_input, case_name, "config.txt")
+def read_cam(case_file):
+    if not os.path.exists(case_file):
+        return None
     content = None
     with open(case_file) as f:
         content = f.readlines()
@@ -184,6 +180,10 @@ def read_cam(case_name):
     str_lines = [line.split(", ") for line in str_list]
     return [[float(s) for s in item] for item in str_lines]
 
+# if data_file newer than ss_file, need update
+def screenshot_need_update(data_file, case):
+    
+    return True
 
 # setup active object
 # get all concerned file names
@@ -198,10 +198,15 @@ for ci in list_case:
 for case in file_dir:
     case_name = case[0]
     ver_name = case[1]
+    cam_file = os.path.join(dir_input, case_name, "config.txt")
+    cam_list = read_cam(cam_file)
+    if cam_list is None or len(cam_list) < 1:
+        continue
     case_files = case[2]
-    cam_list = read_cam(case_name)
     for alg in list_alg:
         file_list = get_file(case_files, alg)
-        if file_list is None:
+        if file_list is None or len(file_list) < 1:
+            continue
+        if screenshot_need_update(file_list[0], case_name):
             continue
         create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
