@@ -29,7 +29,6 @@ def get_file(folder, stem):
 def get_file_list(folder):
     return [name for name in os.listdir(folder)
             if not os.path.isdir(os.path.join(folder, name))]
-    
 
 
 dir_input = "c:/data/test_framwork/input/"
@@ -118,13 +117,13 @@ def read_and_render(file_list, cur_view):
     return reader
 
 # create screenshots for given file from given cam_list    
-def create_shot(file_list, cam_list, out_dir):
+def create_shot(file_list, cam_list, out_dir, pattern):
     cur_view = GetActiveViewOrCreate("RenderView")
     cur_source = read_and_render(file_list, cur_view)
     ss = ScreenShotHelper()
     for i in range(0, len(cam_list)):
         ss.take_shot(cur_view, cam_list[i], cur_source,
-                     "{}_v{}.png".format(out_dir, i))
+                     "{}/ss_{}_v{}.png".format(out_dir, pattern, i))
 
 # read cam position from config file
 def read_cam(case_name):
@@ -150,18 +149,19 @@ for ci in list_case:
 
 #create shot
 for case in file_dir:
-    print(case)
     case_name = case[0]
     ver_name = case[1]
     case_files = case[2]
     cam_list = read_cam(case_name)
     for alg in list_alg:
+        print("alg: {}".format(case_files))
+        file_list = []
         file_alg = get_file(case_files, alg)
         if file_alg is None:
             if os.path.isdir(file_alg):
-                file_alg = get_file_list(file_alg)
+                file_list = get_file_list(file_alg)
             else:
                 continue
-                    
-        create_shot(file_alg, cam_list, os.path.join(dir_output, case_name, ver_name, "ss"))
-
+        else:
+            file_list.append(file_alg)
+        create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
