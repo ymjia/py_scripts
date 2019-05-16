@@ -5,83 +5,223 @@
 import os
 import os.path
 import math
+import time
+import datetime
 from paraview.simple import *
 from paraview.simple import _active_objects
 
+pxm = servermanager.ProxyManager()
+
+# directory operations
 def get_sub_dir(cur):
     return [name for name in os.listdir(cur)
             if os.path.isdir(os.path.join(cur, name))]
 
-dir_input = ""
-dir_output = "c:/output/"
+
+# get all file from folder except subdir
+def get_file_list(folder):
+    return [os.path.join(folder, name) for name in os.listdir(folder)
+            if not os.path.isdir(os.path.join(folder, name))]
+
+# read file name with stem in folder, return *list*
+def get_file(folder, stem):
+    if not os.path.exists(folder):
+        return None
+    for f in os.listdir(folder):
+        cur_stem = os.path.splitext(f)[0]
+        if cur_stem == stem:
+            find_res = os.path.join(folder, f)
+            if os.path.isdir(find_res):
+                return get_file_list(find_res)
+            else:
+                return [find_res]
+    return None
+
+# read models to paraview
+def read_files(file_list):
+    if not isinstance(file_list, list):
+        print("Error: read file input not list: {}".format(file_list))
+        return None
+    if len(file_list) < 1:
+        return None
+    reader = OpenDataFile(file_list)
+    if reader is None: return None
+    #RenameSource(stem, reader)
+    return reader
+
+
+# remove number from string tail
+def trim_last_number(name_str):
+    c_num = len(name_str)
+    idx = 1
+    while idx < c_num:
+        sub_tail = str(name_str[-1 * idx:])
+        if not sub_tail.isdigit():
+            break
+        idx += 1
+    if idx == c_num or idx == 1:
+        return name_str
+    return str(name_str[:-1 * idx + 1])
+
+
+dir_input = "c:/data/test_framwork/input/"
+dir_output = "c:/data/test_framwork/output/"
 # versions to be compared
-list_ver = ["input", "v11", "v12"]
+list_ver = ["v11", "v12"]
 # input data
 list_case = ["case1", "case2"]
 # compare alg list
-list_alg = ["rm_bd", "merge"]
-# screen shot view list
-
-# read view list from input config file
-# use file.read() to get line strings from file
-file_str = [
-    "21.592487625427918, -3.9409709513281155, 14.064178593924428, 0, 31.229605061218003, -10.201408793119702, -84.26875223772231, 63.87174977105823, 30.0, -0.3711922959164563, 0.5909988812878556, 0.7161959241497909",
-    "17.751875930449856, -1.708730201723125, 16.386248894128883, 0, 31.229605061218003, 65.8207005083766, 29.988416576619034, -65.03166947917572, 30.0, -0.071392276098892, -0.9145222379034997, -0.3981861616045869",
-    "10.875073976381433, -2.5383559980146932, -10.683993265910901, 0, 31.229605061218003, -168.8604479975359, -36.20012032697253, -121.38788198253197, 30.0, -0.02947648613752865, -0.9420078679310953, 0.3342937533381327"]
-
-list_view = [line.split(", ") for line in file_str]
-list_number = [[float(str) for str in item] for item in list_view]
-
-def fill_var(in_list, idx, var):
-    if isinstance(var, int) or isinstance(var, float):
-        var = in_list[idx]
-        return 1
-    ac = len(var)
-    var[:] = in_list[idx: idx + len(var)]
-    return ac
+list_alg = ["smooth", "merge"]
 
 
+# class for screenshots
 class ScreenShotHelper:
     def __init__(self):
         paraview.simple._DisableFirstRenderCameraReset()
 
-    def set_camera(self, v, camera_pos):
-        idx = 0
-        idx += fill_var(camera_pos, idx, v.CameraFocalPoint)
-        idx += fill_var(camera_pos, idx, v.CameraParallelProjection)
-        idx += fill_var(camera_pos, idx, v.CameraParallelScale)
-        idx += fill_var(camera_pos, idx, v.CameraPosition)
-        idx += fill_var(camera_pos, idx, v.CameraViewAngle)
-        idx += fill_var(camera_pos, idx, v.CameraViewUp)
+    # fill camera variable from number list
+    def fill_var(self, in_list, idx, var):
+        if isinstance(var, int) or isinstance(var, float):
+            var = in_list[idx]
+            return 1
+        ac = len(var)
+        var[:] = in_list[idx: idx + len(var)]
+        return ac
 
-    def take_shot(self, view, cam, source, filename):
-        HideAll(view)
-        Show(source, view)
+    def set_camera(self, v, cam):
+        idx = 0
+        idx += self.fill_var(cam, idx, v.CameraFocalPoint)
+        idx += self.fill_var(cam, idx, v.CameraParallelProjection)
+        idx += self.fill_var(cam, idx, v.CameraParallelScale)
+        idx += self.fill_var(cam, idx, v.CameraPosition)
+        idx += self.fill_var(cam, idx, v.CameraViewAngle)
+        idx += self.fill_var(cam, idx, v.CameraViewUp)
+
+    def take_shot(self, view, cam, filename):
         self.set_camera(view, cam)
         view.Update()
-        v_size = cur_v.ViewSize
-        SaveScreenshot(filename, cur_v, ImageResolution=v_size, TransparentBackground=1)
+        v_size = view.ViewSize
+        SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=1)
+
+def add_annotation(view, text, size):
+    annot = Text()
+    annot.Text = text
+    dis = Show(annot, view)
+    dis.FontFile = ''
+    dis.FontSize = size
+    dis.Color = [0.0, 0.0, 0.0]
+    dis.Interactivity = 0
+    dis.Shadow = 1
 
 
-#setup active object
-# get data/screen_shot filename
-file_data = [[os.path.join(dir_output, vi, ci)
-              for ci in list_case] for vi in list_ver]
-print(file_data)
-#file_ss
-# read data
-# 
-active_obj = _active_objects()
-cur_s = active_obj.get_source()
-cur_v = active_obj.get_view()
-s_list = active_obj.get_selected_sources()
+def add_time_annotation(view, tfile):
+    t = time.ctime(os.path.getmtime(tfile))
+    file_time = str(datetime.datetime.strptime(t, "%a %b %d %H:%M:%S %Y"))
+    cur_time = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    annot = Text()
+    annot.Text = "Data time: {}\nCamera Time: {}".format(file_time, cur_time)
+    dis = Show(annot, view)
+    dis.WindowLocation = 'LowerRightCorner'
+    dis.Justification = 'Right'
+    dis.FontSize = 14
+    dis.FontFile = ''
+    dis.Color = [0.0, 0.0, 0.0]
+    dis.Interactivity = 0
+    dis.Shadow = 1
 
 
-pxm = servermanager.ProxyManager();
-s_name = os.path.splitext(pxm.GetProxyName("sources", cur_s))[0]
-ss = ScreenShotHelper()
+# read file or file list and render in given view
+def read_and_render(file_list, v):
+    reader = read_files(file_list)
+    if reader is None:
+        return None
 
-# create a new 'SnDenoiseBilateral'
-#ss.take_shot(cur_v, list_number[0], cur_s, "c:/tmp/view0.png")
-#ss.take_shot(cur_v, list_number[1], cur_s, "c:/tmp/view1.png")
-#ss.take_shot(cur_v, list_number[2], cur_s, "c:/tmp/view2.png")
+    if len(file_list) > 1:
+        name = pxm.GetProxyName("sources", reader)
+        gd = GroupTimeSteps(Input=reader)
+        RenameSource("{}_list".format(trim_last_number(name)), gd)
+        reader = gd
+    HideAll(v)
+    gd_display = Show(reader, v)
+    ColorBy(gd_display, ['POINTS', 'tmp'])
+    ColorBy(gd_display, ['POINTS', ''])
+    v.ResetCamera()
+    # add anotation
+    f = file_list[0]
+    path, filename = os.path.split(f)
+    if len(file_list) > 1: # file list, fetch parent dir
+        path, filename = os.path.split(path)
+    stem = trim_last_number(os.path.splitext(filename)[0])
+    path, ver = os.path.split(path)
+    path, case = os.path.split(path)
+    add_annotation(v, "{}_{}_{}".format(case, ver, stem), 28)
+    add_time_annotation(v, f)
+    v.Update()
+    return reader
+
+
+# create screenshots for given file from given cam_list    
+def create_shot(file_list, cam_list, out_dir, pattern):
+    cur_view = GetActiveViewOrCreate("RenderView")
+    cur_source = read_and_render(file_list, cur_view)
+    ss = ScreenShotHelper()
+    for i in range(0, len(cam_list)):
+        ss.take_shot(cur_view, cam_list[i],
+                     "{}/ss_{}_v{}.png".format(out_dir, pattern, i))
+
+# read cam position from config file
+def read_cam(case_file):
+    if not os.path.exists(case_file):
+        return None
+    content = None
+    with open(case_file) as f:
+        content = f.readlines()
+    str_list = [l.strip() for l in content]
+    str_lines = [line.split(", ") for line in str_list]
+    return [[float(s) for s in item] for item in str_lines]
+
+# if data_file newer than ss_file, need update
+def ss_need_update(file_list, config_file, cam_num):
+    time_config = os.path.getmtime(config_file)
+    f = file_list[0]
+    time_data = os.path.getmtime(f)
+    path, filename = os.path.split(f)
+    if len(file_list) > 1: # file list, fetch parent dir
+        path, filename = os.path.split(path)
+    stem = trim_last_number(os.path.splitext(filename)[0])
+    file_pic = os.path.join(path, "ss_{}_v0.png".format(stem))
+    if not os.path.exists(file_pic):
+        return True
+    time_pic = os.path.getmtime(file_pic)
+    if time_config > time_pic: # new cam config
+        return True
+    if time_data > time_pic: # new data
+        return True
+    return False
+
+# setup active object
+# get all concerned file names
+# case/version/alg
+file_dir = []
+for ci in list_case:
+    for vi in list_ver:
+        file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
+
+
+#create shot
+for case in file_dir:
+    case_name = case[0]
+    ver_name = case[1]
+    cam_file = os.path.join(dir_input, case_name, "config.txt")
+    cam_list = read_cam(cam_file)
+    if cam_list is None or len(cam_list) < 1:
+        continue
+    case_files = case[2]
+    for alg in list_alg:
+        file_list = get_file(case_files, alg)
+        if file_list is None or len(file_list) < 1:
+            continue
+        if not ss_need_update(file_list, cam_file, len(cam_list)):
+            continue
+        print("Updating screenshots for {}/{}/{}".format(case, ver_name, alg))
+        create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
