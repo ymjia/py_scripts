@@ -25,7 +25,7 @@ def get_file(folder, stem):
             return os.path.join(folder, f)
     return None
 
-
+# get all file from folder except subdir
 def get_file_list(folder):
     return [name for name in os.listdir(folder)
             if not os.path.isdir(os.path.join(folder, name))]
@@ -144,8 +144,6 @@ for ci in list_case:
     for vi in list_ver:
         file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
 
-
-#[[[ci, vi, os.path.join(dir_output, ci, vi)] for vi in list_ver] for ci in list_case]
 
 #create shot
 for case in file_dir:
