@@ -25,18 +25,17 @@ col_num = len(list_ver)
 document = Document()
 
 # generate paraview project for given data
-def get_paraview_project(dir_in, case, list_v, alg):
-    # get source list
-    list_dir = [os.path.join(dir_in, case, v) for v in list_v]
-    list_annot = ["{}_{}_{}".format(case, v, alg) for v in list_v]
-    # read file
-    list_source = []
-    list_view = []
-    l_pos = []
-    l = CreateLayout('Compare_{}'.format(s_num))
-    # split layout and store positions
-    pos = l.SplitHorizontal(0, 1 / len(list_view))
-    l_pos = [pos, pos + 1]
+def get_paraview_project(filename, dir_in, case, alg, list_v):
+    str_list_v = "["
+    for v in list_v:
+        str_list_v = str_list_v + "\"{}\",".format(v)
+    str_list_v = str_list_v[:-1] + "]"
+    file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files(\"{}\", \"{}\", \"{}\", {})\n""".format(dir_in, case, alg, str_list_v)
+    with open(filename, "w") as text_file:
+        text_file.write(file_content)
+
+
+get_paraview_project("d:/tmp/test.py", "d:/tmp", "case1", "smooth", ["v11", "v12"])
 
 
 
@@ -53,6 +52,12 @@ def add_case_table(doc, case):
         row1 = table.rows[0]
         row1.cells[0].merge(row1.cells[col_num - 1])
         row1.cells[0].text = alg
+        row2 = table.add_row().cells
+        row2[0].merge(row2[col_num-1])
+        name_state = "{}_{}_{}.py".format(case, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+        file_state = os.path.join(dir_output, name_state)
+        row2[0].text = file_state
+        get_paraview_project(file_state, dir_output, case, alg, list_ver)
         for cam in range(0, cam_num):
             row_cells = table.add_row().cells
             for vi in range(0, col_num):
