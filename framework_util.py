@@ -13,7 +13,7 @@ from paraview.simple import _active_objects
 # global variables
 pxm = servermanager.ProxyManager()
 
-# string operations
+# string operations===============
 # remove number from string tail
 def trim_last_number(name_str):
     c_num = len(name_str)
@@ -28,7 +28,7 @@ def trim_last_number(name_str):
     return str(name_str[:-1 * idx + 1])
 
 
-# directory operations
+# file system operations==============
 def get_sub_dir(cur):
     return [name for name in os.listdir(cur)
             if os.path.isdir(os.path.join(cur, name))]
@@ -54,6 +54,7 @@ def get_file(folder, stem):
                 return [find_res]
     return None
 
+
 # read models to paraview
 def read_files(file_list):
     if not isinstance(file_list, list):
@@ -72,6 +73,9 @@ def read_files(file_list):
     return reader
 
 
+# paraview operations ==========================
+## @brief generate layouted views
+## @note call before create views
 def generate_view(l, s_num):
     # view positions in layout
     l_pos = []
@@ -108,6 +112,7 @@ def generate_view(l, s_num):
     return l_pos
 
 
+## @brief add text annotation at left-top
 def add_annotation(view, text, size):
     annot = Text()
     annot.Text = text
@@ -119,6 +124,7 @@ def add_annotation(view, text, size):
     dis.Shadow = 1
 
 
+## @brief add time annotitions at right-bottom
 def add_time_annotation(view, tfile):
     t = time.ctime(os.path.getmtime(tfile))
     file_time = str(datetime.datetime.strptime(t, "%a %b %d %H:%M:%S %Y"))
@@ -135,7 +141,7 @@ def add_time_annotation(view, tfile):
     dis.Shadow = 1
 
 
-# generate paraview project for given data
+# load_file for given framework config(dir, case, alg, compare version_list)
 def load_state_files(dir_in, case, alg, list_v):
     # get source list
     list_dir = [os.path.join(dir_in, case, v) for v in list_v]
@@ -170,3 +176,33 @@ def load_state_files(dir_in, case, alg, list_v):
     SetActiveView(v0)
     v0.ResetCamera()
     Render()
+
+
+# config operations ===========
+## read config file, generate information for test framework
+## @todo may use xml as config file
+
+## @brief read user concerned case name list
+def read_case_list(str_case):
+    res = []
+    return res
+
+## @brief read user concerned version name list
+def read_version_list(str_version):
+    res = []
+    return res
+    
+
+def read_alg_list(str_alg):
+    res = []
+    return res
+
+def read_compare_config(file_config):
+    if not os.path.exists(file_config):
+        return None
+    content = None
+    with open(case_file) as f:
+        content = f.readlines()
+    str_list = [l.strip() for l in content]
+
+    return read_case_list(), read_version_list(), read_alg_list()

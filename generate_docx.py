@@ -75,5 +75,5 @@ for case in list_case:
 file_save = os.path.join(dir_output, "Compare_{}.docx".format(str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))))
 if len(sys.argv) == 2:
     file_save = str(sys.argv[1])
-
+print(file_save)
 document.save(file_save)
