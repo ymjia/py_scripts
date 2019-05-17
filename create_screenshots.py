@@ -14,11 +14,6 @@ sys.path.append(dir_py_module)
 from framework_util import *
 
 
-
-
-
-
-
 # class for screenshots
 class ScreenShotHelper:
     def __init__(self):
