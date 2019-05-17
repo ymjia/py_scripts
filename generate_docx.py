@@ -34,11 +34,6 @@ def get_paraview_project(filename, dir_in, case, alg, list_v):
     with open(filename, "w") as text_file:
         text_file.write(file_content)
 
-
-get_paraview_project("d:/tmp/test.py", "d:/tmp", "case1", "smooth", ["v11", "v12"])
-
-
-
 def add_cell_content(cell, text, pic):
     pg = cell.paragraphs[0]
     run = pg.add_run()
@@ -75,4 +70,9 @@ for case in list_case:
     case, style='List Bullet')
     add_case_table(document, case)
 
-document.save("d:/tmp/compare.docx")
+
+file_save = os.path.join(dir_output, "Compare_{}.docx".format(str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))))
+if len(sys.argv) == 2:
+    file_save = str(sys.argv[1])
+
+document.save(file_save)
