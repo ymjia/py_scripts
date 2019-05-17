@@ -9,69 +9,14 @@ import time
 import datetime
 from paraview.simple import *
 from paraview.simple import _active_objects
-
-pxm = servermanager.ProxyManager()
-
-# directory operations
-def get_sub_dir(cur):
-    return [name for name in os.listdir(cur)
-            if os.path.isdir(os.path.join(cur, name))]
+dir_py_module = os.path.join(os.getcwd(), "..", "Sn3D_plugins", "scripts", "pv_module")
+sys.path.append(dir_py_module)
+from framework_util import *
 
 
-# get all file from folder except subdir
-def get_file_list(folder):
-    return [os.path.join(folder, name) for name in os.listdir(folder)
-            if not os.path.isdir(os.path.join(folder, name))]
-
-# read file name with stem in folder, return *list*
-def get_file(folder, stem):
-    if not os.path.exists(folder):
-        return None
-    for f in os.listdir(folder):
-        cur_stem = os.path.splitext(f)[0]
-        if cur_stem == stem:
-            find_res = os.path.join(folder, f)
-            if os.path.isdir(find_res):
-                return get_file_list(find_res)
-            else:
-                return [find_res]
-    return None
-
-# read models to paraview
-def read_files(file_list):
-    if not isinstance(file_list, list):
-        print("Error: read file input not list: {}".format(file_list))
-        return None
-    if len(file_list) < 1:
-        return None
-    reader = OpenDataFile(file_list)
-    if reader is None: return None
-    #RenameSource(stem, reader)
-    return reader
 
 
-# remove number from string tail
-def trim_last_number(name_str):
-    c_num = len(name_str)
-    idx = 1
-    while idx < c_num:
-        sub_tail = str(name_str[-1 * idx:])
-        if not sub_tail.isdigit():
-            break
-        idx += 1
-    if idx == c_num or idx == 1:
-        return name_str
-    return str(name_str[:-1 * idx + 1])
 
-
-dir_input = "d:/data/test_framwork/input/"
-dir_output = "d:/data/test_framwork/output/"
-# versions to be compared
-list_ver = ["v11", "v12"]
-# input data
-list_case = ["case1", "case2"]
-# compare alg list
-list_alg = ["smooth", "merge"]
 
 
 # class for screenshots
@@ -103,48 +48,13 @@ class ScreenShotHelper:
         v_size = view.ViewSize
         SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=1)
 
-def add_annotation(view, text, size):
-    annot = Text()
-    annot.Text = text
-    dis = Show(annot, view)
-    dis.FontFile = ''
-    dis.FontSize = size
-    dis.Color = [0.0, 0.0, 0.0]
-    dis.Interactivity = 0
-    dis.Shadow = 1
-
-
-def add_time_annotation(view, tfile):
-    t = time.ctime(os.path.getmtime(tfile))
-    file_time = str(datetime.datetime.strptime(t, "%a %b %d %H:%M:%S %Y"))
-    cur_time = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    annot = Text()
-    annot.Text = "Data time: {}\nCamera Time: {}".format(file_time, cur_time)
-    dis = Show(annot, view)
-    dis.WindowLocation = 'LowerRightCorner'
-    dis.Justification = 'Right'
-    dis.FontSize = 14
-    dis.FontFile = ''
-    dis.Color = [0.0, 0.0, 0.0]
-    dis.Interactivity = 0
-    dis.Shadow = 1
-
 
 # read file or file list and render in given view
 def read_and_render(file_list, v):
-    reader = read_files(file_list)
-    if reader is None:
-        return None
-
-    if len(file_list) > 1:
-        name = pxm.GetProxyName("sources", reader)
-        gd = GroupTimeSteps(Input=reader)
-        RenameSource("{}_list".format(trim_last_number(name)), gd)
-        reader = gd
     HideAll(v)
-    gd_display = Show(reader, v)
-    ColorBy(gd_display, ['POINTS', 'tmp'])
-    ColorBy(gd_display, ['POINTS', ''])
+    reader = read_files(file_list)
+    reader_display = Show(reader, v)
+    reader_display.ColorArrayName = [None, '']
     v.ResetCamera()
     # add anotation
     f = file_list[0]
@@ -163,6 +73,7 @@ def read_and_render(file_list, v):
 # create screenshots for given file from given cam_list    
 def create_shot(file_list, cam_list, out_dir, pattern):
     cur_view = GetActiveViewOrCreate("RenderView")
+    cur_view.CenterAxesVisibility = 0
     cur_source = read_and_render(file_list, cur_view)
     ss = ScreenShotHelper()
     for i in range(0, len(cam_list)):
@@ -199,6 +110,19 @@ def ss_need_update(file_list, config_file, cam_num):
         return True
     return False
 
+
+
+# read configuration
+dir_input = "d:/data/test_framwork/input/"
+dir_output = "d:/data/test_framwork/output/"
+# versions to be compared
+list_ver = ["v11", "v12"]
+# input data
+list_case = ["case1", "case2"]
+# compare alg list
+list_alg = ["smooth", "merge"]
+
+
 # setup active object
 # get all concerned file names
 # case/version/alg
@@ -221,7 +145,7 @@ for case in file_dir:
         file_list = get_file(case_files, alg)
         if file_list is None or len(file_list) < 1:
             continue
-        if not ss_need_update(file_list, cam_file, len(cam_list)):
-            continue
+        #if not ss_need_update(file_list, cam_file, len(cam_list)):
+         #   continue
         print("Updating screenshots for {}/{}/{}".format(case, ver_name, alg))
         create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)

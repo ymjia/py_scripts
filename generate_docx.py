@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 ## @file generate_docx.py
 ## @brief create documents from given folder structure
+## @note generated py file meed pv module/framework_util to be parsed
 ## @author jiayanming
 
 import os.path

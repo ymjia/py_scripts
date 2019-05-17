@@ -10,10 +10,35 @@ import datetime
 from paraview.simple import *
 from paraview.simple import _active_objects
 
+# global variables
+pxm = servermanager.ProxyManager()
+
+# string operations
+# remove number from string tail
+def trim_last_number(name_str):
+    c_num = len(name_str)
+    idx = 1
+    while idx < c_num:
+        sub_tail = str(name_str[-1 * idx:])
+        if not sub_tail.isdigit():
+            break
+        idx += 1
+    if idx == c_num or idx == 1:
+        return name_str
+    return str(name_str[:-1 * idx + 1])
+
+
+# directory operations
+def get_sub_dir(cur):
+    return [name for name in os.listdir(cur)
+            if os.path.isdir(os.path.join(cur, name))]
+
+
 # get all file from folder except subdir
 def get_file_list(folder):
     return [os.path.join(folder, name) for name in os.listdir(folder)
             if not os.path.isdir(os.path.join(folder, name))]
+
 
 # read file name with stem in folder, return *list*
 def get_file(folder, stem):
@@ -37,8 +62,15 @@ def read_files(file_list):
     if len(file_list) < 1:
         return None
     reader = OpenDataFile(file_list)
-    if reader is None: return None
+    if reader is None:
+        return None
+    if len(file_list) > 1:
+        name = pxm.GetProxyName("sources", reader)
+        gd = GroupTimeSteps(Input=reader)
+        RenameSource("{}_list".format(trim_last_number(name)), gd)
+        reader = gd
     return reader
+
 
 def generate_view(l, s_num):
     # view positions in layout
@@ -74,6 +106,33 @@ def generate_view(l, s_num):
         if s_num == 6:
             l_pos.append(pos2 + 1)
     return l_pos
+
+
+def add_annotation(view, text, size):
+    annot = Text()
+    annot.Text = text
+    dis = Show(annot, view)
+    dis.FontFile = ''
+    dis.FontSize = size
+    dis.Color = [0.0, 0.0, 0.0]
+    dis.Interactivity = 0
+    dis.Shadow = 1
+
+
+def add_time_annotation(view, tfile):
+    t = time.ctime(os.path.getmtime(tfile))
+    file_time = str(datetime.datetime.strptime(t, "%a %b %d %H:%M:%S %Y"))
+    cur_time = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    annot = Text()
+    annot.Text = "Data time: {}\nCamera Time: {}".format(file_time, cur_time)
+    dis = Show(annot, view)
+    dis.WindowLocation = 'LowerRightCorner'
+    dis.Justification = 'Right'
+    dis.FontSize = 14
+    dis.FontFile = ''
+    dis.Color = [0.0, 0.0, 0.0]
+    dis.Interactivity = 0
+    dis.Shadow = 1
 
 
 # generate paraview project for given data
