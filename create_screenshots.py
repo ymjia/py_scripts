@@ -68,6 +68,7 @@ def read_and_render(file_list, v):
 # create screenshots for given file from given cam_list    
 def create_shot(file_list, cam_list, out_dir, pattern):
     cur_view = GetActiveViewOrCreate("RenderView")
+    add_light_to_view(cur_view, False)
     cur_view.CenterAxesVisibility = 0
     cur_source = read_and_render(file_list, cur_view)
     ss = ScreenShotHelper()

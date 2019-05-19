@@ -112,6 +112,19 @@ def generate_view(l, s_num):
     return l_pos
 
 
+def add_light_to_view(cur_view, append=False):
+    if not append and len(cur_view.AdditionalLights) >= 1:
+        return
+    light = AddLight(view=cur_view)
+    # Properties modified on light1
+    light.Coords = 'Camera'
+    light.Type = 'Directional'
+    light.Position = [-1.0, 1.0, 1.0]
+    light.FocalPoint = [1.0, -1.0, 0.0]
+    # Properties modified on light
+    light.Intensity = 0.5
+
+
 ## @brief add text annotation at left-top
 def add_annotation(view, text, size):
     annot = Text()
