@@ -108,39 +108,37 @@ def ss_need_update(file_list, config_file, cam_num):
 
 
 # read configuration
+def create_screenshots(dir_input, dir_output, file_config):
+    # data to be compared
+    # get all concerned file names
+    list_case, list_ver, list_alg = read_compare_config(file_config)
+
+    # case/version/alg
+    file_dir = []
+    for ci in list_case:
+        for vi in list_ver:
+            file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
+
+    #create shot
+    for case in file_dir:
+        case_name = case[0]
+        ver_name = case[1]
+        cam_file = os.path.join(dir_input, case_name, "config.txt")
+        cam_list = read_cam(cam_file)
+        if cam_list is None or len(cam_list) < 1:
+            continue
+        case_files = case[2]
+        for alg in list_alg:
+            file_list = get_file(case_files, alg)
+            if file_list is None or len(file_list) < 1:
+                continue
+            #if not ss_need_update(file_list, cam_file, len(cam_list)):
+            #   continue
+            print("Updating screenshots for {}/{}/{}".format(case, ver_name, alg))
+            create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
+
+
 dir_input = "d:/data/test_framwork/input/"
 dir_output = "d:/data/test_framwork/output/"
-# versions to be compared
-list_ver = ["v11", "v12"]
-# input data
-list_case = ["case1", "case2"]
-# compare alg list
-list_alg = ["smooth", "merge"]
-
-
-# setup active object
-# get all concerned file names
-# case/version/alg
-file_dir = []
-for ci in list_case:
-    for vi in list_ver:
-        file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
-
-
-#create shot
-for case in file_dir:
-    case_name = case[0]
-    ver_name = case[1]
-    cam_file = os.path.join(dir_input, case_name, "config.txt")
-    cam_list = read_cam(cam_file)
-    if cam_list is None or len(cam_list) < 1:
-        continue
-    case_files = case[2]
-    for alg in list_alg:
-        file_list = get_file(case_files, alg)
-        if file_list is None or len(file_list) < 1:
-            continue
-        #if not ss_need_update(file_list, cam_file, len(cam_list)):
-         #   continue
-        print("Updating screenshots for {}/{}/{}".format(case, ver_name, alg))
-        create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
+file_config = "d:/data/test_framwork/compare.txt"
+create_screenshots(dir_input, dir_output, file_config)
