@@ -16,8 +16,8 @@ class check_item:
 
 # column
 #          check  amount  sup
-# verify :   B      E      G/H
-# input  :   F     K/M      B
+# verify :   B      E      H
+# input  :   F      M      query in verify
     
 def load_item(wb, item_list):
     for row in ws.values:
