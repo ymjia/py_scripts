@@ -75,17 +75,52 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
             am_err_list.append(cur_item)
             continue
         ap_list.append(cur_item)
-    
-ver_list = []
-load_verify_item("c:/data/xls/verify.xlsx", ver_list)
-ap_list = []
-am_err_list = []
-no_id_list = []
-invalid_list = []
-load_ap_item("c:/data/xls/ap.xlsx", ver_list, ap_list,
-             am_err_list, no_id_list, invalid_list)
 
-print("valid: {}\n".format(len(ap_list)))
-print("am_err: {}\n".format(len(am_err_list)))
-print("no_id: {}\n".format(len(no_id_list)))
-print("invalid: {}\n".format(len(invalid_list)))
+
+## find previous number from given start position
+def find_prev_number(input_str, pos):
+    idx = pos - 1
+    while idx >= 0 and input_str[idx].isdigit():
+        idx -= 1
+    return input_str[idx+1:pos]
+
+
+def find_next_number(input_str, pos):
+    max_pos = len(input_str)
+    idx = pos + 1
+    while idx < max_pos and input_str[idx].isdigit():
+        idx += 1
+    return input_str[pos+1:idx]
+
+
+def parse_check_id(input_id, out_list=[]):
+    out_list.clear()
+    prefix = input_id[0, 8]
+    #lenth judge for short ids
+    if len(prefix) != 8 or not prefix.isdigit():
+        return
+
+    
+    
+############## start process ########################
+# ver_list = []
+# load_verify_item("c:/data/xls/verify.xlsx", ver_list)
+# ap_list = []
+# am_err_list = []
+# no_id_list = []
+# invalid_list = []
+# load_ap_item("c:/data/xls/ap.xlsx", ver_list, ap_list,
+#              am_err_list, no_id_list, invalid_list)
+
+# print("valid: {}\n".format(len(ap_list)))
+# print("am_err: {}\n".format(len(am_err_list)))
+# print("no_id: {}\n".format(len(no_id_list)))
+# print("invalid: {}\n".format(len(invalid_list)))
+input_str = "12345/34"
+input_str2 = "12345-34/567"
+print(find_prev_number(input_str, 5))
+print(find_next_number(input_str, 5))
+print(find_prev_number(input_str2, 5))
+print(find_next_number(input_str2, 5))
+print(find_prev_number(input_str2, 8))
+print(find_next_number(input_str2, 8))
