@@ -60,7 +60,7 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
     rid = 1
     for r in ws.iter_rows(min_row=2, max_col=13, values_only=True):
         rid += 1
-        cid = r[5]
+        cid = r[5].replace(" ", "")
         am = float(r[12])
         cur_item = check_item(cid, am, "", rid)
         if len(cid) != 8 or not (cid.isdigit()):
@@ -85,6 +85,7 @@ def find_prev_number(input_str, pos):
     return input_str[idx+1:pos]
 
 
+## find next number from given start position
 def find_next_number(input_str, pos):
     max_pos = len(input_str)
     idx = pos + 1
@@ -93,13 +94,49 @@ def find_next_number(input_str, pos):
     return input_str[pos+1:idx]
 
 
+def merge_str(long_str, short_str):
+    len_s = len(short_str)
+    return long_str[0, len_s] + short_str
+
+
+## parse id list from compound str
+## @return
+## 0 normal finish
+## 1 prefix invalid
+## 2 prefix valid & no valid number following
 def parse_check_id(input_id, out_list=[]):
     out_list.clear()
+    if len(input_id) <= 8:
+        return
     prefix = input_id[0, 8]
     #lenth judge for short ids
-    if len(prefix) != 8 or not prefix.isdigit():
-        return
+    if not prefix.isdigit():
+        return 1
+    next_number = find_next_number(input_id, 8)
+    len_next = len(next_number)
+    if len_next == 0 or len_next >= 8:
+        return 2 # cannot find next number
 
+    prev_number = prefix[8 - len_next:]
+    if input_id[8] == "-":
+        start = int(prev_number)
+        end = int(next_number)
+        for i in range(start, end + 1):
+            out_list.append(merge_str(prefix, str(i)))
+    else:
+        out_list.append(prefix, prev_number)
+        out_list.append(prefix, next_number)
+    # add other check
+    split_pos = 8
+    while True:
+        split_pos = split_pos + len_next + 1
+        if split_pos >= len(input_id):
+            break
+        next_number = find_next_number(input_id, split_pos)
+        len_next = len(next_number)
+        out_list.append(merge_str(prefix, next_number))
+    return 0
+    
     
     
 ############## start process ########################
