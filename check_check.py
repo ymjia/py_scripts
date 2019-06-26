@@ -39,6 +39,22 @@ def merge_str(long_str, short_str):
     return long_str[0:len_s] + short_str
 
 
+## find previous number from given start position
+def find_prev_number(input_str, pos):
+    idx = pos - 1
+    while idx >= 0 and input_str[idx].isdigit():
+        idx -= 1
+    return input_str[idx+1:pos]
+
+
+## find next number from given start position
+def find_next_number(input_str, pos):
+    max_pos = len(input_str)
+    idx = pos + 1
+    while idx < max_pos and input_str[idx].isdigit():
+        idx += 1
+    return input_str[pos+1:idx]
+
 ## parse id list from compound str
 ## @return
 ## 0 normal finish
@@ -65,7 +81,8 @@ def parse_check_id(input_id, out_list=[]):
         for i in range(start, end + 1):
             out_list.append(merge_str(prefix, str(i)))
         if len_next + 9 >= len(input_id):
-            out_list.append(merge_str(prefix, prev_number))
+            out_list.append(prefix)
+            out_list.append(merge_str(prefix, next_number))
             return 3
     else:
         out_list.append(merge_str(prefix, prev_number))
@@ -81,11 +98,28 @@ def parse_check_id(input_id, out_list=[]):
         out_list.append(merge_str(prefix, next_number))
     return 0
     
-
-def id_group_equal(ver_list, ap_id, amount):
+## @todo return map information
+## return ver_ids specify verified item positions in ver_list
+def id_group_equal(ver_list, ap_id, amount, ver_ids):
     id_list = []
     id_type = parse_check_id(ap_id, id_list)
-    
+    if id_type == 1:
+        return False
+    if id_type == 2:
+        ver_id = binary_search(ver_list, id_list[0])
+        if ver_id == -1:
+            return False
+        elif ver_list[ver_id].amount == amount:
+            ver_ids.append(ver_id)
+            return True
+        else:
+            return False
+    if id_type == 3:
+        #if last_2 equal
+        #else use first n-2
+        return False
+        #find first item
+        
     
 # column
 #          check  amount  sup
@@ -132,21 +166,6 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
         ap_list.append(cur_item)
 
 
-## find previous number from given start position
-def find_prev_number(input_str, pos):
-    idx = pos - 1
-    while idx >= 0 and input_str[idx].isdigit():
-        idx -= 1
-    return input_str[idx+1:pos]
-
-
-## find next number from given start position
-def find_next_number(input_str, pos):
-    max_pos = len(input_str)
-    idx = pos + 1
-    while idx < max_pos and input_str[idx].isdigit():
-        idx += 1
-    return input_str[pos+1:idx]
 
 
     
