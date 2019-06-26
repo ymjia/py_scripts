@@ -95,7 +95,7 @@ def find_next_number(input_str, pos):
 
 
 def merge_str(long_str, short_str):
-    len_s = len(short_str)
+    len_s = len(long_str) - len(short_str)
     return long_str[0:len_s] + short_str
 
 
@@ -116,7 +116,6 @@ def parse_check_id(input_id, out_list=[]):
     len_next = len(next_number)
     if len_next == 0 or len_next >= 8:
         return 2 # cannot find next number
-
     prev_number = prefix[8 - len_next:]
     if input_id[8] == "-":
         start = int(prev_number)
@@ -159,7 +158,7 @@ file_id = "c:/data/xls/cid_case.txt"
 f = open(file_id)
 for line in f:
     parsed_list = []
-    parse_check_id(line, parsed_list)
-    print(line)
+    parse_check_id(line.rstrip(), parsed_list)
+    print(line.rstrip())
     for p in parsed_list:
         print("--{}".format(p))
