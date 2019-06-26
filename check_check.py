@@ -34,6 +34,54 @@ def binary_search(a, x, lo=0, hi=None):
     return (pos if pos != hi and a[pos].check_id == x else -1)
 
 
+def merge_str(long_str, short_str):
+    len_s = len(long_str) - len(short_str)
+    return long_str[0:len_s] + short_str
+
+
+## parse id list from compound str
+## @return
+## 0 normal finish
+## 1 prefix invalid
+## 2 prefix valid & no valid number following
+## 3 ambiguous parse
+def parse_check_id(input_id, out_list=[]):
+    out_list.clear()
+    if len(input_id) <= 8:
+        return
+    prefix = input_id[0:8]
+    #lenth judge for short ids
+    if not prefix.isdigit():
+        return 1
+    next_number = find_next_number(input_id, 8)
+    len_next = len(next_number)
+    if len_next == 0 or len_next >= 8:
+        out_list.append(prefix)
+        return 2 # cannot find next number
+    prev_number = prefix[8 - len_next:]
+    if input_id[8] == "-":
+        start = int(prev_number)
+        end = int(next_number)
+        for i in range(start, end + 1):
+            out_list.append(merge_str(prefix, str(i)))
+        if len_next + 9 >= len(input_id):
+            out_list.append(merge_str(prefix, prev_number))
+            return 3
+    else:
+        out_list.append(merge_str(prefix, prev_number))
+        out_list.append(merge_str(prefix, next_number))
+    # add other check
+    split_pos = 8
+    while True:
+        split_pos = split_pos + len_next + 1
+        if split_pos >= len(input_id):
+            break
+        next_number = find_next_number(input_id, split_pos)
+        len_next = len(next_number)
+        out_list.append(merge_str(prefix, next_number))
+    return 0
+    
+
 # column
 #          check  amount  sup
 # verify :   B      E      H
@@ -94,48 +142,6 @@ def find_next_number(input_str, pos):
     return input_str[pos+1:idx]
 
 
-def merge_str(long_str, short_str):
-    len_s = len(long_str) - len(short_str)
-    return long_str[0:len_s] + short_str
-
-
-## parse id list from compound str
-## @return
-## 0 normal finish
-## 1 prefix invalid
-## 2 prefix valid & no valid number following
-def parse_check_id(input_id, out_list=[]):
-    out_list.clear()
-    if len(input_id) <= 8:
-        return
-    prefix = input_id[0:8]
-    #lenth judge for short ids
-    if not prefix.isdigit():
-        return 1
-    next_number = find_next_number(input_id, 8)
-    len_next = len(next_number)
-    if len_next == 0 or len_next >= 8:
-        return 2 # cannot find next number
-    prev_number = prefix[8 - len_next:]
-    if input_id[8] == "-":
-        start = int(prev_number)
-        end = int(next_number)
-        for i in range(start, end + 1):
-            out_list.append(merge_str(prefix, str(i)))
-    else:
-        out_list.append(merge_str(prefix, prev_number))
-        out_list.append(merge_str(prefix, next_number))
-    # add other check
-    split_pos = 8
-    while True:
-        split_pos = split_pos + len_next + 1
-        if split_pos >= len(input_id):
-            break
-        next_number = find_next_number(input_id, split_pos)
-        len_next = len(next_number)
-        out_list.append(merge_str(prefix, next_number))
-    return 0
-    
     
     
 ############## start process ########################
@@ -158,7 +164,7 @@ file_id = "c:/data/xls/cid_case.txt"
 f = open(file_id)
 for line in f:
     parsed_list = []
-    parse_check_id(line.rstrip(), parsed_list)
-    print(line.rstrip())
+    res = parse_check_id(line.rstrip(), parsed_list)
+    print("{} parse res:{}".format(line.rstrip(), res))
     for p in parsed_list:
         print("--{}".format(p))
