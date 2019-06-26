@@ -82,6 +82,11 @@ def parse_check_id(input_id, out_list=[]):
     return 0
     
 
+def id_group_equal(ver_list, ap_id, amount):
+    id_list = []
+    id_type = parse_check_id(ap_id, id_list)
+    
+    
 # column
 #          check  amount  sup
 # verify :   B      E      H
@@ -94,6 +99,8 @@ def load_verify_item(filename, ver_list):
         ver_list.append(check_item(r[1], float(r[4]), r[7], rid))
         rid += 1
     ver_list.sort(key=lambda x: x.check_id, reverse=False)
+
+
 
 
 ## load ap check items
