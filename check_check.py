@@ -96,7 +96,7 @@ def find_next_number(input_str, pos):
 
 def merge_str(long_str, short_str):
     len_s = len(short_str)
-    return long_str[0, len_s] + short_str
+    return long_str[0:len_s] + short_str
 
 
 ## parse id list from compound str
@@ -108,7 +108,7 @@ def parse_check_id(input_id, out_list=[]):
     out_list.clear()
     if len(input_id) <= 8:
         return
-    prefix = input_id[0, 8]
+    prefix = input_id[0:8]
     #lenth judge for short ids
     if not prefix.isdigit():
         return 1
@@ -124,8 +124,8 @@ def parse_check_id(input_id, out_list=[]):
         for i in range(start, end + 1):
             out_list.append(merge_str(prefix, str(i)))
     else:
-        out_list.append(prefix, prev_number)
-        out_list.append(prefix, next_number)
+        out_list.append(merge_str(prefix, prev_number))
+        out_list.append(merge_str(prefix, next_number))
     # add other check
     split_pos = 8
     while True:
@@ -155,9 +155,11 @@ def parse_check_id(input_id, out_list=[]):
 # print("invalid: {}\n".format(len(invalid_list)))
 input_str = "12345/34"
 input_str2 = "12345-34/567"
-print(find_prev_number(input_str, 5))
-print(find_next_number(input_str, 5))
-print(find_prev_number(input_str2, 5))
-print(find_next_number(input_str2, 5))
-print(find_prev_number(input_str2, 8))
-print(find_next_number(input_str2, 8))
+file_id = "c:/data/xls/cid_case.txt"
+f = open(file_id)
+for line in f:
+    parsed_list = []
+    parse_check_id(line, parsed_list)
+    print(line)
+    for p in parsed_list:
+        print("--{}".format(p))
