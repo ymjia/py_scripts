@@ -126,20 +126,12 @@ def amount_equal(ver_list, ap_item, cid_list):
 def id_group_equal(ver_list, ap_item):
     id_list = []
     id_type = parse_check_id(ap_item.check_id, id_list)
-    ap_cid = ap_item.check_id
-    ap_amount = ap_item.amount
+    if id_type == 0:
+        return amount_equal(ver_list, ap_item, id_list)
     if id_type == 1:
         return False
     if id_type == 2:
-        ver_id = binary_search(ver_list, id_list[0])
-        if ver_id == -1:
-            return False
-        ver_item = ver_list[ver_id]
-        if ver_item.amount == ap_amount:
-            ver_item.map_id = ap_cid
-            ap_item.map_id = ver_id
-            return True
-        return False
+        return amount_equal(ver_list, ap_item, id_list[0:1])
     if id_type == 3:
         res_p = amount_equal(ver_list, ap_item, id_list[-2:-1])
         if res_p is True:  # if prefix equal
@@ -150,8 +142,6 @@ def id_group_equal(ver_list, ap_item):
         res_n2 = amount_equal(ver_list, ap_item, id_list[:-2])
         if res_n2 is True:  # if first n-2 equal
             return True
-    if id_type == 0:
-        return amount_equal(ver_list, ap_item, id_list)
     return False
     
 # column
@@ -186,44 +176,47 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
         am = float(r[12])
         cur_item = check_item(cid, am, "", rid)
         if len(cid) != 8 or not (cid.isdigit()):
-            invalid_list.append(cur_item)
-            continue
+            if id_group_equal(ver_list, cur_item):
+                ap_list.append(cur_item)
+                continue
+            else:
+                invalid_list.append(cur_item)
+                continue
         ver_pos = binary_search(ver_list, cid)
         if ver_pos == -1:
             no_id_list.append(cur_item)
             continue
-        cur_item.sup = ver_list[ver_pos].sup
-        if ver_list[ver_pos].amount != am:
+        ver_item = ver_list[ver_pos]
+        cur_item.sup = ver_item.sup
+        if ver_item.amount != am:
             am_err_list.append(cur_item)
             continue
         ap_list.append(cur_item)
+        ver_item.map_id = rid
+        cur_item.map_id = ver_item.rid
 
 
-
-
-    
-    
 ############## start process ########################
-# ver_list = []
-# load_verify_item("c:/data/xls/verify.xlsx", ver_list)
-# ap_list = []
-# am_err_list = []
-# no_id_list = []
-# invalid_list = []
-# load_ap_item("c:/data/xls/ap.xlsx", ver_list, ap_list,
-#              am_err_list, no_id_list, invalid_list)
+ver_list = []
+load_verify_item("c:/data/xls/verify.xlsx", ver_list)
+ap_list = []
+am_err_list = []
+no_id_list = []
+invalid_list = []
+load_ap_item("c:/data/xls/ap.xlsx", ver_list, ap_list,
+             am_err_list, no_id_list, invalid_list)
 
-# print("valid: {}\n".format(len(ap_list)))
-# print("am_err: {}\n".format(len(am_err_list)))
-# print("no_id: {}\n".format(len(no_id_list)))
-# print("invalid: {}\n".format(len(invalid_list)))
-input_str = "12345/34"
-input_str2 = "12345-34/567"
-file_id = "c:/data/xls/cid_case.txt"
-f = open(file_id)
-for line in f:
-    parsed_list = []
-    res = parse_check_id(line.rstrip(), parsed_list)
-    print("{} parse res:{}".format(line.rstrip(), res))
-    for p in parsed_list:
-        print("--{}".format(p))
+print("valid: {}\n".format(len(ap_list)))
+print("am_err: {}\n".format(len(am_err_list)))
+print("no_id: {}\n".format(len(no_id_list)))
+print("invalid: {}\n".format(len(invalid_list)))
+# input_str = "12345/34"
+# input_str2 = "12345-34/567"
+# file_id = "c:/data/xls/cid_case.txt"
+# f = open(file_id)
+# for line in f:
+#     parsed_list = []
+#     res = parse_check_id(line.rstrip(), parsed_list)
+#     print("{} parse res:{}".format(line.rstrip(), res))
+#     for p in parsed_list:
+#         print("--{}".format(p))
