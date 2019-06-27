@@ -16,7 +16,7 @@ class check_item:
         self.amount = amount
         self.sup = supplier
         self.rid = rid
-        self.map_id = 0
+        self.map_id = -1
 
     def __lt__(self, other):
         if isinstance(other, self.__class__):
@@ -98,7 +98,29 @@ def parse_check_id(input_id, out_list=[]):
         len_next = len(next_number)
         out_list.append(merge_str(prefix, next_number))
     return 0
-    
+
+
+def amount_equal(ver_list, ap_item, cid_list):
+    ap_rid = ap_item.rid
+    ap_am = ap_item.amount
+    ver_ids = []
+    ver_am = 0
+    for i in cid_list:
+        tmp_find = binary_search(ver_list, i)
+        if tmp_find == -1:
+            return False
+        ver_ids.append(tmp_find)
+        ver_am += ver_list[tmp_find].amount
+    if not math.isclose(ap_am, ver_am, 1e-5):
+        return False
+    ap_item.map_id = 0
+    if len(ver_ids) == 1:
+        ap_item.map_id = ver_list[ver_ids[0]].rid
+    for i in ver_ids:
+        ver_list[i].map_id = ap_rid
+    return True
+
+
 ## @todo return map information
 ## return ver_ids specify verified item positions in ver_list
 def id_group_equal(ver_list, ap_item):
@@ -119,12 +141,18 @@ def id_group_equal(ver_list, ap_item):
             return True
         return False
     if id_type == 3:
-        #if last_2 equal
-        
-        #else use first n-2
-        return False
-        #find first item
-        
+        res_p = amount_equal(ver_list, ap_item, id_list[-2:-1])
+        if res_p is True:  # if prefix equal
+            return True
+        res_l2 = amount_equal(ver_list, ap_item, id_list[-1:])
+        if res_l2 is True:  # if last 2 equal
+            return True
+        res_n2 = amount_equal(ver_list, ap_item, id_list[:-2])
+        if res_n2 is True:  # if first n-2 equal
+            return True
+    if id_type == 0:
+        return amount_equal(ver_list, ap_item, id_list)
+    return False
     
 # column
 #          check  amount  sup
