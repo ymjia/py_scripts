@@ -111,7 +111,7 @@ def amount_equal(ver_list, ap_item, cid_list):
             return False
         ver_ids.append(tmp_find)
         ver_am += ver_list[tmp_find].amount
-    if not math.isclose(ap_am, ver_am, 1e-5):
+    if not math.isclose(ap_am, ver_am, abs_tol=1e-5):
         return False
     ap_item.map_id = 0
     if len(ver_ids) == 1:
@@ -188,7 +188,7 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
             continue
         ver_item = ver_list[ver_pos]
         cur_item.sup = ver_item.sup
-        if ver_item.amount != am:
+        if not math.isclose(ver_item.amount, am, abs_tol=1e-5):
             am_err_list.append(cur_item)
             continue
         ap_list.append(cur_item)
@@ -220,3 +220,6 @@ print("invalid: {}\n".format(len(invalid_list)))
 #     print("{} parse res:{}".format(line.rstrip(), res))
 #     for p in parsed_list:
 #         print("--{}".format(p))
+
+for l in am_err_list:
+    print("{} {} {} {}".format(l.rid, l.check_id, l.amount, l.map_id))
