@@ -16,6 +16,7 @@ class check_item:
         self.amount = amount
         self.sup = supplier
         self.rid = rid
+        self.map_id = 0
 
     def __lt__(self, other):
         if isinstance(other, self.__class__):
@@ -26,7 +27,7 @@ class check_item:
     amount = 0 
     sup = "" # supplier
     rid = -1
-
+    map_id = 0
 
 def binary_search(a, x, lo=0, hi=None):
     hi = hi if hi is not None else len(a)
@@ -100,22 +101,26 @@ def parse_check_id(input_id, out_list=[]):
     
 ## @todo return map information
 ## return ver_ids specify verified item positions in ver_list
-def id_group_equal(ver_list, ap_id, amount, ver_ids):
+def id_group_equal(ver_list, ap_item):
     id_list = []
-    id_type = parse_check_id(ap_id, id_list)
+    id_type = parse_check_id(ap_item.check_id, id_list)
+    ap_cid = ap_item.check_id
+    ap_amount = ap_item.amount
     if id_type == 1:
         return False
     if id_type == 2:
         ver_id = binary_search(ver_list, id_list[0])
         if ver_id == -1:
             return False
-        elif ver_list[ver_id].amount == amount:
-            ver_ids.append(ver_id)
+        ver_item = ver_list[ver_id]
+        if ver_item.amount == ap_amount:
+            ver_item.map_id = ap_cid
+            ap_item.map_id = ver_id
             return True
-        else:
-            return False
+        return False
     if id_type == 3:
         #if last_2 equal
+        
         #else use first n-2
         return False
         #find first item
