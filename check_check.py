@@ -110,22 +110,26 @@ def amount_equal(ver_list, ap_item, cid_list):
     ap_am = ap_item.amount
     ver_ids = []
     ver_am = 0
+    sup = ["JYM"]
     for i in cid_list:
         if i not in ver_map:
             return False
         tmp_find = ver_map[i]
         ver_ids.append(tmp_find)
-        ver_am += ver_list[tmp_find].amount
+        ver_item = ver_list[tmp_find]
+        ver_am += ver_item.amount
+        if sup[0] != "JYM" and sup[0] != ver_item.sup:
+            print("ERROR! sup in ap table line {}".format(ap_rid))
+        sup[0] = ver_item.sup
+    ap_item.sup = sup[0]
     if not math.isclose(ap_am, ver_am, abs_tol=1e-5):
         return False
-
     # record map information
     ap_item.map_id = 0
     if len(ver_ids) == 1:
         ap_item.map_id = ver_list[ver_ids[0]].rid
     for i in ver_ids:
         ver_list[i].map_id = ap_rid
-        print("v {} - {}".format(ver_list[i].rid, ap_rid))
     return True
 
 
@@ -247,16 +251,17 @@ print("am_err: {}\n".format(len(am_err_list)))
 print("no_id: {}\n".format(len(no_id_list)))
 print("invalid: {}\n".format(len(invalid_list)))
 
-wb_ver = Workbook()
-ws_ver = wb_ver.active
-for vi in ver_list:
-    if vi.map_id == -1:
-        continue
-    ws_ver.append([vi.check_id, vi.amount, vi.rid, vi.map_id])
-wb_ver.save("c:/tmp/ver_test.xlsx")
 
-wb_ap = Workbook()
-ws_ap = wb_ap.active
-for vi in ap_list:
-    ws_ap.append([vi.check_id, vi.amount, vi.rid, vi.map_id])
-wb_ap.save("c:/tmp/ap_test.xlsx")
+def write_item_to_file(filename, out_list):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["check_id", "amount", "row_no", "map_id", "supplier"])
+    for vi in out_list:
+        ws.append([vi.check_id, vi.amount, vi.rid, vi.map_id, vi.sup])
+    wb.save(filename)
+
+
+write_item_to_file("c:/tmp/ver_test.xlsx", ver_list)
+write_item_to_file("c:/tmp/ap_confirm.xlsx", ap_list)
+write_item_to_file("c:/tmp/ap_am_err.xlsx", am_err_list)
+write_item_to_file("c:/tmp/invalid_id.xlsx", invalid_list)
