@@ -22,8 +22,8 @@ class CheckItem:
 
     def __lt__(self, other):
         if isinstance(other, self.__class__):
-            return self.check_id < other.check_id
-        return self.check_id < str(other)
+            return self.sup < other.sup
+        return self.sup < str(other)
 
     check_id = 0 #use int for fast compare
     amount = 0 
@@ -31,7 +31,19 @@ class CheckItem:
     rid = -1
     dup_list = []
     map_id = -1
-    
+
+
+# supplier item
+# record total amount from both ap and ver
+# @note already verified item excluded
+class SupItem:
+    def __init__(self, sup):
+        self.sup = sup
+        self.ver_am = 0
+        self.ap_am = 0
+    sup = ""
+    ver_am = 0
+    ap_am = 0
 
 
 def binary_search(a, x, lo=0, hi=None):
@@ -170,7 +182,7 @@ def load_verify_item(filename, ver_list):
         ver_list.append(CheckItem(cid, float(r[4]), r[7], rid))
 
         rid += 1
-    #ver_list.sort(key=lambda x: x.check_id, reverse=False)
+
 
 # load ap item and remove duplicated
 def load_ap_input(filename, ap_input_list):
@@ -212,8 +224,7 @@ def filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, in
         if cid not in ver_map:
             no_id_list.append(cur_item)
             continue
-        ver_pos = ver_map[cid]
-        ver_item = ver_list[ver_pos]
+        ver_item = ver_list[ver_map[cid]]
         cur_item.sup = ver_item.sup
         if not math.isclose(ver_item.amount, am, abs_tol=1e-5):
             am_err_list.append(cur_item)
@@ -233,25 +244,6 @@ def print_ver_number(ver_list, stage):
     print("verified number at {} : {}".format(stage, verified_number))
 
 
-############## start process ########################
-ver_list = []
-ap_input_list = []
-ap_list = []
-am_err_list = []
-no_id_list = []
-invalid_list = []
-
-load_verify_item("c:/data/xls/verify.xlsx", ver_list)
-load_ap_input("c:/data/xls/ap.xlsx", ap_input_list)
-print("ap number after remove dup: {}".format(len(ap_input_list)))
-filter_ap_item(ver_list, ap_input_list, ap_list,
-               am_err_list, no_id_list, invalid_list)
-print("valid: {}\n".format(len(ap_list)))
-print("am_err: {}\n".format(len(am_err_list)))
-print("no_id: {}\n".format(len(no_id_list)))
-print("invalid: {}\n".format(len(invalid_list)))
-
-
 def write_item_to_file(filename, out_list):
     wb = Workbook()
     ws = wb.active
@@ -261,7 +253,89 @@ def write_item_to_file(filename, out_list):
     wb.save(filename)
 
 
+def write_item_to_sup(filename, sup_list):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["sup_name", "ver_amount", "ap_amount"])
+    for vi in sup_list:
+        ws.append([vi.sup, vi.ver_am, vi.ap_am])
+    wb.save(filename)
+
+
+################ supplier relevant
+def get_remain_ver_item(ver_list, rm_ver_list):
+    for vi in ver_list:
+        if vi.map_id == -1:
+            continue
+        rm_ver_list.append(vi)
+
+
+# get amount sum for each supplier,
+# return sum list and map from sup_NAME to list_IDX
+def collect_supplier_sum(item_list, list_sum, sup_map):
+    i = 0
+    total = len(item_list)
+    while i < total:
+        cur_sup = item_list[i].sup
+        sum_am = 0
+        cur_start = i
+        # collect amount of same cid
+        for j in range(cur_start, total):
+            if cur_sup != item_list[j].sup:
+                break
+            sum_am += item_list[j].amount
+            i += 1
+        # mark verified
+        sup_map[cur_sup] = len(list_sum)
+        list_sum.append(sum_am)
+
+
+############## start process ########################
+ver_list = []
+ap_input_list = []
+ap_list = []
+am_err_list = []
+no_id_list = []
+invalid_list = []
+
+# read input and make basic compare
+load_verify_item("c:/data/xls/verify.xlsx", ver_list)
+load_ap_input("c:/data/xls/ap.xlsx", ap_input_list)
+print("ap number after remove dup: {}".format(len(ap_input_list)))
+filter_ap_item(ver_list, ap_input_list, ap_list,
+               am_err_list, no_id_list, invalid_list)
+
+
+# get remain items and compare by supplier
+
+
+rm_ver_list = []
+get_remain_ver_item(ver_list, rm_ver_list)
+
+sup_list = []
+sup_map = {}
+for item in rm_ver_list:
+    sup = item.sup
+    if sup not in sup_map:
+        sup_map[sup] = len(sup_list)
+        sup_list.append(SupItem(sup))
+    else:
+        sup_list[sup_map[sup]].ver_am += item.amount
+
+for item in am_err_list:
+    sup = item.sup
+    if sup not in sup_map:
+        sup_map[sup] = len(sup_list)
+        sup_list.append(SupItem(sup))
+    else:
+        sup_list[sup_map[sup]].ap_am += item.amount
+
+
+# write results
 write_item_to_file("c:/tmp/ver_test.xlsx", ver_list)
 write_item_to_file("c:/tmp/ap_confirm.xlsx", ap_list)
 write_item_to_file("c:/tmp/ap_am_err.xlsx", am_err_list)
 write_item_to_file("c:/tmp/invalid_id.xlsx", invalid_list)
+write_item_to_file("c:/tmp/remain_ver.xlsx", rm_ver_list)
+
+write_item_to_sup("c:/tmp/sup_amount.xlsx", sup_list)
