@@ -242,16 +242,10 @@ load_ap_input("c:/data/xls/ap.xlsx", ap_input_list)
 print("ap number after remove dup: {}".format(len(ap_input_list)))
 filter_ap_item(ver_list, ap_input_list, ap_list,
                am_err_list, no_id_list, invalid_list)
-filter_same_checkid(ver_list, am_err_list)
 print("valid: {}\n".format(len(ap_list)))
 print("am_err: {}\n".format(len(am_err_list)))
 print("no_id: {}\n".format(len(no_id_list)))
 print("invalid: {}\n".format(len(invalid_list)))
-confirm_am_number = 0
-for l in am_err_list:
-    if l.map_id != -1:
-        confirm_am_number += 1
-print(confirm_am_number)
 
 wb_ver = Workbook()
 ws_ver = wb_ver.active
