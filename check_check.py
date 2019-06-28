@@ -27,7 +27,7 @@ class check_item:
     amount = 0 
     sup = "" # supplier
     rid = -1
-    map_id = 0
+    map_id = -1
 
 def binary_search(a, x, lo=0, hi=None):
     hi = hi if hi is not None else len(a)
@@ -113,6 +113,8 @@ def amount_equal(ver_list, ap_item, cid_list):
         ver_am += ver_list[tmp_find].amount
     if not math.isclose(ap_am, ver_am, abs_tol=1e-5):
         return False
+
+    # record map information
     ap_item.map_id = 0
     if len(ver_ids) == 1:
         ap_item.map_id = ver_list[ver_ids[0]].rid
@@ -191,9 +193,37 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
         if not math.isclose(ver_item.amount, am, abs_tol=1e-5):
             am_err_list.append(cur_item)
             continue
-        ap_list.append(cur_item)
         ver_item.map_id = rid
         cur_item.map_id = ver_item.rid
+        ap_list.append(cur_item)
+
+# check items with same check id
+def filter_same_checkid(ver_list, am_err_list):
+    am_err_list.sort(key=lambda x: x.check_id, reverse=False)
+    i = 0
+    total = len(am_err_list)
+    while i < total:
+        cur_cid = am_err_list[i].check_id
+        cur_am = 0
+        cur_start = i
+        # collect amount of same cid
+        for j in range(cur_start, total):
+            if cur_cid != am_err_list[j].check_id:
+                break
+            cur_am += am_err_list[j].amount
+            i += 1
+        # compare amount
+        ver_pos = binary_search(ver_list, cur_cid)
+        if ver_pos == -1:
+            continue
+        v_am = ver_list[ver_pos].amount
+        if not math.isclose(v_am, cur_am, abs_tol=1e-5):
+            continue
+        # mark verified
+        ver_list[ver_pos].map_id = 0
+        ver_rid = ver_list[ver_pos].rid
+        for j in range(cur_start, i):
+            am_err_list[j].map_id = ver_rid
 
 
 ############## start process ########################
@@ -206,6 +236,7 @@ invalid_list = []
 load_ap_item("c:/data/xls/ap.xlsx", ver_list, ap_list,
              am_err_list, no_id_list, invalid_list)
 
+filter_same_checkid(ver_list, am_err_list)
 print("valid: {}\n".format(len(ap_list)))
 print("am_err: {}\n".format(len(am_err_list)))
 print("no_id: {}\n".format(len(no_id_list)))
@@ -221,5 +252,15 @@ print("invalid: {}\n".format(len(invalid_list)))
 #     for p in parsed_list:
 #         print("--{}".format(p))
 
+verified_number = 0
+for v in ver_list:
+    if v.map_id != -1:
+        verified_number += 1
+
+print("verified number in ver_table: {}".format(verified_number))
+confirm_am_number = 0
 for l in am_err_list:
-    print("{} {} {} {}".format(l.rid, l.check_id, l.amount, l.map_id))
+    #print("{} {} {} {}".format(l.rid, l.check_id, l.amount, l.map_id))
+    if l.map_id != -1:
+        confirm_am_number += 1
+print(confirm_am_number)
