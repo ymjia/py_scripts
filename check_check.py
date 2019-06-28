@@ -9,8 +9,10 @@ from openpyxl import *
 
 from bisect import bisect_left
 
+ver_map = {}
+ap_map = {}
 
-class check_item:
+class CheckItem:
     def __init__(self, cid, amount, supplier, rid):
         self.check_id = cid
         self.amount = amount
@@ -27,7 +29,10 @@ class check_item:
     amount = 0 
     sup = "" # supplier
     rid = -1
+    dup_list = []
     map_id = -1
+    
+
 
 def binary_search(a, x, lo=0, hi=None):
     hi = hi if hi is not None else len(a)
@@ -106,9 +111,9 @@ def amount_equal(ver_list, ap_item, cid_list):
     ver_ids = []
     ver_am = 0
     for i in cid_list:
-        tmp_find = binary_search(ver_list, i)
-        if tmp_find == -1:
+        if i not in ver_map:
             return False
+        tmp_find = ver_map[i]
         ver_ids.append(tmp_find)
         ver_am += ver_list[tmp_find].amount
     if not math.isclose(ap_am, ver_am, abs_tol=1e-5):
@@ -120,6 +125,7 @@ def amount_equal(ver_list, ap_item, cid_list):
         ap_item.map_id = ver_list[ver_ids[0]].rid
     for i in ver_ids:
         ver_list[i].map_id = ap_rid
+        print("v {} - {}".format(ver_list[i].rid, ap_rid))
     return True
 
 
@@ -151,15 +157,34 @@ def id_group_equal(ver_list, ap_item):
 # verify :   B      E      H
 # input  :   F      M      query in verify
 def load_verify_item(filename, ver_list):
+    ver_map.clear()
     ws = load_workbook(filename).active
     rid = 2
     for r in ws.iter_rows(min_row=2, max_col=8, values_only=True):
-        #print("{}:{} {} {}".format(rid, r[1], r[4], r[7]))
-        ver_list.append(check_item(r[1], float(r[4]), r[7], rid))
+        cid = r[1]
+        ver_map[cid] = len(ver_list)
+        ver_list.append(CheckItem(cid, float(r[4]), r[7], rid))
+
         rid += 1
-    ver_list.sort(key=lambda x: x.check_id, reverse=False)
+    #ver_list.sort(key=lambda x: x.check_id, reverse=False)
 
-
+# load ap item and remove duplicated
+def load_ap_input(filename, ap_input_list):
+    ws = load_workbook(filename).active
+    rid = 1
+    for r in ws.iter_rows(min_row=2, max_col=13, values_only=True):
+        rid += 1
+        cid = r[5].replace(" ", "")
+        am = float(r[12])
+        if cid not in ap_map:
+            ap_map[cid] = len(ap_input_list)
+            ap_input_list.append(CheckItem(cid, am, "", rid))
+        else:
+            old_pos = ver_map[cid]
+            old_item = ap_input_list[old_pos]
+            old_item.amount += am
+            old_item.dup_list.append(rid)
+    
 
 
 ## load ap check items
@@ -176,7 +201,8 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
         rid += 1
         cid = r[5].replace(" ", "")
         am = float(r[12])
-        cur_item = check_item(cid, am, "", rid)
+        cur_item = CheckItem(cid, am, "", rid)
+        
         if len(cid) != 8 or not (cid.isdigit()):
             if id_group_equal(ver_list, cur_item):
                 ap_list.append(cur_item)
@@ -184,10 +210,10 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
             else:
                 invalid_list.append(cur_item)
                 continue
-        ver_pos = binary_search(ver_list, cid)
-        if ver_pos == -1:
+        if cid not in ver_map:
             no_id_list.append(cur_item)
             continue
+        ver_pos = ver_map[cid]
         ver_item = ver_list[ver_pos]
         cur_item.sup = ver_item.sup
         if not math.isclose(ver_item.amount, am, abs_tol=1e-5):
@@ -195,6 +221,7 @@ def load_ap_item(filename, ver_list, ap_list, am_err_list, no_id_list, invalid_l
             continue
         ver_item.map_id = rid
         cur_item.map_id = ver_item.rid
+        #print("v {} - {}".format(ver_item.rid, rid))
         ap_list.append(cur_item)
 
 # check items with same check id
@@ -213,9 +240,9 @@ def filter_same_checkid(ver_list, am_err_list):
             cur_am += am_err_list[j].amount
             i += 1
         # compare amount
-        ver_pos = binary_search(ver_list, cur_cid)
-        if ver_pos == -1:
+        if cur_cid not in ver_map:
             continue
+        ver_pos = ver_map[cur_cid]
         v_am = ver_list[ver_pos].amount
         if not math.isclose(v_am, cur_am, abs_tol=1e-5):
             continue
@@ -234,36 +261,38 @@ def print_ver_number(ver_list, stage):
             verified_number += 1
     print("verified number at {} : {}".format(stage, verified_number))
 
+
 ############## start process ########################
 ver_list = []
-load_verify_item("c:/data/xls/verify.xlsx", ver_list)
 ap_list = []
 am_err_list = []
 no_id_list = []
 invalid_list = []
-print_ver_number(ver_list, "pre")
+
+load_verify_item("c:/data/xls/verify.xlsx", ver_list)
 load_ap_item("c:/data/xls/ap.xlsx", ver_list, ap_list,
              am_err_list, no_id_list, invalid_list)
-print_ver_number(ver_list, "load_ap")
 filter_same_checkid(ver_list, am_err_list)
-print_ver_number(ver_list, "same_id")
 print("valid: {}\n".format(len(ap_list)))
 print("am_err: {}\n".format(len(am_err_list)))
 print("no_id: {}\n".format(len(no_id_list)))
 print("invalid: {}\n".format(len(invalid_list)))
-# input_str = "12345/34"
-# input_str2 = "12345-34/567"
-# file_id = "c:/data/xls/cid_case.txt"
-# f = open(file_id)
-# for line in f:
-#     parsed_list = []
-#     res = parse_check_id(line.rstrip(), parsed_list)
-#     print("{} parse res:{}".format(line.rstrip(), res))
-#     for p in parsed_list:
-#         print("--{}".format(p))
 confirm_am_number = 0
 for l in am_err_list:
-    #print("{} {} {} {}".format(l.rid, l.check_id, l.amount, l.map_id))
     if l.map_id != -1:
         confirm_am_number += 1
 print(confirm_am_number)
+
+wb_ver = Workbook()
+ws_ver = wb_ver.active
+for vi in ver_list:
+    if vi.map_id == -1:
+        continue
+    ws_ver.append([vi.check_id, vi.amount, vi.rid, vi.map_id])
+wb_ver.save("c:/tmp/ver_test.xlsx")
+
+wb_ap = Workbook()
+ws_ap = wb_ap.active
+for vi in ap_list:
+    ws_ap.append([vi.check_id, vi.amount, vi.rid, vi.map_id])
+wb_ap.save("c:/tmp/ap_test.xlsx")
