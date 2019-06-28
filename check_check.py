@@ -226,6 +226,14 @@ def filter_same_checkid(ver_list, am_err_list):
             am_err_list[j].map_id = ver_rid
 
 
+## debugging methods
+def print_ver_number(ver_list, stage):
+    verified_number = 0
+    for v in ver_list:
+        if v.map_id != -1:
+            verified_number += 1
+    print("verified number at {} : {}".format(stage, verified_number))
+
 ############## start process ########################
 ver_list = []
 load_verify_item("c:/data/xls/verify.xlsx", ver_list)
@@ -233,10 +241,12 @@ ap_list = []
 am_err_list = []
 no_id_list = []
 invalid_list = []
+print_ver_number(ver_list, "pre")
 load_ap_item("c:/data/xls/ap.xlsx", ver_list, ap_list,
              am_err_list, no_id_list, invalid_list)
-
+print_ver_number(ver_list, "load_ap")
 filter_same_checkid(ver_list, am_err_list)
+print_ver_number(ver_list, "same_id")
 print("valid: {}\n".format(len(ap_list)))
 print("am_err: {}\n".format(len(am_err_list)))
 print("no_id: {}\n".format(len(no_id_list)))
@@ -251,13 +261,6 @@ print("invalid: {}\n".format(len(invalid_list)))
 #     print("{} parse res:{}".format(line.rstrip(), res))
 #     for p in parsed_list:
 #         print("--{}".format(p))
-
-verified_number = 0
-for v in ver_list:
-    if v.map_id != -1:
-        verified_number += 1
-
-print("verified number in ver_table: {}".format(verified_number))
 confirm_am_number = 0
 for l in am_err_list:
     #print("{} {} {} {}".format(l.rid, l.check_id, l.amount, l.map_id))
