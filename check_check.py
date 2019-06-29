@@ -44,7 +44,8 @@ class SupItem:
     sup = ""
     ver_am = 0
     ap_am = 0
-
+    ver_count = 0
+    ap_count = 0
 
 def binary_search(a, x, lo=0, hi=None):
     hi = hi if hi is not None else len(a)
@@ -256,9 +257,9 @@ def write_item_to_file(filename, out_list):
 def write_item_to_sup(filename, sup_list):
     wb = Workbook()
     ws = wb.active
-    ws.append(["sup_name", "ver_amount", "ap_amount"])
+    ws.append(["sup_name", "ver_amount", "ap_amount", "ver_count", "ap_count"])
     for vi in sup_list:
-        ws.append([vi.sup, vi.ver_am, vi.ap_am])
+        ws.append([vi.sup, vi.ver_am, vi.ap_am, vi.ver_count, vi.ap_count])
     wb.save(filename)
 
 
@@ -299,8 +300,8 @@ no_id_list = []
 invalid_list = []
 
 # read input and make basic compare
-load_verify_item("c:/data/xls/verify.xlsx", ver_list)
-load_ap_input("c:/data/xls/ap.xlsx", ap_input_list)
+load_verify_item("/Users/cathy_mo/jym/input/verify.xlsx", ver_list)
+load_ap_input("/Users/cathy_mo/jym/input/ap.xlsx", ap_input_list)
 print("ap number after remove dup: {}".format(len(ap_input_list)))
 filter_ap_item(ver_list, ap_input_list, ap_list,
                am_err_list, no_id_list, invalid_list)
@@ -317,25 +318,33 @@ sup_map = {}
 for item in rm_ver_list:
     sup = item.sup
     if sup not in sup_map:
-        sup_map[sup] = len(sup_list)
+        next_number = len(sup_list)
+        sup_map[sup] = next_number
         sup_list.append(SupItem(sup))
+        sup_list[next_number].ver_am = item.amount
+        sup_list[next_number].ver_count += 1
     else:
         sup_list[sup_map[sup]].ver_am += item.amount
+        sup_list[sup_map[sup]].ver_count += 1
 
 for item in am_err_list:
     sup = item.sup
     if sup not in sup_map:
-        sup_map[sup] = len(sup_list)
+        next_number = len(sup_list)
+        sup_map[sup] = next_number
         sup_list.append(SupItem(sup))
+        sup_list[next_number].ap_am = item.amount
+        sup_list[next_number].ver_count += 1
     else:
         sup_list[sup_map[sup]].ap_am += item.amount
+        sup_list[sup_map[sup]].ver_count += 1
 
 
 # write results
-write_item_to_file("c:/tmp/ver_test.xlsx", ver_list)
-write_item_to_file("c:/tmp/ap_confirm.xlsx", ap_list)
-write_item_to_file("c:/tmp/ap_am_err.xlsx", am_err_list)
-write_item_to_file("c:/tmp/invalid_id.xlsx", invalid_list)
-write_item_to_file("c:/tmp/remain_ver.xlsx", rm_ver_list)
+write_item_to_file("/Users/cathy_mo/jym/ver_test.xlsx", ver_list)
+write_item_to_file("/Users/cathy_mo/jym/ap_confirm.xlsx", ap_list)
+write_item_to_file("/Users/cathy_mo/jym/ap_am_err.xlsx", am_err_list)
+write_item_to_file("/Users/cathy_mo/jym/invalid_id.xlsx", invalid_list)
+write_item_to_file("/Users/cathy_mo/jym/remain_ver.xlsx", rm_ver_list)
 
-write_item_to_sup("c:/tmp/sup_amount.xlsx", sup_list)
+write_item_to_sup("/Users/cathy_mo/jym/sup_amount.xlsx", sup_list)
