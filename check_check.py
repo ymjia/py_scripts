@@ -9,8 +9,12 @@ from openpyxl import *
 
 from bisect import bisect_left
 
+# global variables
 ver_map = {}
 ap_map = {}
+table_ver_input = load_workbook("/Users/cathy_mo/jym/input/verify.xlsx")
+table_ap_input = load_workbook("/Users/cathy_mo/jym/input/ap.xlsx")
+
 
 class CheckItem:
     def __init__(self, cid, amount, supplier, rid):
@@ -175,7 +179,8 @@ def id_group_equal(ver_list, ap_item):
 # input  :   F      M      query in verify
 def load_verify_item(filename, ver_list):
     ver_map.clear()
-    ws = load_workbook(filename).active
+    
+    ws = table_ver_input.active
     rid = 2
     for r in ws.iter_rows(min_row=2, max_col=8, values_only=True):
         cid = r[1]
@@ -187,7 +192,8 @@ def load_verify_item(filename, ver_list):
 
 # load ap item and remove duplicated
 def load_ap_input(filename, ap_input_list):
-    ws = load_workbook(filename).active
+
+    ws = table_ap_input.active
     rid = 1
     for r in ws.iter_rows(min_row=2, max_col=13, values_only=True):
         rid += 1
@@ -291,6 +297,16 @@ def collect_supplier_sum(item_list, list_sum, sup_map):
         list_sum.append(sum_am)
 
 
+
+########### update output################
+def update_ver_table(ver_list):
+    ws = table_ver_input.active
+    ws.insert_cols(16)
+    for item in ver_list:
+        ws.cell(row = item.rid , column = 17).value = item.map_id
+        
+
+
 ############## start process ########################
 ver_list = []
 ap_input_list = []
@@ -334,10 +350,10 @@ for item in am_err_list:
         sup_map[sup] = next_number
         sup_list.append(SupItem(sup))
         sup_list[next_number].ap_am = item.amount
-        sup_list[next_number].ver_count += 1
+        sup_list[next_number].ap_count += 1
     else:
         sup_list[sup_map[sup]].ap_am += item.amount
-        sup_list[sup_map[sup]].ver_count += 1
+        sup_list[sup_map[sup]].ap_count += 1
 
 
 # write results
@@ -348,3 +364,6 @@ write_item_to_file("/Users/cathy_mo/jym/invalid_id.xlsx", invalid_list)
 write_item_to_file("/Users/cathy_mo/jym/remain_ver.xlsx", rm_ver_list)
 
 write_item_to_sup("/Users/cathy_mo/jym/sup_amount.xlsx", sup_list)
+table_ap_input.save("/Users/cathy_mo/jym/ap_output.xlsx")
+update_ver_table(ver_list)
+table_ver_input.save("/Users/cathy_mo/jym/verify_output.xlsx")
