@@ -3,6 +3,7 @@
 ## @brief create diff from given check list file
 ## @author jiayanming
 import os.path
+import re
 import math
 from openpyxl import *
 #from openpyxl import styles
@@ -190,13 +191,27 @@ def load_verify_item(ver_table, ver_list):
         rid += 1
 
 
+# fetch check id from string
+def regex_cid(in_str):
+    m = re.search('.*([0-9]{8}).*', in_str)
+    if m:
+        return m.group(1)
+    return ""
+
 # load ap item and remove duplicated
 def load_ap_input(ap_table, ap_input_list):
     ws = ap_table.active
     rid = 1
-    for r in ws.iter_rows(min_row=2, max_col=13, values_only=True):
+    for r in ws.iter_rows(min_row=2, max_col=16, values_only=True):
         rid += 1
         cid = r[5].replace(" ", "")
+        # find in column 15
+        if len(cid) != 8 or not (cid.isdigit()):
+            text_str = r[15]
+            if len(text_str) > 8:
+                regex_res = regex_cid(text_str)
+                if len(regex_res) != 0:
+                    cid = regex_res
         am = float(r[12])
         if cid not in ap_map:
             ap_map[cid] = len(ap_input_list)
