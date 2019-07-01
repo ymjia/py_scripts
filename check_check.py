@@ -8,8 +8,8 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "c:/data/xls/input/"
-dir_output = "c:/data/xls/output/"
+dir_input = "d:/data/xls_f/input/"
+dir_output = "d:/data/xls_f/output/"
 # global variables
 ver_map = {}
 ap_map = {}
@@ -24,12 +24,12 @@ class CheckItem:
         self.sup = supplier
         self.rid = rid
         self.map_id = -1
-
+        self.dup_list = []
     def __lt__(self, other):
         if isinstance(other, self.__class__):
             return self.sup < other.sup
         return self.sup < str(other)
-
+    
     check_id = 0 #use int for fast compare
     amount = 0 
     sup = "" # supplier
@@ -221,6 +221,7 @@ def load_ap_input(ap_table, ap_input_list):
 def filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, invalid_list, am_round_list):
     for cur_item in ap_input_list:
         am = cur_item.amount
+        # net
         if math.isclose(am, 0, abs_tol=1e-5):
             cur_item.map_id = -2
             ap_list.append(cur_item)
@@ -318,6 +319,12 @@ def update_ver_table(ver_list):
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
+def mark_same_id(cur_item, ws, value):
+    if cur_item.amount == 1:
+        return
+    for ri in cur_item.dup_list:
+        ws.cell(row=ri, column=1).value = value
+
 
 def update_ap_table(ap_list, round_list):
     ws = table_ap_input.active
@@ -329,8 +336,10 @@ def update_ap_table(ap_list, round_list):
             continue
         if res == -2:
             ws.cell(row=item.rid, column=1).value = "NET"
+            mark_same_id(item, ws, "NET")
             continue
         ws.cell(row=item.rid, column=1).value = res
+        mark_same_id(item, ws, res)
     for item in round_list:
         ws.cell(row=item.rid, column=1).value = item.map_id
         ws.cell(row=item.rid, column=1).fill = around_color
