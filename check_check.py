@@ -4,9 +4,8 @@
 ## @author jiayanming
 import os.path
 import math
-import datetime
 from openpyxl import *
-
+#from openpyxl import styles
 from bisect import bisect_left
 
 dir_input = "c:/data/xls/input/"
@@ -219,9 +218,7 @@ def load_ap_input(ap_table, ap_input_list):
 ## no_id_list  check_item cannot found in ver_list
 ## invalid_list check_item with invalid check_id
 ## @note need ver_list filled first
-def filter_ap_item(
-        ver_list, ap_input_list, ap_list,
-        am_err_list, no_id_list, invalid_list, am_round_list):
+def filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, invalid_list, am_round_list):
     for cur_item in ap_input_list:
         am = cur_item.amount
         if math.isclose(am, 0, abs_tol=1e-5):
@@ -250,7 +247,7 @@ def filter_ap_item(
             else:
                 am_round_list.append(cur_item)
             continue
-        ap_list.append(am_err_list)
+        am_err_list.append(cur_item)
 
 
 ## debugging methods
@@ -317,7 +314,12 @@ def update_ver_table(ver_list):
     for item in ver_list:
         ws.cell(row=item.rid, column=16).value = item.map_id
 
-def update_ap_table(ap_list):
+
+my_color = styles.colors.Color(rgb="ffff00")
+around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
+
+
+def update_ap_table(ap_list, round_list):
     ws = table_ap_input.active
     ws.insert_cols(1)
     ws.cell(row=1, column=1).value = "res"
@@ -329,6 +331,10 @@ def update_ap_table(ap_list):
             ws.cell(row=item.rid, column=1).value = "NET"
             continue
         ws.cell(row=item.rid, column=1).value = res
+    for item in round_list:
+        ws.cell(row=item.rid, column=1).value = item.map_id
+        ws.cell(row=item.rid, column=1).fill = around_color
+
 
 ############## start process ########################
 ver_list = []
@@ -342,9 +348,7 @@ invalid_list = []
 # read input and make basic compare
 load_verify_item(table_ver_input, ver_list)
 load_ap_input(table_ap_input, ap_input_list)
-print("ap number after remove dup: {}".format(len(ap_input_list)))
-filter_ap_item(ver_list, ap_input_list, ap_list,
-               am_err_list, no_id_list, invalid_list)
+filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, invalid_list, am_round_list)
 
 
 # get remain items and compare by supplier
@@ -382,13 +386,13 @@ for item in am_err_list:
 
 # write results
 write_item_to_file(os.path.join(dir_output, "ver_test.xlsx"), ver_list)
-write_item_to_file(os.path.join(dir_output, "ap_confirm.xlsx"), ap_list)
+write_item_to_file(str(os.path.join(dir_output, "ap_confirm.xlsx")), ap_list)
 write_item_to_file(os.path.join(dir_output, "ap_am_err.xlsx"), am_err_list)
 write_item_to_file(os.path.join(dir_output, "invalid_id.xlsx"), invalid_list)
 write_item_to_file(os.path.join(dir_output, "remain_ver.xlsx"), rm_ver_list)
 
 write_item_to_sup(os.path.join(dir_output, "sup_amount.xlsx"), sup_list)
 update_ver_table(ver_list)
-update_ap_table(ap_list)
+update_ap_table(ap_list, am_round_list)
 table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
 table_ver_input.save(os.path.join(dir_output, "verify_output.xlsx"))
