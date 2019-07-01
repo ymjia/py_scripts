@@ -219,13 +219,15 @@ def load_ap_input(ap_table, ap_input_list):
 ## no_id_list  check_item cannot found in ver_list
 ## invalid_list check_item with invalid check_id
 ## @note need ver_list filled first
-def filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, invalid_list):
+def filter_ap_item(
+        ver_list, ap_input_list, ap_list,
+        am_err_list, no_id_list, invalid_list, am_round_list):
     for cur_item in ap_input_list:
         am = cur_item.amount
-        # if math.isclose(am, 0, abs_tol=1e-5):
-        #     cur_item.map_id = -2
-        #     ap_list.append(cur_item)
-        #     continue
+        if math.isclose(am, 0, abs_tol=1e-5):
+            cur_item.map_id = -2
+            ap_list.append(cur_item)
+            continue
         rid = cur_item.rid
         cid = cur_item.check_id
         if len(cid) != 8 or not (cid.isdigit()):
@@ -240,13 +242,15 @@ def filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, in
             continue
         ver_item = ver_list[ver_map[cid]]
         cur_item.sup = ver_item.sup
-        if not math.isclose(ver_item.amount, am, abs_tol=1e-5):
-            am_err_list.append(cur_item)
+        if math.isclose(ver_item.amount, am, abs_tol=0.995):
+            ver_item.map_id = rid
+            cur_item.map_id = ver_item.rid
+            if math.isclose(ver_item.amount, am, abs_tol=1e-5):
+                ap_list.append(cur_item)
+            else:
+                am_round_list.append(cur_item)
             continue
-        ver_item.map_id = rid
-        cur_item.map_id = ver_item.rid
-        #print("v {} - {}".format(ver_item.rid, rid))
-        ap_list.append(cur_item)
+        ap_list.append(am_err_list)
 
 
 ## debugging methods
@@ -313,12 +317,25 @@ def update_ver_table(ver_list):
     for item in ver_list:
         ws.cell(row=item.rid, column=16).value = item.map_id
 
+def update_ap_table(ap_list):
+    ws = table_ap_input.active
+    ws.insert_cols(1)
+    ws.cell(row=1, column=1).value = "res"
+    for item in ap_list:
+        res = item.map_id
+        if res == -1:
+            continue
+        if res == -2:
+            ws.cell(row=item.rid, column=1).value = "NET"
+            continue
+        ws.cell(row=item.rid, column=1).value = res
 
 ############## start process ########################
 ver_list = []
 ap_input_list = []
 ap_list = []
 am_err_list = []
+am_round_list = []
 no_id_list = []
 invalid_list = []
 
@@ -371,6 +388,7 @@ write_item_to_file(os.path.join(dir_output, "invalid_id.xlsx"), invalid_list)
 write_item_to_file(os.path.join(dir_output, "remain_ver.xlsx"), rm_ver_list)
 
 write_item_to_sup(os.path.join(dir_output, "sup_amount.xlsx"), sup_list)
-table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
 update_ver_table(ver_list)
+update_ap_table(ap_list)
+table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
 table_ver_input.save(os.path.join(dir_output, "verify_output.xlsx"))
