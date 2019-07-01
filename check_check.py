@@ -9,11 +9,13 @@ from openpyxl import *
 
 from bisect import bisect_left
 
+dir_input = "c:/data/xls/input/"
+dir_output = "c:/data/xls/output/"
 # global variables
 ver_map = {}
 ap_map = {}
-table_ver_input = load_workbook("/Users/cathy_mo/jym/input/verify.xlsx")
-table_ap_input = load_workbook("/Users/cathy_mo/jym/input/ap.xlsx")
+table_ver_input = load_workbook(os.path.join(dir_input, "verify.xlsx"))
+table_ap_input = load_workbook(os.path.join(dir_input, "ap.xlsx"))
 
 
 class CheckItem:
@@ -177,10 +179,9 @@ def id_group_equal(ver_list, ap_item):
 #          check  amount  sup
 # verify :   B      E      H
 # input  :   F      M      query in verify
-def load_verify_item(filename, ver_list):
+def load_verify_item(ver_table, ver_list):
     ver_map.clear()
-    
-    ws = table_ver_input.active
+    ws = ver_table.active
     rid = 2
     for r in ws.iter_rows(min_row=2, max_col=8, values_only=True):
         cid = r[1]
@@ -191,9 +192,8 @@ def load_verify_item(filename, ver_list):
 
 
 # load ap item and remove duplicated
-def load_ap_input(filename, ap_input_list):
-
-    ws = table_ap_input.active
+def load_ap_input(ap_table, ap_input_list):
+    ws = ap_table.active
     rid = 1
     for r in ws.iter_rows(min_row=2, max_col=13, values_only=True):
         rid += 1
@@ -212,15 +212,22 @@ def load_ap_input(filename, ap_input_list):
 ## load ap check items
 ## @return:
 ## ap_list varified list
+##         map_id: 0  -- correspond to multiple ver item
+##                 -2 -- net amount is 0
+##                 -1 -- n
 ## am_err_list check item found in ver_list but amount not equal
 ## no_id_list  check_item cannot found in ver_list
 ## invalid_list check_item with invalid check_id
 ## @note need ver_list filled first
 def filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, invalid_list):
     for cur_item in ap_input_list:
+        am = cur_item.amount
+        # if math.isclose(am, 0, abs_tol=1e-5):
+        #     cur_item.map_id = -2
+        #     ap_list.append(cur_item)
+        #     continue
         rid = cur_item.rid
         cid = cur_item.check_id
-        am = cur_item.amount
         if len(cid) != 8 or not (cid.isdigit()):
             if id_group_equal(ver_list, cur_item):
                 ap_list.append(cur_item)
@@ -302,9 +309,9 @@ def collect_supplier_sum(item_list, list_sum, sup_map):
 def update_ver_table(ver_list):
     ws = table_ver_input.active
     ws.insert_cols(16)
+    ws.cell(row=1, column=16).value = "res"
     for item in ver_list:
-        ws.cell(row = item.rid , column = 17).value = item.map_id
-        
+        ws.cell(row=item.rid, column=16).value = item.map_id
 
 
 ############## start process ########################
@@ -316,8 +323,8 @@ no_id_list = []
 invalid_list = []
 
 # read input and make basic compare
-load_verify_item("/Users/cathy_mo/jym/input/verify.xlsx", ver_list)
-load_ap_input("/Users/cathy_mo/jym/input/ap.xlsx", ap_input_list)
+load_verify_item(table_ver_input, ver_list)
+load_ap_input(table_ap_input, ap_input_list)
 print("ap number after remove dup: {}".format(len(ap_input_list)))
 filter_ap_item(ver_list, ap_input_list, ap_list,
                am_err_list, no_id_list, invalid_list)
@@ -357,13 +364,13 @@ for item in am_err_list:
 
 
 # write results
-write_item_to_file("/Users/cathy_mo/jym/ver_test.xlsx", ver_list)
-write_item_to_file("/Users/cathy_mo/jym/ap_confirm.xlsx", ap_list)
-write_item_to_file("/Users/cathy_mo/jym/ap_am_err.xlsx", am_err_list)
-write_item_to_file("/Users/cathy_mo/jym/invalid_id.xlsx", invalid_list)
-write_item_to_file("/Users/cathy_mo/jym/remain_ver.xlsx", rm_ver_list)
+write_item_to_file(os.path.join(dir_output, "ver_test.xlsx"), ver_list)
+write_item_to_file(os.path.join(dir_output, "ap_confirm.xlsx"), ap_list)
+write_item_to_file(os.path.join(dir_output, "ap_am_err.xlsx"), am_err_list)
+write_item_to_file(os.path.join(dir_output, "invalid_id.xlsx"), invalid_list)
+write_item_to_file(os.path.join(dir_output, "remain_ver.xlsx"), rm_ver_list)
 
-write_item_to_sup("/Users/cathy_mo/jym/sup_amount.xlsx", sup_list)
-table_ap_input.save("/Users/cathy_mo/jym/ap_output.xlsx")
+write_item_to_sup(os.path.join(dir_output, "sup_amount.xlsx"), sup_list)
+table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
 update_ver_table(ver_list)
-table_ver_input.save("/Users/cathy_mo/jym/verify_output.xlsx")
+table_ver_input.save(os.path.join(dir_output, "verify_output.xlsx"))
