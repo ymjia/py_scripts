@@ -33,6 +33,8 @@ rm_ver_list = [] # ver list after filter equal check
 sup_list = [] # suplier list without equal checks
 sup_map = {} 
 
+test_ver_list = [] # remain ver item after all filters, need test
+test_ap_list = [] # remain ap item after all filters, need test
 
 class CheckItem:
     def __init__(self, cid, amount, supplier, rid):
@@ -359,6 +361,7 @@ def update_ver_table():
     for item in rm_ver_list:
         sup_st = sup_status(item.sup)
         if sup_st == 0:
+            test_ver_list.append(item)
             continue
         ws.cell(row=item.rid, column=1).value = "VENDOR"
         if sup_st == 2:
@@ -400,6 +403,7 @@ def update_ap_table():
         mark_same_id(item, ws, 2, item.sup)
         sup_st = sup_status(item.sup)
         if sup_st == 0:
+            test_ap_list.append(item)
             continue
         ws.cell(row=item.rid, column=1).value = "VENDOR"
         mark_same_id(item, ws, 1, "VENDOR")
@@ -444,14 +448,11 @@ for item in am_err_list:
 
 
 # write results
-write_item_to_sup(os.path.join(dir_output, "sup_amount.xlsx"), sup_list)
-write_item_to_file(os.path.join(dir_output, "invalid_id.xlsx"), invalid_list)
-
-write_item_to_file(os.path.join(dir_output, "ap_am_err.xlsx"), am_err_list)
-write_item_to_file(os.path.join(dir_output, "remain_ver.xlsx"), rm_ver_list)
-
-
 update_ver_table()
 update_ap_table()
 table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
 table_ver_input.save(os.path.join(dir_output, "verify_output.xlsx"))
+write_item_to_file(os.path.join(dir_output, "invalid_id.xlsx"), invalid_list)
+write_item_to_file(os.path.join(dir_output, "remain_ap.xlsx"), test_ap_list)
+write_item_to_file(os.path.join(dir_output, "remain_ver.xlsx"), test_ver_list)
+write_item_to_sup(os.path.join(dir_output, "remain_sup.xlsx"), sup_list)
