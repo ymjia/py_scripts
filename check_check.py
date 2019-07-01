@@ -11,11 +11,15 @@ from bisect import bisect_left
 
 dir_input = "d:/data/xls_f/input/"
 dir_output = "d:/data/xls_f/output/"
+my_color = styles.colors.Color(rgb="ffff00")
+around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
+
 # global variables
 ver_map = {}
 ap_map = {}
 table_ver_input = load_workbook(os.path.join(dir_input, "verify.xlsx"))
 table_ap_input = load_workbook(os.path.join(dir_input, "ap.xlsx"))
+
 
 # global variable
 ver_list = []
@@ -25,7 +29,9 @@ am_err_list = []
 am_round_list = []
 no_id_list = []
 invalid_list = []
-
+rm_ver_list = [] # ver list after filter equal check
+sup_list = [] # suplier list without equal checks
+sup_map = {} 
 
 
 class CheckItem:
@@ -296,6 +302,8 @@ def write_item_to_sup(filename, sup_list):
     ws = wb.active
     ws.append(["sup_name", "ver_amount", "ap_amount", "ver_count", "ap_count"])
     for vi in sup_list:
+        if math.isclose(vi.ap_am, vi.ver_am, abs_tol=1e-5):
+            continue
         ws.append([vi.sup, vi.ver_am, vi.ap_am, vi.ver_count, vi.ap_count])
     wb.save(filename)
 
@@ -303,7 +311,7 @@ def write_item_to_sup(filename, sup_list):
 ################ supplier relevant
 def get_remain_ver_item(ver_list, rm_ver_list):
     for vi in ver_list:
-        if vi.map_id == -1:
+        if vi.map_id != -1:
             continue
         rm_ver_list.append(vi)
 
@@ -330,23 +338,40 @@ def collect_supplier_sum(item_list, list_sum, sup_map):
 
 
 ########### update output################
-def update_ver_table(ver_list):
+# 0: not equal
+# 1: equal
+# 2: round equal
+def sup_status(sup_name):
+    si = sup_list[sup_map[sup_name]]
+    if math.isclose(si.ap_am, si.ver_am, abs_tol=0.995):
+        if math.isclose(si.ap_am, si.ver_am, abs_tol=1e-5):
+            return 1
+        return 2
+    return 0
+
+
+def update_ver_table():
     ws = table_ver_input.active
-    ws.insert_cols(16)
-    ws.cell(row=1, column=16).value = "res"
+    ws.insert_cols(1)
+    ws.cell(row=1, column=1).value = "res"
     for item in ver_list:
-        ws.cell(row=item.rid, column=16).value = item.map_id
+        ws.cell(row=item.rid, column=1).value = item.map_id
+    for item in rm_ver_list:
+        sup_st = sup_status(item.sup)
+        if sup_st == 0:
+            continue
+        ws.cell(row=item.rid, column=1).value = "VENDOR"
+        if sup_st == 2:
+            ws.cell(row=item.rid, column=1).fill = around_color
 
 
-my_color = styles.colors.Color(rgb="ffff00")
-around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
-
-def mark_same_id(cur_item, ws, col, value):
+def mark_same_id(cur_item, ws, col, value, color=False):
     if cur_item.amount == 1:
         return
     for ri in cur_item.dup_list:
         ws.cell(row=ri, column=col).value = value
-
+        if color:
+            ws.cell(row=ri, column=col).fill = around_color
 
 def update_ap_table():
     ws = table_ap_input.active
@@ -373,7 +398,14 @@ def update_ap_table():
     for item in am_err_list:
         ws.cell(row=item.rid, column=2).value = item.sup
         mark_same_id(item, ws, 2, item.sup)
-        
+        sup_st = sup_status(item.sup)
+        if sup_st == 0:
+            continue
+        ws.cell(row=item.rid, column=1).value = "VENDOR"
+        mark_same_id(item, ws, 1, "VENDOR")
+        if sup_st == 2:
+            ws.cell(row=item.rid, column=1).fill = around_color
+            mark_same_id(item, ws, 1, "VENDOR", True)
 
 
 ############## start process ########################
@@ -385,13 +417,7 @@ filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, invali
 
 
 # get remain items and compare by supplier
-
-
-rm_ver_list = []
 get_remain_ver_item(ver_list, rm_ver_list)
-
-sup_list = []
-sup_map = {}
 for item in rm_ver_list:
     sup = item.sup
     if sup not in sup_map:
@@ -418,14 +444,14 @@ for item in am_err_list:
 
 
 # write results
-write_item_to_file(os.path.join(dir_output, "ver_test.xlsx"), ver_list)
-write_item_to_file(str(os.path.join(dir_output, "ap_confirm.xlsx")), ap_list)
-write_item_to_file(os.path.join(dir_output, "ap_am_err.xlsx"), am_err_list)
+write_item_to_sup(os.path.join(dir_output, "sup_amount.xlsx"), sup_list)
 write_item_to_file(os.path.join(dir_output, "invalid_id.xlsx"), invalid_list)
+
+write_item_to_file(os.path.join(dir_output, "ap_am_err.xlsx"), am_err_list)
 write_item_to_file(os.path.join(dir_output, "remain_ver.xlsx"), rm_ver_list)
 
-write_item_to_sup(os.path.join(dir_output, "sup_amount.xlsx"), sup_list)
-update_ver_table(ver_list)
+
+update_ver_table()
 update_ap_table()
 table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
 table_ver_input.save(os.path.join(dir_output, "verify_output.xlsx"))
