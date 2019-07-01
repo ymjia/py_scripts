@@ -17,6 +17,16 @@ ap_map = {}
 table_ver_input = load_workbook(os.path.join(dir_input, "verify.xlsx"))
 table_ap_input = load_workbook(os.path.join(dir_input, "ap.xlsx"))
 
+# global variable
+ver_list = []
+ap_input_list = []
+ap_list = []
+am_err_list = []
+am_round_list = []
+no_id_list = []
+invalid_list = []
+
+
 
 class CheckItem:
     def __init__(self, cid, amount, supplier, rid):
@@ -47,11 +57,8 @@ class SupItem:
         self.sup = sup
         self.ver_am = 0
         self.ap_am = 0
-    sup = ""
-    ver_am = 0
-    ap_am = 0
-    ver_count = 0
-    ap_count = 0
+        self.ver_count = 0
+        self.ap_count = 0
 
 def binary_search(a, x, lo=0, hi=None):
     hi = hi if hi is not None else len(a)
@@ -334,40 +341,42 @@ def update_ver_table(ver_list):
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
-def mark_same_id(cur_item, ws, value):
+def mark_same_id(cur_item, ws, col, value):
     if cur_item.amount == 1:
         return
     for ri in cur_item.dup_list:
-        ws.cell(row=ri, column=1).value = value
+        ws.cell(row=ri, column=col).value = value
 
 
-def update_ap_table(ap_list, round_list):
+def update_ap_table():
     ws = table_ap_input.active
     ws.insert_cols(1)
+    ws.insert_cols(2)
     ws.cell(row=1, column=1).value = "res"
     for item in ap_list:
         res = item.map_id
+        ws.cell(row=item.rid, column=2).value = item.sup
+        mark_same_id(item, ws, 2, item.sup)
         if res == -1:
             continue
         if res == -2:
             ws.cell(row=item.rid, column=1).value = "NET"
-            mark_same_id(item, ws, "NET")
+            mark_same_id(item, ws, 1, "NET")
             continue
         ws.cell(row=item.rid, column=1).value = res
-        mark_same_id(item, ws, res)
-    for item in round_list:
+        mark_same_id(item, ws, 1, res)
+    for item in am_round_list:
         ws.cell(row=item.rid, column=1).value = item.map_id
         ws.cell(row=item.rid, column=1).fill = around_color
+        ws.cell(row=item.rid, column=2).value = item.sup
+        mark_same_id(item, ws, 2, item.sup)
+    for item in am_err_list:
+        ws.cell(row=item.rid, column=2).value = item.sup
+        mark_same_id(item, ws, 2, item.sup)
+        
 
 
 ############## start process ########################
-ver_list = []
-ap_input_list = []
-ap_list = []
-am_err_list = []
-am_round_list = []
-no_id_list = []
-invalid_list = []
 
 # read input and make basic compare
 load_verify_item(table_ver_input, ver_list)
@@ -417,6 +426,6 @@ write_item_to_file(os.path.join(dir_output, "remain_ver.xlsx"), rm_ver_list)
 
 write_item_to_sup(os.path.join(dir_output, "sup_amount.xlsx"), sup_list)
 update_ver_table(ver_list)
-update_ap_table(ap_list, am_round_list)
+update_ap_table()
 table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
 table_ver_input.save(os.path.join(dir_output, "verify_output.xlsx"))
