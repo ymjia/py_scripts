@@ -9,8 +9,8 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "d:/data/xls_f/input/"
-dir_output = "d:/data/xls_f/output/"
+dir_input = "c:/data/xls/input_6/"
+dir_output = "c:/data/xls/output_6/"
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
@@ -120,10 +120,11 @@ def parse_check_id(input_id, out_list=[]):
         end = int(next_number)
         for i in range(start, end + 1):
             out_list.append(merge_str(prefix, str(i)))
-        if len_next + 9 >= len(input_id):
-            out_list.append(prefix)
-            out_list.append(merge_str(prefix, next_number))
-            return 3
+        # if len_next + 9 >= len(input_id):
+        #     print(input_id)
+        #     out_list.append(prefix)
+        #     out_list.append(merge_str(prefix, next_number))
+        #     return 3
     else:
         out_list.append(merge_str(prefix, prev_number))
         out_list.append(merge_str(prefix, next_number))
@@ -200,9 +201,10 @@ def load_verify_item(ver_table, ver_list):
     rid = 2
     for r in ws.iter_rows(min_row=2, max_col=8, values_only=True):
         cid = r[1]
+        #cid = r[2]
         ver_map[cid] = len(ver_list)
         ver_list.append(CheckItem(cid, float(r[4]), r[7], rid))
-
+        #ver_list.append(CheckItem(cid, float(r[7]), r[4], rid))
         rid += 1
 
 
@@ -221,9 +223,11 @@ def load_ap_input(ap_table, ap_input_list):
         rid += 1
         cid = r[5].replace(" ", "")
         # find in column 15
-        if len(cid) != 8 or not (cid.isdigit()):
+        if len(cid) == 10 and (cid[8] == "-"):
+            cid = cid[0:8]
+        elif len(cid) != 8 or not (cid.isdigit()):
             text_str = r[15]
-            if len(text_str) > 8:
+            if len(text_str) >= 8:
                 regex_res = regex_cid(text_str)
                 if len(regex_res) != 0:
                     cid = regex_res
@@ -409,7 +413,7 @@ def update_ap_table():
         mark_same_id(item, ws, 1, "VENDOR")
         if sup_st == 2:
             ws.cell(row=item.rid, column=1).fill = around_color
-            mark_same_id(item, ws, 1, "VENDOR", True)
+            mark_same_id(item, ws, 1, "VENDOR", color=True)
 
 
 ############## start process ########################
