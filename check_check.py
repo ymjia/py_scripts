@@ -120,11 +120,6 @@ def parse_check_id(input_id, out_list=[]):
         end = int(next_number)
         for i in range(start, end + 1):
             out_list.append(merge_str(prefix, str(i)))
-        # if len_next + 9 >= len(input_id):
-        #     print(input_id)
-        #     out_list.append(prefix)
-        #     out_list.append(merge_str(prefix, next_number))
-        #     return 3
     else:
         out_list.append(merge_str(prefix, prev_number))
         out_list.append(merge_str(prefix, next_number))
@@ -152,9 +147,12 @@ def amount_equal(ver_list, ap_item, cid_list):
         tmp_find = ver_map[i]
         ver_ids.append(tmp_find)
         ver_item = ver_list[tmp_find]
+        if ver_item.map_id != -1:
+            print("already mark v:{}, a:{}".
+                  format(ver_item.rid, ap_rid))
         ver_am += ver_item.amount
         if sup[0] != "JYM" and sup[0] != ver_item.sup:
-            print("ERROR! sup in ap table line {}".format(ap_rid))
+            print("ERROR! sup in ap table:{}".format(ap_rid))
         sup[0] = ver_item.sup
     ap_item.sup = sup[0]
     if not math.isclose(ap_am, ver_am, abs_tol=1e-5):
@@ -164,6 +162,8 @@ def amount_equal(ver_list, ap_item, cid_list):
     if len(ver_ids) == 1:
         ap_item.map_id = ver_list[ver_ids[0]].rid
     for i in ver_ids:
+        if ver_list[i].map_id != -1:
+            print("already set:v-{}, a-{}".format(i, ap_rid))
         ver_list[i].map_id = ap_rid
     return True
 
@@ -399,6 +399,7 @@ def update_ap_table():
         mark_same_id(item, ws, 1, res)
     for item in am_round_list:
         ws.cell(row=item.rid, column=1).value = item.map_id
+        mark_same_id(item, ws, 1, item.map_id)
         ws.cell(row=item.rid, column=1).fill = around_color
         ws.cell(row=item.rid, column=2).value = item.sup
         mark_same_id(item, ws, 2, item.sup)
@@ -451,7 +452,10 @@ for item in am_err_list:
         sup_list[sup_map[sup]].ap_count += 1
 
 
+############ debug ################
+#write_item_to_file(os.path.join(dir_output, "ap_dup.xlsx"), ap_input_list)
 # write results
+
 update_ver_table()
 update_ap_table()
 table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
