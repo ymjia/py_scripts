@@ -16,7 +16,7 @@ class Project:
         self._dirOutput = ""
         self._case = []
         self._alg = []
-        self.ver = []
+        self._ver = []
         self._tree = None
 
     def load_project(self, filename = ""):
@@ -24,12 +24,18 @@ class Project:
             self._configFile = filename
         self._tree = ET.parse(self._configFile)
         root = self._tree.getroot()
-        proj_input = root.find("input")
-        print(proj_input.tag)
-        print(proj_input.attrib)
-        self._dirInput = root.find("input")
-    
-
+        # directories
+        self._dirInput = root.find("input").attrib["dir"]
+        self._dirInput = root.find("output").attrib["dir"]
+        #case
+        for item in root.find("case"):
+            self._case.append(item.attrib["name"])
+        #algorithm
+        for item in root.find("algorithm"):
+            self._alg.append(item.attrib["name"])
+        #version
+        for item in root.find("version"):
+            self._ver.append(item.attrib["name"])
 
 p = Project("")
 p.load_project("d:/data/test_framwork/management/project1/tf_config.xml")
