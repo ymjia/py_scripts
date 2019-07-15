@@ -3,7 +3,8 @@
 ## @brief ui updating
 ## @author jiayanming
 
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout
+from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
+                             QGroupBox)
 
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
 import os.path
@@ -16,18 +17,21 @@ p = project_io.Project("c:/data/test_framwork/management/project1/tf_config.xml"
 
 
 class TFWindow(QWidget):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(TFWindow, self).__init__(parent)
         box = QVBoxLayout()
+        box.addStretch(1)
         box.addWidget(self.create_project_info())
+        #box.addWidget(self.create_project_info())
         box.addWidget(self.create_control_region())
         self.setLayout(box)
         self.setWindowTitle("Test Framework")
-        self.resize(1500, 1200)
-
+        self.resize(1500, 900)
 
     def create_project_info(self):
         p_info = QWidget()
+        pybutton = QPushButton('Click me', self)
+        pybutton.move(10, 10)
         return p_info
 
     def create_control_region(self):
@@ -36,10 +40,12 @@ class TFWindow(QWidget):
         box.addWidget(self.create_exe_region())
         box.addWidget(self.create_ss_region())
         box.addWidget(self.create_doc_region())
+        control_region.setLayout(box)
         return control_region
 
     def create_exe_region(self):
-        exe_region = QWidget()
+        exe_region = QGroupBox("Executable Configuration")
+
         ql_exe = QLabel('Executable')
         ql_input = QLabel('Input')
         ql_output = QLabel('Output')
@@ -62,7 +68,7 @@ class TFWindow(QWidget):
         return exe_region
 
     def create_ss_region(self):
-        ss_region = QWidget()
+        ss_region = QGroupBox("ScreenShot Configuration")
         ql_case = QLabel('Case')
         ql_alg = QLabel('Algorithm')
         ql_ver = QLabel('Version')
@@ -85,7 +91,7 @@ class TFWindow(QWidget):
         return ss_region
 
     def create_doc_region(self):
-        doc_region = QWidget()
+        doc_region = QGroupBox("Docx Configuration")
         ql_case = QLabel('Case')
         ql_alg = QLabel('Algorithm')
         ql_ver = QLabel('Version')
