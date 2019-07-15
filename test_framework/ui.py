@@ -4,12 +4,13 @@
 ## @author jiayanming
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
-                             QGroupBox)
+                             QGroupBox, QListView, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit)
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
 import os.path
 import sys
-sys.path.insert(0, r'c:/dev/py_scripts/')
+sys.path.insert(0, r'd:/dev/py_scripts/')
 
 import datetime
 from test_framework import project_io
@@ -29,10 +30,20 @@ class TFWindow(QWidget):
         self.resize(1500, 900)
 
     def create_project_info(self):
-        p_info = QWidget()
-        pybutton = QPushButton('Click me', self)
-        pybutton.move(10, 10)
-        return p_info
+        view = QListView()
+        return view
+
+    def create_check_list(self, item_list, check_list):
+        lv_item = QListView()
+        model = QStandardItemModel()
+        for i in range(0, len(item_list)):
+            item = QStandardItem(item_list[i])
+            check = Qt.Checked if check_list[i] == 1 else Qt.Unchecked
+            item.setCheckState(check)
+            item.setCheckable(True)
+            model.appendRow(item)
+        lv_item.setModel(model)
+        return lv_item
 
     def create_control_region(self):
         control_region = QWidget()
