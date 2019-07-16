@@ -1,6 +1,8 @@
 <project>
-  <input dir="c:/data/test_framwork/management/project1/input/"></input>
-  <output dir="c:/data/test_framwork/management/project1/output/"></output>
+  <input path="c:/data/test_framwork/management/project1/input/"></input>
+  <output path="c:/data/test_framwork/management/project1/output/"></output>
+  <exe_demo path="d:/dev/build_dev/Release/JYMTest.exe"></exe_demo>
+  <exe_pv path="d:/ParaView/bin/pvpython.exe"></exe_pv>
   <all>
 	<case>
 	  <item name="case1" check="1"></item>

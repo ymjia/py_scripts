@@ -16,6 +16,8 @@ class Project:
         self._configFile = filename
         self._dirInput = ""
         self._dirOutput = ""
+        self._exeDemo = ""
+        self._exePV = ""
         # case name list
         self._case = []
         self._alg = []
@@ -35,8 +37,10 @@ class Project:
         self._tree = ET.parse(self._configFile)
         root = self._tree.getroot()
         # directories
-        self._dirInput = root.find("input").attrib["dir"]
-        self._dirOutput = root.find("output").attrib["dir"]
+        self._dirInput = root.find("input").attrib["path"]
+        self._dirOutput = root.find("output").attrib["path"]
+        self._exeDemo = root.find("exe_demo").attrib["path"]
+        self._exePV = root.find("exe_pv").attrib["path"]
         root_ss = root.find("screenshot")
         root_doc = root.find("docx")
         self.load_list()

@@ -52,11 +52,11 @@ class TFWindow(QWidget):
 
     def create_project_info(self):
         # fill information
-        self._qle_conf_file = self._p._configFile
-        self._qle_dir_in = self._p._dirInput
-        self._qle_dir_out = self._p._dirOutput
-        self._qle_exe_pv = self._p._configFile
-        self._qle_exe_demo = self._p._configFile
+        self._qle_conf_file.setText(self._p._configFile)
+        self._qle_dir_in.setText(self._p._dirInput)
+        self._qle_dir_out.setText(self._p._dirOutput)
+        self._qle_exe_pv.setText(self._p._exePV)
+        self._qle_exe_demo.setText(self._p._exeDemo)
         # create widget
         info = QGroupBox("Project Information")
         grid = QGridLayout()
@@ -165,11 +165,10 @@ class TFWindow(QWidget):
         return doc_region
 
 
-p = project_io.Project("c:/data/test_framwork/management/project1/tf_config.xml")
+p = project_io.Project("c:/dev/py_scripts/test_framework/tf_config.xml")
 p.load_project()
 
 app = QApplication(sys.argv)
 w = TFWindow(p)
-w._qle_conf_file.setText("config_file")
 w.show()
 sys.exit(app.exec_())
