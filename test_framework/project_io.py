@@ -20,18 +20,14 @@ class Project:
         self._case = []
         self._alg = []
         self._ver = []
-        # case dict from name to position
-        self._dict_case = {}
-        self._dict_alg = {}
-        self._dict_ver = {}
         # screen shot
-        self._sCaseCheck = []
-        self._sAlgCheck = []
-        self._sVerCheck = []
+        self._sCaseCheck = {}
+        self._sAlgCheck = {}
+        self._sVerCheck = {}
         # doc
-        self._dCaseCheck = []
-        self._dAlgCheck = []
-        self._dVerCheck = []
+        self._dCaseCheck = {}
+        self._dAlgCheck = {}
+        self._dVerCheck = {}
 
     def load_project(self, filename=""):
         if filename != "":
@@ -53,43 +49,31 @@ class Project:
         for item in branch.find("case"):
             name = item.attrib["name"]
             self._case.append(name)
-            self._dict_case[name] = len(self._case)
         # algorithm
         self._alg.clear()
         for item in branch.find("algorithm"):
             self._alg.append(item.attrib["name"])
-            self._dict_alg[name] = len(self._alg)
         # version
         self._ver.clear()
         for item in branch.find("version"):
             self._ver.append(item.attrib["name"])
-            self._dict_ver[name] = len(self._ver)
 
-    def load_check(self, branch, cc, ac, vc):
+    def load_check(self, branch, cd, ad, vd):
         # case
-        cc.clear()
-        cc.resize(len(self._case))
+        cd.clear()
         for item in branch.find("case"):
-            name = item.attrib["name"]
-            if name not in self._dict_case:
-                continue
-            cc[self._dict_case[name]] = int(item.attrib["check"])
+            if item.attrib["check"] == "1":
+                cd[item.attrib["name"]] = 1
         # algorithm
-        ac.clear()
-        ac.resize(len(self._alg))
+        ad.clear()
         for item in branch.find("algorithm"):
-            name = item.attrib["name"]
-            if name not in self._dict_alg:
-                continue
-            ac[self._dict_alg[name]] = int(item.attrib["check"])
+            if item.attrib["check"] == "1":
+                ad[item.attrib["name"]] = 1
         # version
-        vc.clear()
-        vc.resize(len(self._ver))
+        vd.clear()
         for item in branch.find("version"):
-            name = item.attrib["name"]
-            if name not in self._dict_ver:
-                continue
-            vc[self._dict_ver[name]] = int(item.attrib["check"])
+            if item.attrib["check"] == "1":
+                vd[item.attrib["name"]] = 1
 
     def save_project(self, filename=""):
         file_save = self._configFile
@@ -105,12 +89,11 @@ class Project:
         # load alg and ver from output dir
 
 
-def get_checked_items(l_all, l_check):
+def get_checked_items(l_all, d_check):
     res = []
-    for i in range(0, len(l_all)):
-        if l_check == 0:
-            continue
-        res.append(l_all[i])
+    for i in l_all:
+        if i in d_check:
+            res.append(l_all[i])
     return res
 
 
