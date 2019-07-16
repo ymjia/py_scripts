@@ -1,0 +1,46 @@
+<project>
+  <input dir="c:/data/test_framwork/management/project1/input/"></input>
+  <output dir="c:/data/test_framwork/management/project1/output/"></output>
+  <all>
+	<case>
+	  <item name="case1" check="1"></item>
+	  <item name="case2" check="1"></item>
+	</case>
+	<algorithm>
+	  <item name="rmbd" check="1"></item>
+	  <item name="merge" check="1"></item>
+	</algorithm>
+	<version>
+	  <item name="v1" check="1"></item>
+	  <item name="v2" check="1"></item>
+	</version>
+  </all>
+  <screenshot>
+	<case>
+	  <item name="case1" check="1"></item>
+	  <item name="case2" check="1"></item>
+	</case>
+	<algorithm>
+	  <item name="rmbd" check="1"></item>
+	  <item name="merge" check="1"></item>
+	</algorithm>
+	<version>
+	  <item name="v1" check="1"></item>
+	  <item name="v2" check="1"></item>
+	</version>
+  </screenshot>
+  <docx>
+	<case>
+	  <item name="case1" check="0"></item>
+	  <item name="case2" check="1"></item>
+	</case>
+	<algorithm>
+	  <item name="rmbd" check="1"></item>
+	  <item name="merge" check="0"></item>
+	</algorithm>
+	<version>
+	  <item name="v1" check="1"></item>
+	  <item name="v2" check="1"></item>
+	</version>
+  </docx>
+</project>
