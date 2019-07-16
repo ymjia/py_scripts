@@ -107,13 +107,8 @@ def ss_need_update(file_list, config_file, cam_num):
     return False
 
 
-
 # read configuration
-def create_screenshots(dir_input, dir_output, file_config):
-    # data to be compared
-    # get all concerned file names
-    list_case, list_ver, list_alg = read_compare_config(file_config)
-
+def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
     # case/version/alg
     file_dir = []
     for ci in list_case:
@@ -139,7 +134,15 @@ def create_screenshots(dir_input, dir_output, file_config):
             create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
 
 
-dir_input = "d:/data/test_framwork/input/"
-dir_output = "d:/data/test_framwork/output/"
-file_config = "d:/data/test_framwork/compare.txt"
-create_screenshots(dir_input, dir_output, file_config)
+def create_screenshots_wrap(dir_input, dir_output, file_config):
+    # data to be compared
+    # get all concerned file names
+    list_case, list_ver, list_alg = read_compare_config(file_config)
+    create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver)
+
+
+if __name__ == "__main__":
+    dir_input = "d:/data/test_framwork/input/"
+    dir_output = "d:/data/test_framwork/output/"
+    file_config = "d:/data/test_framwork/compare.txt"
+    create_screenshots_wrap(dir_input, dir_output, file_config)
