@@ -16,14 +16,20 @@ class Project:
         self._configFile = filename
         self._dirInput = ""
         self._dirOutput = ""
-        # all target list
-        self._case = []
-        self._alg = []
-        self._ver = []
-        # check state list
-        self._caseCheckList = []
-        self._algCheckList = []
-        self._verCheckList = []
+        # screen shot
+        self._sCase = []
+        self._sAlg = []
+        self._sVer = []
+        self._sCaseCheck = []
+        self._sAlgCheck = []
+        self._sVerCheck = []
+        # doc
+        self._dCase = []
+        self._dAlg = []
+        self._dVer = []
+        self._dCaseCheck = []
+        self._dAlgCheck = []
+        self._dVerCheck = []
 
     def load_project(self, filename=""):
         if filename != "":
@@ -33,18 +39,32 @@ class Project:
         # directories
         self._dirInput = root.find("input").attrib["dir"]
         self._dirOutput = root.find("output").attrib["dir"]
+        root_ss = root.find("screenshot")
+        root_doc = root.find("docx")
+        self.load_list(root_ss, self._sCase, self._sAlg, self._sVer,
+                       self._sCaseCheck, self._sAlgCheck, self._sVerCheck)
+        self.load_list(root_doc, self._dCase, self._dAlg, self._dVer,
+                       self._dCaseCheck, self._dAlgCheck, self._dVerCheck)
+
+    def load_list(self, branch, case, alg, ver, cc, ac, vc):
         # case
-        for item in root.find("case"):
-            self._case.append(item.attrib["name"])
-            self._caseCheckList.append(int(item.attrib["check"]))
+        case.clear()
+        cc.clear()
+        for item in branch.find("case"):
+            case.append(item.attrib["name"])
+            cc.append(int(item.attrib["check"]))
         # algorithm
-        for item in root.find("algorithm"):
-            self._alg.append(item.attrib["name"])
-            self._algCheckList.append(int(item.attrib["check"]))
+        alg.clear()
+        ac.clear()
+        for item in branch.find("algorithm"):
+            alg.append(item.attrib["name"])
+            ac.append(int(item.attrib["check"]))
         # version
-        for item in root.find("version"):
-            self._ver.append(item.attrib["name"])
-            self._verCheckList.append(int(item.attrib["check"]))
+        ver.clear()
+        vc.clear()
+        for item in branch.find("version"):
+            ver.append(item.attrib["name"])
+            vc.append(int(item.attrib["check"]))
 
     def save_project(self, filename=""):
         file_save = self._configFile
@@ -55,8 +75,8 @@ class Project:
     def load_from_fs(self):
         # load cases from input directory
         dir_in = self._dirInput
-        self._caseList = [f for f in os.listdir(dir_in)
-                          if os.path.isdir(os.path.join(dir_in, f))]
+        return [f for f in os.listdir(dir_in)
+                if os.path.isdir(os.path.join(dir_in, f))]
         # load alg and ver from output dir
 
 
