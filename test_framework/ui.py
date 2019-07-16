@@ -29,11 +29,20 @@ class TFWindow(QWidget):
         box.addWidget(self.create_control_region())
         self.setLayout(box)
         self.setWindowTitle("Test Framework")
-        self.resize(1500, 900)
+        self.resize(1024, 768)
 
     def create_project_info(self):
-        view = QListView()
-        return view
+        info = QGroupBox("Project Information")
+        grid = QGridLayout()
+        grid.setSpacing(10)
+        self.create_file_browser(grid, 0, "Configuration File")
+        self.create_file_browser(grid, 1, "Input Directory")
+        self.create_file_browser(grid, 2, "Output Directory")
+        self.create_file_browser(grid, 3, "PVPython Interpreter")
+        self.create_file_browser(grid, 4, "Demo Executable")
+        info.setLayout(grid)
+        info.setGeometry(300, 300, 350, 300)
+        return info
 
     def get_check_list(self, item_list, check_dict):
         lv_item = QListView()
@@ -56,27 +65,31 @@ class TFWindow(QWidget):
         control_region.setLayout(box)
         return control_region
 
+    def create_file_browser(self, grid, grid_line, label):
+        ql = QLabel(label)
+        qle = QLineEdit()
+        qpb = QPushButton("Browse..", self)
+        grid.addWidget(ql, grid_line, 0)
+        grid.addWidget(qle, grid_line, 1)
+        grid.addWidget(qpb, grid_line, 2)
+
     def create_exe_region(self):
         exe_region = QGroupBox("Executable Configuration")
-        ql_exe = QLabel('Executable')
-        ql_input = QLabel('Input')
-        ql_output = QLabel('Output')
-        ql_exeEdit = QLineEdit()
-        ql_inputEdit = QLineEdit()
-        ql_outputEdit = QLineEdit()
+        ql_input = QLabel('Input Case')
+        ql_ver = QLabel('Current Version Name')
+        ql_verEdit = QLineEdit()
         grid = QGridLayout()
         grid.setSpacing(10)
-        grid.addWidget(ql_exe, 1, 0)
-        grid.addWidget(ql_exeEdit, 1, 1)
-
-        grid.addWidget(ql_input, 2, 0)
-        grid.addWidget(ql_inputEdit, 2, 1)
-
-        grid.addWidget(ql_output, 3, 0)
-        grid.addWidget(ql_outputEdit, 3, 1)
-
+        grid.addWidget(ql_input, 1, 0)
+        grid.addWidget(self.get_check_list(self._p._case, self._p._dCaseCheck), 1, 1)
+        grid.addWidget(ql_ver, 1, 0)
+        grid.addWidget(ql_verEdit, 1, 1)
         exe_region.setLayout(grid)
         exe_region.setGeometry(300, 300, 350, 300)
+        pybutton = QPushButton('RunDemo', self)
+        #pybutton.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
+        pybutton.resize(100, 32)
+        grid.addWidget(pybutton, 2, 1)
         return exe_region
 
     def create_ss_region(self):
@@ -95,7 +108,7 @@ class TFWindow(QWidget):
         ss_region.setLayout(grid)
         ss_region.setGeometry(300, 300, 350, 300)
         pybutton = QPushButton('Take Screenshot', self)
-        pybutton.clicked.connect(lambda: ui_logic.create_screenshots(self._p))
+        pybutton.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
         pybutton.resize(100, 32)
         grid.addWidget(pybutton, 4, 1)
         return ss_region
@@ -116,7 +129,7 @@ class TFWindow(QWidget):
         doc_region.setLayout(grid)
         doc_region.setGeometry(300, 300, 350, 300)
         pybutton = QPushButton('Generate Document', self)
-        pybutton.clicked.connect(lambda: ui_logic.generate_docx("test", self._p))
+        pybutton.clicked.connect(lambda: ui_logic.slot_generate_docx("test", self._p))
         pybutton.resize(100, 32)
         grid.addWidget(pybutton, 4, 1)
         return doc_region
