@@ -31,6 +31,7 @@ class Project:
         self._dAlgCheck = {}
         self._dVerCheck = {}
 
+    # load functions
     def load_project(self, filename=""):
         if filename != "":
             self._configFile = filename
@@ -79,21 +80,61 @@ class Project:
             if item.attrib["check"] == "1":
                 vd[item.attrib["name"]] = 1
 
-    def save_list(self, tree):
+    # save functions
+    def save_list(self):
         ele_all = ET.Element("all")
-        self._tree.getroot().append(ele_all)
+        ele_case = ET.Element("case")
+        ele_ver = ET.Element("version")
+        ele_alg = ET.Element("algorithm")
         for item in self._case:
-            ele_all.append(ET.Element("item", {"name":item, "check":"1"}
-        # algorithm
-        self._alg.clear()
-        for item in branch.find("algorithm"):
-            self._alg.append(item.attrib["name"])
-        # version
-        self._ver.clear()
-        for item in branch.find("version"):
-            self._ver.append(item.attrib["name"])
+            ele_case.append(ET.Element("item", {"name":item, "check":"1"}))
+        for item in self._alg:
+            ele_alg.append(ET.Element("item", {"name":item, "check":"1"}))
+        for item in self._ver:
+            ele_ver.append(ET.Element("item", {"name":item, "check":"1"}))
+        ele_all.append(ele_case)
+        ele_all.append(ele_ver)
+        ele_all.append(ele_alg)
+        return ele_all
         
+    def save_check(self, name, cd, ad, vd):
+        ele = ET.Element(name)
+        ele_case = ET.Element("case")
+        ele_ver = ET.Element("version")
+        ele_alg = ET.Element("algorithm")
+        for item in self._case:
+            if item in cd:
+                ele_case.append(ET.Element("item", {"name":item, "check":"1"}))
+            else:
+                ele_case.append(ET.Element("item", {"name":item, "check":"0"}))
+        for item in self._alg:
+            if item in ad:
+                ele_alg.append(ET.Element("item", {"name":item, "check":"1"}))
+            else:
+                ele_alg.append(ET.Element("item", {"name":item, "check":"0"}))
+        for item in self._ver:
+            if item in vd:
+                ele_ver.append(ET.Element("item", {"name":item, "check":"1"}))
+            else:
+                ele_ver.append(ET.Element("item", {"name":item, "check":"1"}))
+        ele.append(ele_case)
+        ele.append(ele_ver)
+        ele.append(ele_alg)
+        return ele
+
     def save_project(self, filename=""):
+        root = ET.Element("project")
+        # directories
+        root.append(ET.Element("input", {"path":self._dirInput}))
+        root.append(ET.Element("output", {"path":self._dirOutput}))
+        root.append(ET.Element("exe_demo", {"path":self._exeDemo}))
+        root.append(ET.Element("exe_pv", {"path":self._exePV}))
+        root.append(self.save_list())
+        root.append(self.save_check("screenshot", self._sCaseCheck, self._sAlgCheck, self._sVerCheck))
+        root.append(self.save_check("docx", self._dCaseCheck, self._dAlgCheck, self._dVerCheck))
+        return ET.ElementTree(root)
+
+    def save_tree(self, filename=""):
         file_save = self._configFile
         if filename != "":
             file_save = filename
@@ -115,13 +156,11 @@ def get_checked_items(l_all, d_check):
     return res
 
 
-# p = Project("")
-
-# p.load_project("c:/data/test_framwork/management/project1/tf_config.xml")
-# p.load_from_fs()
-
-# print(p._case)
-# print(p._ver)
-# print(p._alg)
-# print(p._dirInput)
-# print(p._caseList)
+if __name__ == "__main__":
+    p = Project("")
+    p.load_project("d:/dev/py_scripts/test_framework/tf_config.xml")
+    p.save_project("d:/tmp/test_input.xml")
+    tree = p.save_project()
+    tree.write("d:/tmp/test_output.xml")
+    #p.load_from_fs()
+    print(p._case)
