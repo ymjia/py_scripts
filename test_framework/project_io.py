@@ -105,6 +105,15 @@ class Project:
         # load alg and ver from output dir
 
 
+def get_checked_items(l_all, l_check):
+    res = []
+    for i in range(0, len(l_all)):
+        if l_check == 0:
+            continue
+        res.append(l_all[i])
+    return res
+
+
 # p = Project("")
 
 # p.load_project("c:/data/test_framwork/management/project1/tf_config.xml")

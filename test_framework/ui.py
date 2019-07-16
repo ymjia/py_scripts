@@ -14,7 +14,7 @@ sys.path.insert(0, r'c:/dev/py_scripts/')
 
 import datetime
 from test_framework import project_io
-
+from test_framework import ui_logic
 
 
 class TFWindow(QWidget):
@@ -94,6 +94,9 @@ class TFWindow(QWidget):
         grid.addWidget(self.get_check_list(self._p._sVer, self._p._sVerCheck), 3, 1)
         ss_region.setLayout(grid)
         ss_region.setGeometry(300, 300, 350, 300)
+        pybutton = QPushButton('Take Screenshot', self)
+        pybutton.clicked.connect(lambda: ui_logic.create_screenshots(self._p))
+        pybutton.resize(100, 32)
         return ss_region
 
     def create_doc_region(self):
@@ -111,6 +114,9 @@ class TFWindow(QWidget):
         grid.addWidget(self.get_check_list(self._p._dVer, self._p._dVerCheck), 3, 1)
         doc_region.setLayout(grid)
         doc_region.setGeometry(300, 300, 350, 300)
+        pybutton = QPushButton('Generate Document', self)
+        pybutton.clicked.connect(lambda: ui_logic.generate_docx("test", self._p))
+        pybutton.resize(100, 32)
         return doc_region
 
 

@@ -4,6 +4,7 @@
 ## @author jiayanming
 import os
 import os.path
+import sys
 import math
 import time
 import datetime
@@ -142,7 +143,7 @@ def create_screenshots_wrap(dir_input, dir_output, file_config):
 
 
 if __name__ == "__main__":
-    dir_input = "d:/data/test_framwork/input/"
-    dir_output = "d:/data/test_framwork/output/"
-    file_config = "d:/data/test_framwork/compare.txt"
+    dir_input = sys.argv[1]
+    dir_output = sys.argv[2]
+    file_config = sys.argv[3]
     create_screenshots_wrap(dir_input, dir_output, file_config)
