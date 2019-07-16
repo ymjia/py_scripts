@@ -21,6 +21,22 @@ class TFWindow(QWidget):
     # take project object as input
     def __init__(self, p_obj, parent=None):
         super(TFWindow, self).__init__(parent)
+        # info widget for updating infomation
+        # text
+        qle_dir_in = None
+        qle_dir_out = None
+        qle_exe_pv = None
+        qle_exe_demo = None
+        qle_cur_ver = None
+        qle_doc_name = None
+        #listview
+        qlv_exe_case = None
+        qlv_ss_case = None
+        qlv_ss_alg = None
+        qlv_ss_ver = None
+        qlv_doc_case = None
+        qlv_doc_alg = None
+        qlv_doc_ver = None
         self._p = p_obj
         box = QVBoxLayout()
         box.addStretch(1)
@@ -30,6 +46,7 @@ class TFWindow(QWidget):
         self.setLayout(box)
         self.setWindowTitle("Test Framework")
         self.resize(1024, 768)
+        
 
     def create_project_info(self):
         info = QGroupBox("Project Information")
