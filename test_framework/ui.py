@@ -47,6 +47,7 @@ class TFWindow(QWidget):
         self.setWindowTitle("Test Framework")
         self.resize(1024, 768)
 
+    # load information from TFobject to ui
     def load_proj_info(self, in_obj=None):
         if in_obj is not None:
             self._p = in_obj
@@ -63,6 +64,20 @@ class TFWindow(QWidget):
         self.get_check_list(self._qlv_doc_ver, self._p._ver, self._p._dVerCheck)
         self.get_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
 
+    def collect_ui_info(self, out_obj):
+        self._p._configFile = self._qle_conf_file.text()
+        self._p._dirInput = self._qle_dir_in.text()
+        self._p._dirOutput = self._qle_dir_out.text()
+        self._p._exePV = self._qle_exe_pv.text()
+        self._p._exeDemo = self._qle_exe_demo.text()
+        self.read_check_list(self._qlv_exe_case, self._p._case, self._p._dCaseCheck)
+        self.read_check_list(self._qlv_ss_case, self._p._case, self._p._sCaseCheck)
+        self.read_check_list(self._qlv_ss_ver, self._p._ver, self._p._sVerCheck)
+        self.read_check_list(self._qlv_ss_alg, self._p._alg, self._p._sAlgCheck)
+        self.read_check_list(self._qlv_doc_case, self._p._case, self._p._dCaseCheck)
+        self.read_check_list(self._qlv_doc_ver, self._p._ver, self._p._dVerCheck)
+        self.read_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
+
     def create_project_info(self):
         # fill information
         # create widget
@@ -78,6 +93,7 @@ class TFWindow(QWidget):
         info.setGeometry(300, 300, 350, 300)
         return info
 
+    # get listview from project_object
     def get_check_list(self, lv, item_list, check_dict):
         model = QStandardItemModel()
         for i in item_list:
@@ -87,6 +103,18 @@ class TFWindow(QWidget):
             item.setCheckable(True)
             model.appendRow(item)
         lv.setModel(model)
+
+    # get project_object info from listview
+    def read_check_list(self, lv, item_list, check_dict):
+        item_list.clear()
+        check_dict.clear()
+        model = lv.getModel()
+        for index in range(model.rowCount()):
+            item = model.item(index)
+            text = item.text_str()
+            item_list.append(text)
+            if item.checkState() == Qt.Unchecked:
+                check_dict[text] = 1
 
     def create_control_region(self):
         control_region = QWidget()
