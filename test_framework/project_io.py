@@ -16,17 +16,19 @@ class Project:
         self._configFile = filename
         self._dirInput = ""
         self._dirOutput = ""
+        # case name list
+        self._case = []
+        self._alg = []
+        self._ver = []
+        # case dict from name to position
+        self._dict_case = {}
+        self._dict_alg = {}
+        self._dict_ver = {}
         # screen shot
-        self._sCase = []
-        self._sAlg = []
-        self._sVer = []
         self._sCaseCheck = []
         self._sAlgCheck = []
         self._sVerCheck = []
         # doc
-        self._dCase = []
-        self._dAlg = []
-        self._dVer = []
         self._dCaseCheck = []
         self._dAlgCheck = []
         self._dVerCheck = []
@@ -41,30 +43,53 @@ class Project:
         self._dirOutput = root.find("output").attrib["dir"]
         root_ss = root.find("screenshot")
         root_doc = root.find("docx")
-        self.load_list(root_ss, self._sCase, self._sAlg, self._sVer,
-                       self._sCaseCheck, self._sAlgCheck, self._sVerCheck)
-        self.load_list(root_doc, self._dCase, self._dAlg, self._dVer,
-                       self._dCaseCheck, self._dAlgCheck, self._dVerCheck)
+        self.load_list()
+        self.load_check(root_ss, self._sCaseCheck, self._sAlgCheck, self._sVerCheck)
+        self.load_check(root_doc, self._dCaseCheck, self._dAlgCheck, self._dVerCheck)
 
-    def load_list(self, branch, case, alg, ver, cc, ac, vc):
-        # case
-        case.clear()
-        cc.clear()
+    def load_list(self):
+        branch = self._tree.getroot().find("all")
+        self._case.clear()
         for item in branch.find("case"):
-            case.append(item.attrib["name"])
-            cc.append(int(item.attrib["check"]))
+            name = item.attrib["name"]
+            self._case.append(name)
+            self._dict_case[name] = len(self._case)
         # algorithm
-        alg.clear()
-        ac.clear()
+        self._alg.clear()
         for item in branch.find("algorithm"):
-            alg.append(item.attrib["name"])
-            ac.append(int(item.attrib["check"]))
+            self._alg.append(item.attrib["name"])
+            self._dict_alg[name] = len(self._alg)
         # version
-        ver.clear()
-        vc.clear()
+        self._ver.clear()
         for item in branch.find("version"):
-            ver.append(item.attrib["name"])
-            vc.append(int(item.attrib["check"]))
+            self._ver.append(item.attrib["name"])
+            self._dict_ver[name] = len(self._ver)
+
+    def load_check(self, branch, cc, ac, vc):
+        # case
+        cc.clear()
+        cc.resize(len(self._case))
+        for item in branch.find("case"):
+            name = item.attrib["name"]
+            if name not in self._dict_case:
+                continue
+            cc[self._dict_case[name]] = int(item.attrib["check"])
+        # algorithm
+        ac.clear()
+        ac.resize(len(self._alg))
+        for item in branch.find("algorithm"):
+            name = item.attrib["name"]
+            if name not in self._dict_alg:
+                continue
+            ac[self._dict_alg[name]] = int(item.attrib["check"])
+        # version
+        vc.clear()
+        vc.resize(len(self._ver))
+        for item in branch.find("version"):
+            name = item.attrib["name"]
+            if name not in self._dict_ver:
+                continue
+            vc[self._dict_ver[name]] = int(item.attrib["check"])
 
     def save_project(self, filename=""):
         file_save = self._configFile
