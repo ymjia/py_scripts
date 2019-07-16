@@ -97,6 +97,7 @@ class TFWindow(QWidget):
         pybutton = QPushButton('Take Screenshot', self)
         pybutton.clicked.connect(lambda: ui_logic.create_screenshots(self._p))
         pybutton.resize(100, 32)
+        grid.addWidget(pybutton, 4, 1)
         return ss_region
 
     def create_doc_region(self):
@@ -117,6 +118,7 @@ class TFWindow(QWidget):
         pybutton = QPushButton('Generate Document', self)
         pybutton.clicked.connect(lambda: ui_logic.generate_docx("test", self._p))
         pybutton.resize(100, 32)
+        grid.addWidget(pybutton, 4, 1)
         return doc_region
 
 
