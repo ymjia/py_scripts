@@ -79,6 +79,20 @@ class Project:
             if item.attrib["check"] == "1":
                 vd[item.attrib["name"]] = 1
 
+    def save_list(self, tree):
+        ele_all = ET.Element("all")
+        self._tree.getroot().append(ele_all)
+        for item in self._case:
+            ele_all.append(ET.Element("item", {"name":item, "check":"1"}
+        # algorithm
+        self._alg.clear()
+        for item in branch.find("algorithm"):
+            self._alg.append(item.attrib["name"])
+        # version
+        self._ver.clear()
+        for item in branch.find("version"):
+            self._ver.append(item.attrib["name"])
+        
     def save_project(self, filename=""):
         file_save = self._configFile
         if filename != "":
