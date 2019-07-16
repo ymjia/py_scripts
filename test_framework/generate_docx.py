@@ -6,6 +6,7 @@
 
 import os.path
 import math
+import sys
 import datetime
 from docx import Document
 from docx.shared import Inches
@@ -101,12 +102,8 @@ def add_case_table(doc, dir_in, case, list_ver, list_alg, cam_num):
 ## @param dir_input data case config directory
 ## @param dir_output algorithm/screenshots output directory
 ## @param file_config file contains user specified compare config
-def generate_docx(dir_input, dir_output, file_config):
-    # input data read from config file
-    list_case, list_ver, list_alg = read_compare_config(file_config)
-    config_stem = os.path.splitext(os.path.split(file_config)[1])[0]
+def generate_docx(dir_input, dir_output, config_stem, list_case, list_ver, list_alg):
     # screen shot view list
-    col_num = len(list_ver)
     document = Document()
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     document.add_heading("Compare Result {}".format(str_time), 0)
@@ -122,7 +119,15 @@ def generate_docx(dir_input, dir_output, file_config):
     document.save(file_save)
 
 
-dir_input = "d:/data/test_framwork/input/"
-dir_output = "d:/data/test_framwork/output/"
-file_config = "d:/data/test_framwork/compare.txt"
-generate_docx(dir_input, dir_output, file_config)
+def generate_docx_wrap(dir_input, dir_output, file_config):
+    # input data read from config file
+    list_case, list_ver, list_alg = read_compare_config(file_config)
+    config_stem = os.path.splitext(os.path.split(file_config)[1])[0]
+    generate_docx(dir_input, dir_output, config_stem, list_case, list_ver, list_alg)
+
+
+if __name__ == "__main__":
+    dir_input = "d:/data/test_framwork/input/"
+    dir_output = "d:/data/test_framwork/output/"
+    file_config = "d:/data/test_framwork/compare.txt"
+    generate_docx_wrap(dir_input, dir_output, file_config)
