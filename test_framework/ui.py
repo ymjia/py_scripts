@@ -35,12 +35,12 @@ class TFWindow(QWidget):
         view = QListView()
         return view
 
-    def get_check_list(self, item_list, check_list):
+    def get_check_list(self, item_list, check_dict):
         lv_item = QListView()
         model = QStandardItemModel()
-        for i in range(0, len(item_list)):
-            item = QStandardItem(item_list[i])
-            check = Qt.Checked if check_list[i] == 1 else Qt.Unchecked
+        for i in item_list:
+            item = QStandardItem(i)
+            check = Qt.Checked if i in check_dict else Qt.Unchecked
             item.setCheckState(check)
             item.setCheckable(True)
             model.appendRow(item)
@@ -87,11 +87,11 @@ class TFWindow(QWidget):
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_case, 1, 0)
-        grid.addWidget(self.get_check_list(self._p._sCase, self._p._sCaseCheck), 1, 1)
+        grid.addWidget(self.get_check_list(self._p._case, self._p._sCaseCheck), 1, 1)
         grid.addWidget(ql_alg, 2, 0)
-        grid.addWidget(self.get_check_list(self._p._sAlg, self._p._sAlgCheck), 2, 1)
+        grid.addWidget(self.get_check_list(self._p._alg, self._p._sAlgCheck), 2, 1)
         grid.addWidget(ql_ver, 3, 0)
-        grid.addWidget(self.get_check_list(self._p._sVer, self._p._sVerCheck), 3, 1)
+        grid.addWidget(self.get_check_list(self._p._ver, self._p._sVerCheck), 3, 1)
         ss_region.setLayout(grid)
         ss_region.setGeometry(300, 300, 350, 300)
         pybutton = QPushButton('Take Screenshot', self)
@@ -107,11 +107,11 @@ class TFWindow(QWidget):
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_case, 1, 0)
-        grid.addWidget(self.get_check_list(self._p._dCase, self._p._dCaseCheck), 1, 1)
+        grid.addWidget(self.get_check_list(self._p._case, self._p._dCaseCheck), 1, 1)
         grid.addWidget(ql_alg, 2, 0)
-        grid.addWidget(self.get_check_list(self._p._dAlg, self._p._dAlgCheck), 2, 1)
+        grid.addWidget(self.get_check_list(self._p._alg, self._p._dAlgCheck), 2, 1)
         grid.addWidget(ql_ver, 3, 0)
-        grid.addWidget(self.get_check_list(self._p._dVer, self._p._dVerCheck), 3, 1)
+        grid.addWidget(self.get_check_list(self._p._ver, self._p._dVerCheck), 3, 1)
         doc_region.setLayout(grid)
         doc_region.setGeometry(300, 300, 350, 300)
         pybutton = QPushButton('Generate Document', self)
