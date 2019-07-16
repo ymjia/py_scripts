@@ -9,7 +9,7 @@ import sys
 import datetime
 import xml.etree.ElementTree as ET
 import subprocess
-sys.path.insert(0, r'c:/dev/py_scripts/')
+sys.path.insert(0, r'd:/dev/py_scripts/')
 
 
 from test_framework.project_io import get_checked_items

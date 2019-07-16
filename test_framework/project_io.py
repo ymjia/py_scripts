@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ## @file project_io.py
-## @brief load/save/generate project configration files
+## @brief transfer module between project_object and xml
 ## @author jiayanming
 
 import os.path
@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 
 class Project:
-    def __init__(self, filename):
+    def __init__(self, filename=""):
         # xml tree object
         self._tree = None
         # global config

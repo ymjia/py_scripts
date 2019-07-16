@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ## @file ui.py
-## @brief ui updating
+## @brief ui definition, transfer module between project_object and ui
 ## @author jiayanming
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
@@ -10,7 +10,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 import os.path
 import sys
-sys.path.insert(0, r'c:/dev/py_scripts/')
+sys.path.insert(0, r'd:/dev/py_scripts/')
 
 import datetime
 from test_framework import project_io
@@ -64,19 +64,21 @@ class TFWindow(QWidget):
         self.get_check_list(self._qlv_doc_ver, self._p._ver, self._p._dVerCheck)
         self.get_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
 
-    def collect_ui_info(self, out_obj):
-        self._p._configFile = self._qle_conf_file.text()
-        self._p._dirInput = self._qle_dir_in.text()
-        self._p._dirOutput = self._qle_dir_out.text()
-        self._p._exePV = self._qle_exe_pv.text()
-        self._p._exeDemo = self._qle_exe_demo.text()
-        self.read_check_list(self._qlv_exe_case, self._p._case, self._p._dCaseCheck)
-        self.read_check_list(self._qlv_ss_case, self._p._case, self._p._sCaseCheck)
-        self.read_check_list(self._qlv_ss_ver, self._p._ver, self._p._sVerCheck)
-        self.read_check_list(self._qlv_ss_alg, self._p._alg, self._p._sAlgCheck)
-        self.read_check_list(self._qlv_doc_case, self._p._case, self._p._dCaseCheck)
-        self.read_check_list(self._qlv_doc_ver, self._p._ver, self._p._dVerCheck)
-        self.read_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
+    def collect_ui_info(self):
+        out_obj = Project()
+        out_obj._configFile = self._qle_conf_file.text()
+        out_obj._dirInput = self._qle_dir_in.text()
+        out_obj._dirOutput = self._qle_dir_out.text()
+        out_obj._exePV = self._qle_exe_pv.text()
+        out_obj._exeDemo = self._qle_exe_demo.text()
+        self.read_check_list(self._qlv_exe_case, out_obj._case, out_obj._dCaseCheck)
+        self.read_check_list(self._qlv_ss_case, out_obj._case, out_obj._sCaseCheck)
+        self.read_check_list(self._qlv_ss_ver, out_obj._ver, out_obj._sVerCheck)
+        self.read_check_list(self._qlv_ss_alg, out_obj._alg, out_obj._sAlgCheck)
+        self.read_check_list(self._qlv_doc_case, out_obj._case, out_obj._dCaseCheck)
+        self.read_check_list(self._qlv_doc_ver, out_obj._ver, out_obj._dVerCheck)
+        self.read_check_list(self._qlv_doc_alg, out_obj._alg, out_obj._dAlgCheck)
+        return out_obj
 
     def create_project_info(self):
         # fill information
@@ -194,7 +196,7 @@ class TFWindow(QWidget):
         return doc_region
 
 
-p = project_io.Project("c:/dev/py_scripts/test_framework/tf_config.xml")
+p = project_io.Project("d:/dev/py_scripts/test_framework/tf_config.xml")
 p.load_project()
 
 app = QApplication(sys.argv)
