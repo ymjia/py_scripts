@@ -47,16 +47,24 @@ class TFWindow(QWidget):
         self.setWindowTitle("Test Framework")
         self.resize(1024, 768)
 
-    def load_proj_info(self, in_obj):
-        self._p = in_obj
-
-    def create_project_info(self):
-        # fill information
+    def load_proj_info(self, in_obj=None):
+        if in_obj is not None:
+            self._p = in_obj
         self._qle_conf_file.setText(self._p._configFile)
         self._qle_dir_in.setText(self._p._dirInput)
         self._qle_dir_out.setText(self._p._dirOutput)
         self._qle_exe_pv.setText(self._p._exePV)
         self._qle_exe_demo.setText(self._p._exeDemo)
+        self.get_check_list(self._qlv_exe_case, self._p._case, self._p._dCaseCheck)
+        self.get_check_list(self._qlv_ss_case, self._p._case, self._p._sCaseCheck)
+        self.get_check_list(self._qlv_ss_ver, self._p._ver, self._p._sVerCheck)
+        self.get_check_list(self._qlv_ss_alg, self._p._alg, self._p._sAlgCheck)
+        self.get_check_list(self._qlv_doc_case, self._p._case, self._p._dCaseCheck)
+        self.get_check_list(self._qlv_doc_ver, self._p._ver, self._p._dVerCheck)
+        self.get_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
+
+    def create_project_info(self):
+        # fill information
         # create widget
         info = QGroupBox("Project Information")
         grid = QGridLayout()
@@ -101,7 +109,6 @@ class TFWindow(QWidget):
         exe_region = QGroupBox("Executable Configuration")
         ql_input = QLabel('Input Case')
         ql_ver = QLabel('Current Version Name')
-        self.get_check_list(self._qlv_exe_case, self._p._case, self._p._dCaseCheck)
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_input, 0, 0)
@@ -121,9 +128,6 @@ class TFWindow(QWidget):
         ql_case = QLabel('Case')
         ql_ver = QLabel('Version')
         ql_alg = QLabel('Algorithm')
-        self.get_check_list(self._qlv_ss_case, self._p._case, self._p._sCaseCheck)
-        self.get_check_list(self._qlv_ss_ver, self._p._ver, self._p._sVerCheck)
-        self.get_check_list(self._qlv_ss_alg, self._p._alg, self._p._sAlgCheck)
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_case, 1, 0)
@@ -145,9 +149,6 @@ class TFWindow(QWidget):
         ql_case = QLabel('Case')
         ql_ver = QLabel('Version')
         ql_alg = QLabel('Algorithm')
-        self.get_check_list(self._qlv_doc_case, self._p._case, self._p._dCaseCheck)
-        self.get_check_list(self._qlv_doc_ver, self._p._ver, self._p._dVerCheck)
-        self.get_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_case, 1, 0)
@@ -170,5 +171,6 @@ p.load_project()
 
 app = QApplication(sys.argv)
 w = TFWindow(p)
+w.load_proj_info()
 w.show()
 sys.exit(app.exec_())
