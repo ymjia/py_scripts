@@ -10,7 +10,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 import os.path
 import sys
-sys.path.insert(0, r'd:/dev/py_scripts/')
+sys.path.insert(0, r'c:/dev/py_scripts/')
 
 import datetime
 from test_framework import project_io

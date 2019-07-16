@@ -4,7 +4,6 @@
 ## @author jiayanming
 
 import os.path
-import math
 import datetime
 import xml.etree.ElementTree as ET
 
@@ -21,13 +20,12 @@ class Project:
         self._case = []
         self._alg = []
         self._ver = []
-        # all avaliable list
-        self._caseList = []
-        self._algList = []
-        self._verList = []
+        # check state list
+        self._caseCheckList = []
+        self._algCheckList = []
+        self._verCheckList = []
 
-
-    def load_project(self, filename = ""):
+    def load_project(self, filename=""):
         if filename != "":
             self._configFile = filename
         self._tree = ET.parse(self._configFile)
@@ -35,23 +33,24 @@ class Project:
         # directories
         self._dirInput = root.find("input").attrib["dir"]
         self._dirOutput = root.find("output").attrib["dir"]
-        #case
+        # case
         for item in root.find("case"):
             self._case.append(item.attrib["name"])
-        #algorithm
+            self._caseCheckList.append(int(item.attrib["check"]))
+        # algorithm
         for item in root.find("algorithm"):
             self._alg.append(item.attrib["name"])
-        #version
+            self._algCheckList.append(int(item.attrib["check"]))
+        # version
         for item in root.find("version"):
             self._ver.append(item.attrib["name"])
+            self._verCheckList.append(int(item.attrib["check"]))
 
-
-    def save_project(self, filename = ""):
+    def save_project(self, filename=""):
         file_save = self._configFile
         if filename != "":
             file_save = filename
         self._tree.write(file_save)
-
 
     def load_from_fs(self):
         # load cases from input directory
