@@ -14,16 +14,18 @@ sys.path.insert(0, r'c:/dev/py_scripts/')
 
 import datetime
 from test_framework import project_io
-p = project_io.Project("c:/data/test_framwork/management/project1/tf_config.xml")
+
 
 
 class TFWindow(QWidget):
-    def __init__(self, parent=None):
+    # take project object as input
+    def __init__(self, p_obj, parent=None):
         super(TFWindow, self).__init__(parent)
+        self._p = p_obj
         box = QVBoxLayout()
         box.addStretch(1)
         box.addWidget(self.create_project_info())
-        #box.addWidget(self.create_project_info())
+        # box.addWidget(self.create_project_info())
         box.addWidget(self.create_control_region())
         self.setLayout(box)
         self.setWindowTitle("Test Framework")
@@ -33,7 +35,7 @@ class TFWindow(QWidget):
         view = QListView()
         return view
 
-    def create_check_list(self, item_list, check_list):
+    def get_check_list(self, item_list, check_list):
         lv_item = QListView()
         model = QStandardItemModel()
         for i in range(0, len(item_list)):
@@ -56,7 +58,6 @@ class TFWindow(QWidget):
 
     def create_exe_region(self):
         exe_region = QGroupBox("Executable Configuration")
-
         ql_exe = QLabel('Executable')
         ql_input = QLabel('Input')
         ql_output = QLabel('Output')
@@ -83,20 +84,14 @@ class TFWindow(QWidget):
         ql_case = QLabel('Case')
         ql_alg = QLabel('Algorithm')
         ql_ver = QLabel('Version')
-        ql_caseEdit = QLineEdit()
-        ql_algEdit = QLineEdit()
-        ql_verEdit = QLineEdit()
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_case, 1, 0)
-        grid.addWidget(ql_caseEdit, 1, 1)
-
+        grid.addWidget(self.get_check_list(self._p._sCase, self._p._sCaseCheck), 1, 1)
         grid.addWidget(ql_alg, 2, 0)
-        grid.addWidget(ql_algEdit, 2, 1)
-
+        grid.addWidget(self.get_check_list(self._p._sAlg, self._p._sAlgCheck), 2, 1)
         grid.addWidget(ql_ver, 3, 0)
-        grid.addWidget(ql_verEdit, 3, 1)
-
+        grid.addWidget(self.get_check_list(self._p._sVer, self._p._sVerCheck), 3, 1)
         ss_region.setLayout(grid)
         ss_region.setGeometry(300, 300, 350, 300)
         return ss_region
@@ -106,26 +101,23 @@ class TFWindow(QWidget):
         ql_case = QLabel('Case')
         ql_alg = QLabel('Algorithm')
         ql_ver = QLabel('Version')
-        ql_caseEdit = QLineEdit()
-        ql_algEdit = QLineEdit()
-        ql_verEdit = QLineEdit()
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_case, 1, 0)
-        grid.addWidget(ql_caseEdit, 1, 1)
-
+        grid.addWidget(self.get_check_list(self._p._dCase, self._p._dCaseCheck), 1, 1)
         grid.addWidget(ql_alg, 2, 0)
-        grid.addWidget(ql_algEdit, 2, 1)
-
+        grid.addWidget(self.get_check_list(self._p._dAlg, self._p._dAlgCheck), 2, 1)
         grid.addWidget(ql_ver, 3, 0)
-        grid.addWidget(ql_verEdit, 3, 1)
-
+        grid.addWidget(self.get_check_list(self._p._dVer, self._p._dVerCheck), 3, 1)
         doc_region.setLayout(grid)
         doc_region.setGeometry(300, 300, 350, 300)
         return doc_region
 
 
+p = project_io.Project("c:/data/test_framwork/management/project1/tf_config.xml")
+p.load_project()
+
 app = QApplication(sys.argv)
-w = TFWindow()
+w = TFWindow(p)
 w.show()
 sys.exit(app.exec_())
