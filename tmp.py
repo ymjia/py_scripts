@@ -1,11 +1,17 @@
 import re
 
-def regex_cid(in_str):
-    m = re.search('.*([0-9]{8}).*', in_str)
-    if m:
-        return m.group(1)
+class Test():
+    def __init__(self):
+        self._text1 = []
+        self._text2 = []
+
+    def change_text(self, in_list):
+        in_list.append("a")
+
+    def run(self):
+        self.change_text(self._text1)
 
 
-print(regex_cid("lsajf1234567898a..aslkj"))
-print(regex_cid("lsajf 123456781 .12.aslkj"))
-print(regex_cid("*lsajf 012345678#..aslkj"))
+t = Test()
+t.run()
+print(t._text1)

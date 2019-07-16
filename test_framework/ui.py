@@ -23,46 +23,47 @@ class TFWindow(QWidget):
         super(TFWindow, self).__init__(parent)
         # info widget for updating infomation
         # text
-        qle_dir_in = None
-        qle_dir_out = None
-        qle_exe_pv = None
-        qle_exe_demo = None
-        qle_cur_ver = None
-        qle_doc_name = None
-        #listview
-        qlv_exe_case = None
-        qlv_ss_case = None
-        qlv_ss_alg = None
-        qlv_ss_ver = None
-        qlv_doc_case = None
-        qlv_doc_alg = None
-        qlv_doc_ver = None
+        self._qle_conf_file = QLineEdit()
+        self._qle_dir_in = QLineEdit()
+        self._qle_dir_out = QLineEdit()
+        self._qle_exe_pv = QLineEdit()
+        self._qle_exe_demo = QLineEdit()
+        self._qle_cur_ver = QLineEdit()
+        self._qle_doc_name = QLineEdit()
+        # listview
+        self._qlv_exe_case = QListView()
+        self._qlv_ss_case = QListView()
+        self._qlv_ss_alg = QListView()
+        self._qlv_ss_ver = QListView()
+        self._qlv_doc_case = QListView()
+        self._qlv_doc_alg = QListView()
+        self._qlv_doc_ver = QListView()
         self._p = p_obj
         box = QVBoxLayout()
         box.addStretch(1)
         box.addWidget(self.create_project_info())
-        # box.addWidget(self.create_project_info())
         box.addWidget(self.create_control_region())
         self.setLayout(box)
         self.setWindowTitle("Test Framework")
         self.resize(1024, 768)
-        
+
+    def load_proj_info(self, in_obj):
+        self._p = in_obj
 
     def create_project_info(self):
         info = QGroupBox("Project Information")
         grid = QGridLayout()
         grid.setSpacing(10)
-        self.create_file_browser(grid, 0, "Configuration File")
-        self.create_file_browser(grid, 1, "Input Directory")
-        self.create_file_browser(grid, 2, "Output Directory")
-        self.create_file_browser(grid, 3, "PVPython Interpreter")
-        self.create_file_browser(grid, 4, "Demo Executable")
+        self.get_f_bsw(self._qle_conf_file, grid, 0, "Configuration File")
+        self.get_f_bsw(self._qle_dir_in, grid, 1, "Input Directory")
+        self.get_f_bsw(self._qle_dir_out, grid, 2, "Output Directory")
+        self.get_f_bsw(self._qle_exe_pv, grid, 3, "PVPython Interpreter")
+        self.get_f_bsw(self._qle_exe_demo, grid, 4, "Demo Executable")
         info.setLayout(grid)
         info.setGeometry(300, 300, 350, 300)
         return info
 
-    def get_check_list(self, item_list, check_dict):
-        lv_item = QListView()
+    def get_check_list(self, lv, item_list, check_dict):
         model = QStandardItemModel()
         for i in item_list:
             item = QStandardItem(i)
@@ -70,8 +71,7 @@ class TFWindow(QWidget):
             item.setCheckState(check)
             item.setCheckable(True)
             model.appendRow(item)
-        lv_item.setModel(model)
-        return lv_item
+        lv.setModel(model)
 
     def create_control_region(self):
         control_region = QWidget()
@@ -82,9 +82,9 @@ class TFWindow(QWidget):
         control_region.setLayout(box)
         return control_region
 
-    def create_file_browser(self, grid, grid_line, label):
+    # create a file browser
+    def get_f_bsw(self, qle, grid, grid_line, label):
         ql = QLabel(label)
-        qle = QLineEdit()
         qpb = QPushButton("Browse..", self)
         grid.addWidget(ql, grid_line, 0)
         grid.addWidget(qle, grid_line, 1)
@@ -94,13 +94,13 @@ class TFWindow(QWidget):
         exe_region = QGroupBox("Executable Configuration")
         ql_input = QLabel('Input Case')
         ql_ver = QLabel('Current Version Name')
-        ql_verEdit = QLineEdit()
+        self.get_check_list(self._qlv_exe_case, self._p._case, self._p._dCaseCheck)
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_input, 0, 0)
-        grid.addWidget(self.get_check_list(self._p._case, self._p._dCaseCheck), 0, 1)
+        grid.addWidget(self._qlv_exe_case, 0, 1)
         grid.addWidget(ql_ver, 1, 0)
-        grid.addWidget(ql_verEdit, 1, 1)
+        grid.addWidget(self._qle_cur_ver, 1, 1)
         exe_region.setLayout(grid)
         exe_region.setGeometry(300, 300, 350, 300)
         pybutton = QPushButton('RunDemo', self)
@@ -112,16 +112,19 @@ class TFWindow(QWidget):
     def create_ss_region(self):
         ss_region = QGroupBox("ScreenShot Configuration")
         ql_case = QLabel('Case')
-        ql_alg = QLabel('Algorithm')
         ql_ver = QLabel('Version')
+        ql_alg = QLabel('Algorithm')
+        self.get_check_list(self._qlv_ss_case, self._p._case, self._p._sCaseCheck)
+        self.get_check_list(self._qlv_ss_ver, self._p._ver, self._p._sVerCheck)
+        self.get_check_list(self._qlv_ss_alg, self._p._alg, self._p._sAlgCheck)
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_case, 1, 0)
-        grid.addWidget(self.get_check_list(self._p._case, self._p._sCaseCheck), 1, 1)
-        grid.addWidget(ql_alg, 2, 0)
-        grid.addWidget(self.get_check_list(self._p._alg, self._p._sAlgCheck), 2, 1)
-        grid.addWidget(ql_ver, 3, 0)
-        grid.addWidget(self.get_check_list(self._p._ver, self._p._sVerCheck), 3, 1)
+        grid.addWidget(self._qlv_ss_case, 1, 1)
+        grid.addWidget(ql_ver, 2, 0)
+        grid.addWidget(self._qlv_ss_ver, 2, 1)
+        grid.addWidget(ql_alg, 3, 0)
+        grid.addWidget(self._qlv_ss_alg, 3, 1)
         ss_region.setLayout(grid)
         ss_region.setGeometry(300, 300, 350, 300)
         pybutton = QPushButton('Take Screenshot', self)
@@ -133,16 +136,19 @@ class TFWindow(QWidget):
     def create_doc_region(self):
         doc_region = QGroupBox("Docx Configuration")
         ql_case = QLabel('Case')
-        ql_alg = QLabel('Algorithm')
         ql_ver = QLabel('Version')
+        ql_alg = QLabel('Algorithm')
+        self.get_check_list(self._qlv_doc_case, self._p._case, self._p._dCaseCheck)
+        self.get_check_list(self._qlv_doc_ver, self._p._ver, self._p._dVerCheck)
+        self.get_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(ql_case, 1, 0)
-        grid.addWidget(self.get_check_list(self._p._case, self._p._dCaseCheck), 1, 1)
-        grid.addWidget(ql_alg, 2, 0)
-        grid.addWidget(self.get_check_list(self._p._alg, self._p._dAlgCheck), 2, 1)
-        grid.addWidget(ql_ver, 3, 0)
-        grid.addWidget(self.get_check_list(self._p._ver, self._p._dVerCheck), 3, 1)
+        grid.addWidget(self._qlv_doc_case, 1, 1)
+        grid.addWidget(ql_ver, 2, 0)
+        grid.addWidget(self._qlv_doc_ver, 2, 1)
+        grid.addWidget(ql_alg, 3, 0)
+        grid.addWidget(self._qlv_doc_alg, 3, 1)
         doc_region.setLayout(grid)
         doc_region.setGeometry(300, 300, 350, 300)
         pybutton = QPushButton('Generate Document', self)
@@ -157,5 +163,6 @@ p.load_project()
 
 app = QApplication(sys.argv)
 w = TFWindow(p)
+w._qle_conf_file.setText("config_file")
 w.show()
 sys.exit(app.exec_())
