@@ -51,6 +51,13 @@ class TFWindow(QWidget):
         self._p = in_obj
 
     def create_project_info(self):
+        # fill information
+        self._qle_conf_file = self._p._configFile
+        self._qle_dir_in = self._p._dirInput
+        self._qle_dir_out = self._p._dirOutput
+        self._qle_exe_pv = self._p._configFile
+        self._qle_exe_demo = self._p._configFile
+        # create widget
         info = QGroupBox("Project Information")
         grid = QGridLayout()
         grid.setSpacing(10)
