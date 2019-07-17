@@ -102,19 +102,15 @@ def add_case_table(doc, dir_in, case, list_ver, list_alg, cam_num):
 ## @param dir_input data case config directory
 ## @param dir_output algorithm/screenshots output directory
 ## @param file_config file contains user specified compare config
-def generate_docx(dir_input, dir_output, config_stem, list_case, list_ver, list_alg):
+def generate_docx(dir_input, dir_output, file_save, list_case, list_ver, list_alg):
     # screen shot view list
     document = Document()
-    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     document.add_heading("Compare Result {}".format(str_time), 0)
     document.add_paragraph("From config file: {}".format(file_config))
     for case in list_case:
         document.add_paragraph(case, style='List Bullet')
         list_cam = read_cam(os.path.join(dir_input, case, "config.txt"))
         add_case_table(document, dir_output, case, list_ver, list_alg, len(list_cam))
-    file_save = os.path.join(dir_output, "{}_{}.docx".format(config_stem, str_time))
-    if len(sys.argv) == 2:
-        file_save = str(sys.argv[1])
     print(file_save)
     document.save(file_save)
 
@@ -123,7 +119,11 @@ def generate_docx_wrap(dir_input, dir_output, file_config):
     # input data read from config file
     list_case, list_ver, list_alg = read_compare_config(file_config)
     config_stem = os.path.splitext(os.path.split(file_config)[1])[0]
-    generate_docx(dir_input, dir_output, config_stem, list_case, list_ver, list_alg)
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    file_save = os.path.join(dir_output, "{}_{}.docx".format(config_stem, str_time))
+    if len(sys.argv) == 2:
+        file_save = str(sys.argv[1])
+    generate_docx(dir_input, dir_output, file_save, list_case, list_ver, list_alg)
 
 
 if __name__ == "__main__":
