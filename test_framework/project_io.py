@@ -30,6 +30,8 @@ class Project:
         self._dCaseCheck = {}
         self._dAlgCheck = {}
         self._dVerCheck = {}
+        self._docName = ""
+        self._curDocName = ""
 
     # load functions
     def load_project(self, filename=""):
@@ -42,11 +44,15 @@ class Project:
         self._dirOutput = root.find("output").attrib["path"]
         self._exeDemo = root.find("exe_demo").attrib["path"]
         self._exePV = root.find("exe_pv").attrib["path"]
-        root_ss = root.find("screenshot")
-        root_doc = root.find("docx")
         self.load_list()
+        # screen shots
+        root_ss = root.find("screenshot")
         self.load_check(root_ss, self._sCaseCheck, self._sAlgCheck, self._sVerCheck)
+        # doc
+        root_doc = root.find("docx")
         self.load_check(root_doc, self._dCaseCheck, self._dAlgCheck, self._dVerCheck)
+        self._docName = root_doc.find("doc_name").attrib["name"]
+        self._curDocName = root_doc.find("current_name").attrib["name"]
 
     def load_list(self):
         branch = self._tree.getroot().find("all")
@@ -125,13 +131,21 @@ class Project:
     def save_project(self, filename=""):
         root = ET.Element("project")
         # directories
-        root.append(ET.Element("input", {"path":self._dirInput}))
-        root.append(ET.Element("output", {"path":self._dirOutput}))
-        root.append(ET.Element("exe_demo", {"path":self._exeDemo}))
-        root.append(ET.Element("exe_pv", {"path":self._exePV}))
+        root.append(ET.Element("input", {"path": self._dirInput}))
+        root.append(ET.Element("output", {"path": self._dirOutput}))
+        root.append(ET.Element("exe_demo", {"path": self._exeDemo}))
+        root.append(ET.Element("exe_pv", {"path": self._exePV}))
         root.append(self.save_list())
-        root.append(self.save_check("screenshot", self._sCaseCheck, self._sAlgCheck, self._sVerCheck))
-        root.append(self.save_check("docx", self._dCaseCheck, self._dAlgCheck, self._dVerCheck))
+        # screenshots
+        ss_root = self.save_check("screenshot", self._sCaseCheck,
+                                  self._sAlgCheck, self._sVerCheck)
+        root.append(ss_root)
+        # docx
+        doc_root = self.save_check("docx", self._dCaseCheck, self._dAlgCheck,
+                                   self._dVerCheck)
+        doc_root.append(ET.Element("doc_name", {"name": self._docName}))
+        doc_root.append(ET.Element("current_name", {"name": self._curDocName}))
+        root.append(doc_root)
         return ET.ElementTree(root)
 
     def save_tree(self, filename=""):

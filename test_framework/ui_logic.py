@@ -48,12 +48,11 @@ def slot_create_screenshots(p_obj):
     f_config.writelines(line_alg)
     f_config.close()
     # run pvpython.exe
-    exe_pvpython = ""
+    exe_pvpython = p_obj._exePV
     proc_ss = subprocess.Popen(
         [exe_pvpython,
          dir_i, dir_o, f_config])
     proc_ss.wait()
-    # create_screenshots(dir_i, dir_o, l_case, l_alg, l_ver)
 
 
 # get file and set qle.text
