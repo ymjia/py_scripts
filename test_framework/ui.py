@@ -92,17 +92,23 @@ class TFWindow(QWidget):
         return out_obj
 
     def create_project_manage(self):
-        manage = QWidget()
+        manage = QGroupBox("Project Manage")
         qpb_new = QPushButton("New Project")
         qpb_copy = QPushButton("Copy Project")
         qpb_save = QPushButton("Save Project")
         qpb_load = QPushButton("Load Project")
+        qpb_new.clicked.connect(lambda: ui_logic.slot_new_project(self))
+        qpb_copy.clicked.connect(lambda: ui_logic.slot_copy_project(self))
+        qpb_save.clicked.connect(lambda: ui_logic.slot_save_project(self))
+        qpb_load.clicked.connect(lambda: ui_logic.slot_load_project(self))
+        
         grid = QGridLayout()
+        #grid.setSpacing(10)
         grid.addWidget(QPlainTextEdit(), 0, 0, 1, 2)
-        grid.addWidge(qpb_new, 1, 0)
-        grid.addWidge(qpb_copy, 1, 1)
-        grid.addWidge(qpb_save, 2, 0)
-        grid.addWidge(qpb_load, 2, 1)
+        grid.addWidget(qpb_new, 1, 0)
+        grid.addWidget(qpb_copy, 1, 1)
+        grid.addWidget(qpb_save, 2, 0)
+        grid.addWidget(qpb_load, 2, 1)
         manage.setLayout(grid)
         return manage
 
@@ -168,9 +174,7 @@ class TFWindow(QWidget):
         exe_region = QGroupBox("Executable Configuration")
         qpb_exe_run = QPushButton('Run Demo', self)
         qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
-        qpb_exe_run.resize(100, 32)
         grid = QGridLayout()
-        grid.setSpacing(10)
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
         grid.addWidget(QLabel('Exe Parameter line'), 1, 0)
@@ -179,19 +183,15 @@ class TFWindow(QWidget):
         grid.addWidget(self._qle_cur_ver, 2, 1)
         grid.addWidget(qpb_exe_run, 3, 1)
         exe_region.setLayout(grid)
-        exe_region.setGeometry(300, 300, 350, 300)
         return exe_region
 
     def create_ss_region(self):
         ss_region = QGroupBox("ScreenShot Configuration")
         qpb_ss_shot = QPushButton('Take Screenshot', self)
         qpb_ss_shot.clicked.connect(lambda: ui_logic.slot_create_screenshots(self))
-        qpb_ss_shot.resize(100, 32)
         qpb_ss_manage = QPushButton('Manage Screen Camera', self)
         #qpb_ss_manage.clicked.connect(lambda: ui_logic.slot_create_screenshots(self))
-        qpb_ss_manage.resize(100, 32)
         grid = QGridLayout()
-        grid.setSpacing(10)
         grid.addWidget(QLabel('Case'), 1, 0)
         grid.addWidget(self._qlv_ss_case, 1, 1)
         grid.addWidget(QLabel('Version'), 2, 0)
@@ -201,22 +201,17 @@ class TFWindow(QWidget):
         grid.addWidget(qpb_ss_manage, 4, 1)
         grid.addWidget(qpb_ss_shot, 5, 1)
         ss_region.setLayout(grid)
-        ss_region.setGeometry(300, 300, 350, 300)
         return ss_region
 
     def create_doc_region(self):
         doc_region = QGroupBox("Docx Configuration")
         qpb_g_doc = QPushButton('Generate Document', self)
         qpb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx(self))
-        qpb_g_doc.resize(100, 32)
         qpb_o_doc = QPushButton('Open Document', self)
         qpb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx(self))
-        qpb_o_doc.resize(100, 32)
         qpb_o_path = QPushButton('Open Path', self)
         qpb_o_path.clicked.connect(lambda: ui_logic.slot_open_docx_path(self))
-        qpb_o_path.resize(100, 32)
         grid = QGridLayout()
-        grid.setSpacing(10)
         grid.addWidget(QLabel('Case'), 1, 0)
         grid.addWidget(self._qlv_doc_case, 1, 1)
         grid.addWidget(QLabel('Version'), 2, 0)
@@ -231,7 +226,6 @@ class TFWindow(QWidget):
         grid.addWidget(qpb_o_doc, 5, 1)
         grid.addWidget(qpb_g_doc, 6, 1)
         doc_region.setLayout(grid)
-        doc_region.setGeometry(300, 300, 350, 300)
         return doc_region
 
 
