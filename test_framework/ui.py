@@ -41,11 +41,13 @@ class TFWindow(QWidget):
         self._qlv_doc_alg = QListView()
         self._qlv_doc_ver = QListView()
         self._p = p_obj
-        box = QVBoxLayout()
-        box.addStretch(1)
-        box.addWidget(self.create_project_info())
-        box.addWidget(self.create_control_region())
-        self.setLayout(box)
+        grid = QGridLayout()
+        grid.addWidget(QPlainTextEdit(), 0, 0, 2, 1)
+        grid.addWidget(self.create_project_info(), 0, 1)
+        grid.addWidget(self.create_control_region(), 1, 1)
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 3)
+        self.setLayout(grid)
         self.setWindowTitle("Test Framework")
         self.resize(1024, 768)
 
