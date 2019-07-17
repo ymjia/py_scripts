@@ -102,8 +102,9 @@ def add_case_table(doc, dir_in, case, list_ver, list_alg, cam_num):
 ## @param dir_input data case config directory
 ## @param dir_output algorithm/screenshots output directory
 ## @param file_config file contains user specified compare config
-def generate_docx(dir_input, dir_output, file_save, list_case, list_ver, list_alg):
+def generate_docx(file_config, dir_input, dir_output, file_save, list_case, list_ver, list_alg):
     # screen shot view list
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     document = Document()
     document.add_heading("Compare Result {}".format(str_time), 0)
     document.add_paragraph("From config file: {}".format(file_config))
@@ -123,7 +124,7 @@ def generate_docx_wrap(dir_input, dir_output, file_config):
     file_save = os.path.join(dir_output, "{}_{}.docx".format(config_stem, str_time))
     if len(sys.argv) == 2:
         file_save = str(sys.argv[1])
-    generate_docx(dir_input, dir_output, file_save, list_case, list_ver, list_alg)
+    generate_docx(file_config, dir_input, dir_output, file_save, list_case, list_ver, list_alg)
 
 
 if __name__ == "__main__":
