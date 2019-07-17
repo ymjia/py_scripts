@@ -120,8 +120,8 @@ class Project:
         ele_ver = ET.Element("version")
         ele_alg = ET.Element("algorithm")
         self.save_item_list(ele_case, self._case, cd)
-        self.save_item_list(ele_case, self._alg, ad)
-        self.save_item_list(ele_case, self._ver, vd)
+        self.save_item_list(ele_alg, self._alg, ad)
+        self.save_item_list(ele_ver, self._ver, vd)
         ele.append(ele_case)
         ele.append(ele_ver)
         ele.append(ele_alg)
@@ -145,7 +145,7 @@ class Project:
         # exe
         exe_root = ET.Element("exe")
         self.save_item_list(exe_root, self._case, self._eCaseCheck)
-        exe_root.append(ET.Element("version", {"name": self._eVer}))
+        exe_root.append(ET.Element("version", {"str": self._eVer}))
         exe_root.append(ET.Element("param", {"str": self._exeParam}))
         # screenshots
         ss_root = self.save_check("screenshot", self._sCaseCheck,

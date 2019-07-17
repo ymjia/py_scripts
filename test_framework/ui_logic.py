@@ -126,3 +126,25 @@ def slot_exe_run(ui):
         continue
         proc_demo = subprocess.Popen([exe, param])
         proc_demo.wait()
+
+
+def slot_new_project(ui):
+    return
+
+
+def slot_copy_project(ui):
+    return
+
+
+def slot_save_project(ui):
+    # update project object
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    # update xml object
+    p_obj._tree = p_obj.save_project()
+    # save xml
+    p_obj.save_tree()
+
+
+def slot_load_project(ui):
+    return

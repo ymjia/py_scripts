@@ -1,58 +1,56 @@
 <project>
-  <input path="c:/data/test_framework/management/project1/input/"></input>
-  <output path="c:/data/test_framework/management/project1/output/"></output>
-  <exe_demo path="d:/dev/build_dev/Release/JYMTest.exe"></exe_demo>
-  <exe_pv path="d:/tools/ParaView_r/bin/pvpython.exe"></exe_pv>
+  <input path="c:/data/test_framework/management/project1/input/" />
+  <output path="c:/data/test_framework/management/project1/output/" />
+  <exe_demo path="d:/dev/build_dev/Release/JYMTest.exe" />
+  <exe_pv path="d:/tools/ParaView_r/bin/pvpython.exe" />
   <all>
 	<case>
-	  <item name="case1" check="1"></item>
-	  <item name="case2" check="1"></item>
+	  <item check="1" name="case1" />
+	  <item check="1" name="case2" />
 	</case>
-	<algorithm>
-	  <item name="smooth" check="1"></item>
-	  <item name="merge" check="1"></item>
-	</algorithm>
 	<version>
-	  <item name="v11" check="1"></item>
-	  <item name="v12" check="1"></item>
+	  <item check="1" name="v11" />
+	  <item check="1" name="v12" />
 	</version>
+	<algorithm>
+	  <item check="1" name="smooth" />
+	  <item check="1" name="merge" />
+	</algorithm>
   </all>
   <exe>
-	<case>
-	  <item name="case1" check="1"></item>
-	  <item name="case2" check="1"></item>
-	</case>
-	<param str="-i {i} -o {o}"/>
-	<version str="test"/>
+	<item check="1" name="case1" />
+	<item check="1" name="case2" />
+	<version str="test" />
+	<param str="-i {i} -o {o} -p" />
   </exe>
   <screenshot>
 	<case>
-	  <item name="case1" check="1"></item>
-	  <item name="case2" check="1"></item>
+	  <item check="1" name="case1" />
+	  <item check="1" name="case2" />
 	</case>
-	<algorithm>
-	  <item name="smooth" check="1"></item>
-	  <item name="merge" check="1"></item>
-	</algorithm>
 	<version>
-	  <item name="v11" check="1"></item>
-	  <item name="v12" check="1"></item>
+	  <item check="1" name="v11" />
+	  <item check="1" name="v12" />
 	</version>
+	<algorithm>
+	  <item check="1" name="smooth" />
+	  <item check="1" name="merge" />
+	</algorithm>
   </screenshot>
   <docx>
 	<case>
-	  <item name="case1" check="0"></item>
-	  <item name="case2" check="1"></item>
+	  <item check="0" name="case1" />
+	  <item check="1" name="case2" />
 	</case>
-	<algorithm>
-	  <item name="smooth" check="1"></item>
-	  <item name="merge" check="0"></item>
-	</algorithm>
 	<version>
-	  <item name="v11" check="1"></item>
-	  <item name="v12" check="1"></item>
+	  <item check="1" name="v11" />
+	  <item check="1" name="v12" />
 	</version>
+	<algorithm>
+	  <item check="1" name="smooth" />
+	  <item check="0" name="merge" />
+	</algorithm>
 	<doc_name name="test_doc" />
-	<current_name name=""/>
+	<current_name name="" />
   </docx>
 </project>
