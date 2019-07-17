@@ -88,11 +88,11 @@ class TFWindow(QWidget):
         info = QGroupBox("Project Information")
         grid = QGridLayout()
         grid.setSpacing(10)
-        self.get_f_bsw(self._qle_conf_file, grid, 0, "Configuration File")
+        self.get_f_bsw(self._qle_conf_file, grid, 0, "Configuration File", "xml")
         self.get_f_bsw(self._qle_dir_in, grid, 1, "Input Directory")
         self.get_f_bsw(self._qle_dir_out, grid, 2, "Output Directory")
-        self.get_f_bsw(self._qle_exe_pv, grid, 3, "PVPython Interpreter")
-        self.get_f_bsw(self._qle_exe_demo, grid, 4, "Demo Executable")
+        self.get_f_bsw(self._qle_exe_pv, grid, 3, "PVPython Interpreter", "exe")
+        self.get_f_bsw(self._qle_exe_demo, grid, 4, "Demo Executable", "exe")
         info.setLayout(grid)
         info.setGeometry(300, 300, 350, 300)
         return info
@@ -130,12 +130,16 @@ class TFWindow(QWidget):
         return control_region
 
     # create a file browser
-    def get_f_bsw(self, qle, grid, grid_line, label):
-        ql = QLabel(label)
+    def get_f_bsw(self, qle, grid, grid_line, label, f_type=""):
         qpb = QPushButton("Browse..", self)
-        grid.addWidget(ql, grid_line, 0)
+        grid.addWidget(QLabel(label), grid_line, 0)
         grid.addWidget(qle, grid_line, 1)
         grid.addWidget(qpb, grid_line, 2)
+        if f_type == "":
+            qpb.clicked.connect(lambda: ui_logic.slot_get_path(qle))
+        else:
+            qpb.clicked.connect(lambda: ui_logic.slot_get_file(qle, f_type))
+        #lambda return value
 
     def create_exe_region(self):
         exe_region = QGroupBox("Executable Configuration")
@@ -153,8 +157,6 @@ class TFWindow(QWidget):
         grid.addWidget(qb_exe_run, 3, 1)
         exe_region.setLayout(grid)
         exe_region.setGeometry(300, 300, 350, 300)
-
-
         return exe_region
 
     def create_ss_region(self):

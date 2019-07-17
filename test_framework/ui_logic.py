@@ -7,8 +7,9 @@ import os.path
 import math
 import sys
 import datetime
-import xml.etree.ElementTree as ET
+
 import subprocess
+from PyQt5.QtWidgets import QFileDialog
 sys.path.insert(0, r'c:/dev/py_scripts/')
 
 from test_framework.project_io import get_checked_items
@@ -53,3 +54,20 @@ def slot_create_screenshots(p_obj):
          dir_i, dir_o, f_config])
     proc_ss.wait()
     # create_screenshots(dir_i, dir_o, l_case, l_alg, l_ver)
+
+
+# get file and set qle.text
+def slot_get_path(qle):
+    path = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QFileDialog.ShowDirsOnly)
+    if path is not None and path != "":
+        qle.setText(path)
+
+
+def slot_get_file(qle, f_type):
+    path = ""
+    if f_type == "xml":
+        path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'XML (*.xml)')
+    else:
+        path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'EXE (*.exe)')
+    if path is not None and path != "":
+        qle.setText(path)
