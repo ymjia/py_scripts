@@ -9,20 +9,43 @@ import sys
 import datetime
 
 import subprocess
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 sys.path.insert(0, r'c:/dev/py_scripts/')
 
 from test_framework.project_io import get_checked_items
 from test_framework.generate_docx import generate_docx
 
 
-def slot_generate_docx(filename, p_obj):
+def slot_generate_docx(p_obj):
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
+    dir_doc = os.path.join(dir_o, "doc")
+    doc_name = p_obj._docName
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    p_obj._curDocName = "{}_{}.docx".format(doc_name, str_time)
+    if not os.path.exists(dir_doc):
+        os.makedirs(dir_doc)
+    file_save = os.path.join(dir_doc, p_obj._curDocName)
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
-    generate_docx(dir_i, dir_o, filename, l_case, l_alg, l_ver)
+    generate_docx(dir_i, dir_o, file_save, l_case, l_alg, l_ver)
+
+
+def slot_open_docx(p_obj):
+    dir_doc = os.path.join(p_obj._dirOutput, "doc")
+    file_doc = os.path.join(dir_doc, p_obj._curDocName)
+    if os.path.exists(file_doc):
+        os.startfile(file_doc)
+    else:
+        QMessageBox.about(None, "Error", "Document doesnot Exist! Try Generate Docx First.")
+
+
+def slot_open_docx_path(p_obj):
+    dir_doc = os.path.join(p_obj._dirOutput, "doc")
+    if not os.path.exists(dir_doc):
+        os.makedirs(dir_doc)
+    os.startfile(dir_doc)
 
 
 def slot_create_screenshots(p_obj):

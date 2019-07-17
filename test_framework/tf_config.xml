@@ -44,7 +44,7 @@
 	  <item name="v1" check="1"></item>
 	  <item name="v2" check="1"></item>
 	</version>
-	<doc_name name="" />
-	<currnet_name name=""/>
+	<doc_name name="test_doc" />
+	<current_name name=""/>
   </docx>
 </project>

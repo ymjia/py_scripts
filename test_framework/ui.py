@@ -141,7 +141,6 @@ class TFWindow(QWidget):
             qpb.clicked.connect(lambda: ui_logic.slot_get_path(qle))
         else:
             qpb.clicked.connect(lambda: ui_logic.slot_get_file(qle, f_type))
-        #lambda return value
 
     def create_exe_region(self):
         exe_region = QGroupBox("Executable Configuration")
@@ -189,10 +188,10 @@ class TFWindow(QWidget):
         qb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx("test", self._p))
         qb_g_doc.resize(100, 32)
         qb_o_doc = QPushButton('Open Document', self)
-        qb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx("test", self._p))
+        qb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx(self._p))
         qb_o_doc.resize(100, 32)
         qb_o_path = QPushButton('Open Path', self)
-        qb_o_path.clicked.connect(lambda: ui_logic.slot_open_docx_path("test", self._p))
+        qb_o_path.clicked.connect(lambda: ui_logic.slot_open_docx_path(self._p))
         qb_o_path.resize(100, 32)
         grid = QGridLayout()
         grid.setSpacing(10)

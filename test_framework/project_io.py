@@ -166,7 +166,7 @@ def get_checked_items(l_all, d_check):
     res = []
     for i in l_all:
         if i in d_check:
-            res.append(l_all[i])
+            res.append(i)
     return res
 
 
