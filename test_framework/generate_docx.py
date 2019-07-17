@@ -85,7 +85,7 @@ def add_case_table(doc, dir_in, case, list_ver, list_alg, cam_num):
         row2 = table.add_row().cells
         row2[0].merge(row2[col_num-1])
         name_state = "{}_{}_{}.py".format(case, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
-        dir_data = os.path.join(dir_in, "ParaView_projects")
+        dir_state = os.path.join(dir_in, "ParaView_projects")
         if not os.path.exists(dir_state):
             os.makedirs(dir_state)
         file_state = os.path.join(dir_state, name_state)
