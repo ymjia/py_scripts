@@ -42,7 +42,7 @@ class TFWindow(QWidget):
         self._qlv_doc_ver = QListView()
         self._p = p_obj
         grid = QGridLayout()
-        grid.addWidget(QPlainTextEdit(), 0, 0, 2, 1)
+        grid.addWidget(self.create_project_manage(), 0, 0, 2, 1)
         grid.addWidget(self.create_project_info(), 0, 1)
         grid.addWidget(self.create_control_region(), 1, 1)
         grid.setColumnStretch(0, 1)
@@ -90,6 +90,21 @@ class TFWindow(QWidget):
         self.read_check_list(self._qlv_doc_ver, out_obj._ver, out_obj._dVerCheck)
         self.read_check_list(self._qlv_doc_alg, out_obj._alg, out_obj._dAlgCheck)
         return out_obj
+
+    def create_project_manage(self):
+        manage = QWidget()
+        qpb_new = QPushButton("New Project")
+        qpb_copy = QPushButton("Copy Project")
+        qpb_save = QPushButton("Save Project")
+        qpb_load = QPushButton("Load Project")
+        grid = QGridLayout()
+        grid.addWidget(QPlainTextEdit(), 0, 0, 1, 2)
+        grid.addWidge(qpb_new, 1, 0)
+        grid.addWidge(qpb_copy, 1, 1)
+        grid.addWidge(qpb_save, 2, 0)
+        grid.addWidge(qpb_load, 2, 1)
+        manage.setLayout(grid)
+        return manage
 
     def create_project_info(self):
         # fill information
