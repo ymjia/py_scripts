@@ -12,7 +12,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import os.path
 import sys
 sys.path.insert(0, r'c:/dev/py_scripts/')
-
+from test_framework import project_io
 import datetime
 from test_framework import project_io
 from test_framework import ui_logic
@@ -68,7 +68,7 @@ class TFWindow(QWidget):
         self.get_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
 
     def collect_ui_info(self):
-        out_obj = Project()
+        out_obj = project_io.Project()
         out_obj._configFile = self._qle_conf_file.text()
         out_obj._dirInput = self._qle_dir_in.text()
         out_obj._dirOutput = self._qle_dir_out.text()
@@ -114,10 +114,10 @@ class TFWindow(QWidget):
     def read_check_list(self, lv, item_list, check_dict):
         item_list.clear()
         check_dict.clear()
-        model = lv.getModel()
+        model = lv.model()
         for index in range(model.rowCount()):
             item = model.item(index)
-            text = item.text_str()
+            text = item.text()
             item_list.append(text)
             if item.checkState() == Qt.Unchecked:
                 check_dict[text] = 1
@@ -163,10 +163,10 @@ class TFWindow(QWidget):
     def create_ss_region(self):
         ss_region = QGroupBox("ScreenShot Configuration")
         qb_ss_shot = QPushButton('Take Screenshot', self)
-        qb_ss_shot.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
+        qb_ss_shot.clicked.connect(lambda: ui_logic.slot_create_screenshots(self))
         qb_ss_shot.resize(100, 32)
         qb_ss_manage = QPushButton('Manage Screen Camera', self)
-        qb_ss_shot.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
+        qb_ss_shot.clicked.connect(lambda: ui_logic.slot_create_screenshots(self))
         qb_ss_manage.resize(100, 32)
         grid = QGridLayout()
         grid.setSpacing(10)
@@ -185,13 +185,13 @@ class TFWindow(QWidget):
     def create_doc_region(self):
         doc_region = QGroupBox("Docx Configuration")
         qb_g_doc = QPushButton('Generate Document', self)
-        qb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx("test", self._p))
+        qb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx(self))
         qb_g_doc.resize(100, 32)
         qb_o_doc = QPushButton('Open Document', self)
-        qb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx(self._p))
+        qb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx(self))
         qb_o_doc.resize(100, 32)
         qb_o_path = QPushButton('Open Path', self)
-        qb_o_path.clicked.connect(lambda: ui_logic.slot_open_docx_path(self._p))
+        qb_o_path.clicked.connect(lambda: ui_logic.slot_open_docx_path(self))
         qb_o_path.resize(100, 32)
         grid = QGridLayout()
         grid.setSpacing(10)
