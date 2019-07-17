@@ -10,7 +10,7 @@ import datetime
 
 import subprocess
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
-sys.path.insert(0, r'c:/dev/py_scripts/')
+sys.path.insert(0, r'd:/dev/py_scripts/')
 
 from test_framework.project_io import get_checked_items
 from test_framework.generate_docx import generate_docx
@@ -54,6 +54,7 @@ def slot_open_docx_path(ui):
 
 
 def slot_create_screenshots(ui):
+    ui._p = ui.collect_ui_info()
     p_obj = ui._p
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
@@ -61,7 +62,7 @@ def slot_create_screenshots(ui):
     l_alg = get_checked_items(p_obj._alg, p_obj._sAlgCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._sVerCheck)
     # write to file
-    filename = "c:/tmp/ss_config.txt"
+    filename = os.path.join(dir_o, "ss_config.txt")
     line_case = "cas"
     for c in l_case:
         line_case = line_case + " {}".format(c)
@@ -72,17 +73,19 @@ def slot_create_screenshots(ui):
     for c in l_alg:
         line_alg = line_alg + " {}".format(c)
     f_config = open(filename, "w")
-    f_config.writelines(line_case)
-    f_config.writelines(line_ver)
-    f_config.writelines(line_alg)
+    f_config.write(line_case + "\n")
+    f_config.write(line_ver + "\n")
+    f_config.write(line_alg + "\n")
     f_config.close()
     # run pvpython.exe
     exe_pvpython = p_obj._exePV
+    dir_pv_wd = os.path.dirname(exe_pvpython)
+    py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
     proc_ss = subprocess.Popen(
-        [exe_pvpython,
-         dir_i, dir_o, f_config])
+        [exe_pvpython, py_ss,
+         dir_i, dir_o, filename], cwd=dir_pv_wd)
     proc_ss.wait()
-
+    QMessageBox.about(None, "Message", "Create Screenshots Completed!")
 
 # get file and set qle.text
 def slot_get_path(qle):

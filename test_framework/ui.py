@@ -11,7 +11,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 import os.path
 import sys
-sys.path.insert(0, r'c:/dev/py_scripts/')
+sys.path.insert(0, r'd:/dev/py_scripts/')
 from test_framework import project_io
 import datetime
 from test_framework import project_io
@@ -171,7 +171,7 @@ class TFWindow(QWidget):
         qpb_ss_shot.clicked.connect(lambda: ui_logic.slot_create_screenshots(self))
         qpb_ss_shot.resize(100, 32)
         qpb_ss_manage = QPushButton('Manage Screen Camera', self)
-        qpb_ss_shot.clicked.connect(lambda: ui_logic.slot_create_screenshots(self))
+        #qpb_ss_manage.clicked.connect(lambda: ui_logic.slot_create_screenshots(self))
         qpb_ss_manage.resize(100, 32)
         grid = QGridLayout()
         grid.setSpacing(10)
@@ -218,7 +218,7 @@ class TFWindow(QWidget):
         return doc_region
 
 
-p = project_io.Project("c:/dev/py_scripts/test_framework/tf_config.xml")
+p = project_io.Project("d:/dev/py_scripts/test_framework/tf_config.xml")
 p.load_project()
 
 app = QApplication(sys.argv)

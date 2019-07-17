@@ -1,8 +1,8 @@
 <project>
-  <input path="c:/data/test_framwork/management/project1/input/"></input>
-  <output path="c:/data/test_framwork/management/project1/output/"></output>
+  <input path="c:/data/test_framework/management/project1/input/"></input>
+  <output path="c:/data/test_framework/management/project1/output/"></output>
   <exe_demo path="d:/dev/build_dev/Release/JYMTest.exe"></exe_demo>
-  <exe_pv path="d:/ParaView/bin/pvpython.exe"></exe_pv>
+  <exe_pv path="d:/tools/ParaView_r/bin/pvpython.exe"></exe_pv>
   <all>
 	<case>
 	  <item name="case1" check="1"></item>
@@ -22,7 +22,7 @@
 	  <item name="case1" check="1"></item>
 	  <item name="case2" check="1"></item>
 	</case>
-	<param str="-i -o"/>
+	<param str="-i {i} -o {o}"/>
 	<version str="test"/>
   </exe>
   <screenshot>
