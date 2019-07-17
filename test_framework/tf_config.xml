@@ -22,7 +22,7 @@
 	  <item name="case1" check="1"></item>
 	  <item name="case2" check="1"></item>
 	</case>
-	<param str=""/>
+	<param str="-i -o"/>
 	<version str="test"/>
   </exe>
   <screenshot>

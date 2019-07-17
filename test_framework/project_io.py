@@ -145,18 +145,18 @@ class Project:
         # exe
         exe_root = ET.Element("exe")
         self.save_item_list(exe_root, self._case, self._eCaseCheck)
-        root.append(exe_root)
-        root.append(ET.Element("version", {"name": self._eVer}))
-        root.append(ET.Element("param", {"str": self._exeParam})
+        exe_root.append(ET.Element("version", {"name": self._eVer}))
+        exe_root.append(ET.Element("param", {"str": self._exeParam}))
         # screenshots
         ss_root = self.save_check("screenshot", self._sCaseCheck,
                                   self._sAlgCheck, self._sVerCheck)
-        root.append(ss_root)
         # docx
         doc_root = self.save_check("docx", self._dCaseCheck, self._dAlgCheck,
                                    self._dVerCheck)
         doc_root.append(ET.Element("doc_name", {"name": self._docName}))
         doc_root.append(ET.Element("current_name", {"name": self._curDocName}))
+        root.append(exe_root)
+        root.append(ss_root)
         root.append(doc_root)
         return ET.ElementTree(root)
 
