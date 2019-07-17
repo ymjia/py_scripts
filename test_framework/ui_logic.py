@@ -99,3 +99,17 @@ def slot_get_file(qle, f_type):
         path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'EXE (*.exe)')
     if path is not None and path != "":
         qle.setText(path)
+
+
+def generate_exe_param(ui, case):
+    param = ""
+    return param
+
+
+def slot_exe_run(ui):
+    cur_obj = ui._p
+    exe = cur_obj._exeDemo
+    #list_case = ui.get_checked_items(cur_obj._case, cur_obj._
+    param = generate_exe_param(ui)
+    proc_demo = subprocess.Popen([exe, param])
+    proc_demo.wait()
