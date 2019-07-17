@@ -129,9 +129,9 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
             file_list = get_file(case_files, alg)
             if file_list is None or len(file_list) < 1:
                 continue
-            #if not ss_need_update(file_list, cam_file, len(cam_list)):
-            #   continue
-            print("Updating screenshots for {}/{}/{}".format(case, ver_name, alg))
+            if not ss_need_update(file_list, cam_file, len(cam_list)):
+                continue
+            print("Updating screenshots for {}/{}/{}".format(case[0], ver_name, alg))
             create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
 
 
