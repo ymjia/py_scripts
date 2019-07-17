@@ -4,7 +4,6 @@
 ## @author jiayanming
 
 import os.path
-import datetime
 import xml.etree.ElementTree as ET
 
 
@@ -22,6 +21,8 @@ class Project:
         self._case = []
         self._alg = []
         self._ver = []
+        # exe demo
+        self._eCaseCheck = {}
         # screen shot
         self._sCaseCheck = {}
         self._sAlgCheck = {}
@@ -45,6 +46,12 @@ class Project:
         self._exeDemo = root.find("exe_demo").attrib["path"]
         self._exePV = root.find("exe_pv").attrib["path"]
         self.load_list()
+        # exe
+        root_exe = root.find("exe")
+        self._eCaseCheck.clear()
+        for item in root_exe.find("case"):
+            if item.attrib["check"] == "1":
+                self._eCaseCheck[item.attrib["name"]] = 1
         # screen shots
         root_ss = root.find("screenshot")
         self.load_check(root_ss, self._sCaseCheck, self._sAlgCheck, self._sVerCheck)
@@ -102,31 +109,26 @@ class Project:
         ele_all.append(ele_ver)
         ele_all.append(ele_alg)
         return ele_all
-        
+
     def save_check(self, name, cd, ad, vd):
         ele = ET.Element(name)
         ele_case = ET.Element("case")
         ele_ver = ET.Element("version")
         ele_alg = ET.Element("algorithm")
-        for item in self._case:
-            if item in cd:
-                ele_case.append(ET.Element("item", {"name":item, "check":"1"}))
-            else:
-                ele_case.append(ET.Element("item", {"name":item, "check":"0"}))
-        for item in self._alg:
-            if item in ad:
-                ele_alg.append(ET.Element("item", {"name":item, "check":"1"}))
-            else:
-                ele_alg.append(ET.Element("item", {"name":item, "check":"0"}))
-        for item in self._ver:
-            if item in vd:
-                ele_ver.append(ET.Element("item", {"name":item, "check":"1"}))
-            else:
-                ele_ver.append(ET.Element("item", {"name":item, "check":"1"}))
+        self.save_item_list(ele_case, self._case, cd)
+        self.save_item_list(ele_case, self._alg, ad)
+        self.save_item_list(ele_case, self._ver, vd)
         ele.append(ele_case)
         ele.append(ele_ver)
         ele.append(ele_alg)
         return ele
+
+    def save_item_list(self, root, item_all, item_dict):
+        for item in item_all:
+            if item in item_dict:
+                root.append(ET.Element("item", {"name": item, "check": "1"}))
+            else:
+                root.append(ET.Element("item", {"name": item, "check": "0"}))
 
     def save_project(self, filename=""):
         root = ET.Element("project")
@@ -136,6 +138,10 @@ class Project:
         root.append(ET.Element("exe_demo", {"path": self._exeDemo}))
         root.append(ET.Element("exe_pv", {"path": self._exePV}))
         root.append(self.save_list())
+        # exe
+        exe_root = ET.Element("exe")
+        self.save_item_list(exe_root, self._case, self._eCaseCheck)
+        root.append(exe_root)
         # screenshots
         ss_root = self.save_check("screenshot", self._sCaseCheck,
                                   self._sAlgCheck, self._sVerCheck)

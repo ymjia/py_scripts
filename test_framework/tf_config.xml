@@ -17,6 +17,12 @@
 	  <item name="v12" check="1"></item>
 	</version>
   </all>
+  <exe>
+	<case>
+	  <item name="case1" check="1"></item>
+	  <item name="case2" check="1"></item>
+	</case>
+  </exe>
   <screenshot>
 	<case>
 	  <item name="case1" check="1"></item>
