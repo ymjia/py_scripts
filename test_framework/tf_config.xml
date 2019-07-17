@@ -22,7 +22,8 @@
 	  <item name="case1" check="1"></item>
 	  <item name="case2" check="1"></item>
 	</case>
-	<version name="test"/>
+	<param str=""/>
+	<version str="test"/>
   </exe>
   <screenshot>
 	<case>

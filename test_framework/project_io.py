@@ -23,6 +23,7 @@ class Project:
         self._ver = []
         # exe demo
         self._eCaseCheck = {}
+        self._exeParam = ""
         self._eVer = ""
         # screen shot
         self._sCaseCheck = {}
@@ -53,7 +54,8 @@ class Project:
         for item in root_exe.find("case"):
             if item.attrib["check"] == "1":
                 self._eCaseCheck[item.attrib["name"]] = 1
-        self._eVer = root_exe.find("version").attrib["name"]
+        self._eVer = root_exe.find("version").attrib["str"]
+        self._exeParam = root_exe.find("param").attrib["str"]
         # screen shots
         root_ss = root.find("screenshot")
         self.load_check(root_ss, self._sCaseCheck, self._sAlgCheck, self._sVerCheck)
@@ -145,6 +147,7 @@ class Project:
         self.save_item_list(exe_root, self._case, self._eCaseCheck)
         root.append(exe_root)
         root.append(ET.Element("version", {"name": self._eVer}))
+        root.append(ET.Element("param", {"str": self._exeParam})
         # screenshots
         ss_root = self.save_check("screenshot", self._sCaseCheck,
                                   self._sAlgCheck, self._sVerCheck)
