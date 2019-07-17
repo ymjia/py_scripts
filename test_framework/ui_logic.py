@@ -102,14 +102,18 @@ def slot_get_file(qle, f_type):
 
 
 def generate_exe_param(ui, case):
+    p_obj = ui._p
     param = ""
+    #ver = p_obj._ver
     return param
 
 
 def slot_exe_run(ui):
-    cur_obj = ui._p
-    exe = cur_obj._exeDemo
-    #list_case = ui.get_checked_items(cur_obj._case, cur_obj._
-    param = generate_exe_param(ui)
-    proc_demo = subprocess.Popen([exe, param])
-    proc_demo.wait()
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    exe = p_obj._exeDemo
+    list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
+    for case in list_case:
+        param = generate_exe_param(ui, case)
+        proc_demo = subprocess.Popen([exe, param])
+        proc_demo.wait()
