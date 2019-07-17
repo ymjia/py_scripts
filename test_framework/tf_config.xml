@@ -9,12 +9,12 @@
 	  <item name="case2" check="1"></item>
 	</case>
 	<algorithm>
-	  <item name="rmbd" check="1"></item>
+	  <item name="smooth" check="1"></item>
 	  <item name="merge" check="1"></item>
 	</algorithm>
 	<version>
-	  <item name="v1" check="1"></item>
-	  <item name="v2" check="1"></item>
+	  <item name="v11" check="1"></item>
+	  <item name="v12" check="1"></item>
 	</version>
   </all>
   <screenshot>
@@ -23,12 +23,12 @@
 	  <item name="case2" check="1"></item>
 	</case>
 	<algorithm>
-	  <item name="rmbd" check="1"></item>
+	  <item name="smooth" check="1"></item>
 	  <item name="merge" check="1"></item>
 	</algorithm>
 	<version>
-	  <item name="v1" check="1"></item>
-	  <item name="v2" check="1"></item>
+	  <item name="v11" check="1"></item>
+	  <item name="v12" check="1"></item>
 	</version>
   </screenshot>
   <docx>
@@ -37,12 +37,12 @@
 	  <item name="case2" check="1"></item>
 	</case>
 	<algorithm>
-	  <item name="rmbd" check="1"></item>
+	  <item name="smooth" check="1"></item>
 	  <item name="merge" check="0"></item>
 	</algorithm>
 	<version>
-	  <item name="v1" check="1"></item>
-	  <item name="v2" check="1"></item>
+	  <item name="v11" check="1"></item>
+	  <item name="v12" check="1"></item>
 	</version>
 	<doc_name name="test_doc" />
 	<current_name name=""/>
