@@ -108,8 +108,8 @@ def generate_exe_param(ui, case):
     ver = p_obj._eVer
     p_i = os.path.join(dir_i, case)
     p_o = os.path.join(dir_o, case, ver)
-    p_other = ""
-    return " {} {} {}".format(p_i, p_o, p_other)
+    param = p_obj._exeParam
+    return param.replace("{i}", p_i).replace("{o}", p_o)
 
 
 def slot_exe_run(ui):
@@ -119,5 +119,7 @@ def slot_exe_run(ui):
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
     for case in list_case:
         param = generate_exe_param(ui, case)
+        QMessageBox.about(None, "Message", param)
+        continue
         proc_demo = subprocess.Popen([exe, param])
         proc_demo.wait()
