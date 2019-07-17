@@ -53,7 +53,7 @@ class Project:
         for item in root_exe.find("case"):
             if item.attrib["check"] == "1":
                 self._eCaseCheck[item.attrib["name"]] = 1
-        self._eVer = root.find("version").attrib["name"]
+        self._eVer = root_exe.find("version").attrib["name"]
         # screen shots
         root_ss = root.find("screenshot")
         self.load_check(root_ss, self._sCaseCheck, self._sAlgCheck, self._sVerCheck)

@@ -103,10 +103,13 @@ def slot_get_file(qle, f_type):
 
 def generate_exe_param(ui, case):
     p_obj = ui._p
-    param = ""
+    dir_i = p_obj._dirInput
+    dir_o = p_obj._dirOutput
     ver = p_obj._eVer
-    
-    return param
+    p_i = os.path.join(dir_i, case)
+    p_o = os.path.join(dir_o, case, ver)
+    p_other = ""
+    return " {} {} {}".format(p_i, p_o, p_other)
 
 
 def slot_exe_run(ui):
