@@ -104,7 +104,8 @@ def slot_get_file(qle, f_type):
 def generate_exe_param(ui, case):
     p_obj = ui._p
     param = ""
-    #ver = p_obj._ver
+    ver = p_obj._eVer
+    
     return param
 
 
