@@ -144,7 +144,9 @@ class Project:
         root.append(self.save_list())
         # exe
         exe_root = ET.Element("exe")
-        self.save_item_list(exe_root, self._case, self._eCaseCheck)
+        ele_case = ET.Element("case")
+        self.save_item_list(ele_case, self._case, self._eCaseCheck)
+        exe_root.append(ele_case)
         exe_root.append(ET.Element("version", {"str": self._eVer}))
         exe_root.append(ET.Element("param", {"str": self._exeParam}))
         # screenshots
