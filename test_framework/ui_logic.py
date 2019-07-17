@@ -11,7 +11,7 @@ import datetime
 import subprocess
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 sys.path.insert(0, r'd:/dev/py_scripts/')
-
+from test_framework import project_io
 from test_framework.project_io import get_checked_items
 from test_framework.generate_docx import generate_docx
 
@@ -147,4 +147,11 @@ def slot_save_project(ui):
 
 
 def slot_load_project(ui):
+    path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'XML (*.xml)')
+    if not os.path.exists(path):
+        QMessageBox.about(None, "Error", "Wrong file: {}!".format(path))
+        return
+    p = project_io.Project(path)
+    p.load_project()
+    ui.load_proj_info(p)
     return

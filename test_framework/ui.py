@@ -14,7 +14,6 @@ import sys
 sys.path.insert(0, r'd:/dev/py_scripts/')
 from test_framework import project_io
 import datetime
-from test_framework import project_io
 from test_framework import ui_logic
 
 
