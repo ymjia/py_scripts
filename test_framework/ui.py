@@ -53,19 +53,20 @@ class TFWindow(QWidget):
     def load_proj_info(self, in_obj=None):
         if in_obj is not None:
             self._p = in_obj
-        self._qle_conf_file.setText(self._p._configFile)
-        self._qle_dir_in.setText(self._p._dirInput)
-        self._qle_dir_out.setText(self._p._dirOutput)
-        self._qle_exe_pv.setText(self._p._exePV)
-        self._qle_exe_demo.setText(self._p._exeDemo)
-        self._qle_doc_name.setText(self._p._docName)
-        self.get_check_list(self._qlv_exe_case, self._p._case, self._p._dCaseCheck)
-        self.get_check_list(self._qlv_ss_case, self._p._case, self._p._sCaseCheck)
-        self.get_check_list(self._qlv_ss_ver, self._p._ver, self._p._sVerCheck)
-        self.get_check_list(self._qlv_ss_alg, self._p._alg, self._p._sAlgCheck)
-        self.get_check_list(self._qlv_doc_case, self._p._case, self._p._dCaseCheck)
-        self.get_check_list(self._qlv_doc_ver, self._p._ver, self._p._dVerCheck)
-        self.get_check_list(self._qlv_doc_alg, self._p._alg, self._p._dAlgCheck)
+        cur_obj = self._p
+        self._qle_conf_file.setText(cur_obj._configFile)
+        self._qle_dir_in.setText(cur_obj._dirInput)
+        self._qle_dir_out.setText(cur_obj._dirOutput)
+        self._qle_exe_pv.setText(cur_obj._exePV)
+        self._qle_exe_demo.setText(cur_obj._exeDemo)
+        self._qle_doc_name.setText(cur_obj._docName)
+        self.fill_check_list(self._qlv_exe_case, cur_obj._case, cur_obj._dCaseCheck)
+        self.fill_check_list(self._qlv_ss_case, cur_obj._case, cur_obj._sCaseCheck)
+        self.fill_check_list(self._qlv_ss_ver, cur_obj._ver, cur_obj._sVerCheck)
+        self.fill_check_list(self._qlv_ss_alg, cur_obj._alg, cur_obj._sAlgCheck)
+        self.fill_check_list(self._qlv_doc_case, cur_obj._case, cur_obj._dCaseCheck)
+        self.fill_check_list(self._qlv_doc_ver, cur_obj._ver, cur_obj._dVerCheck)
+        self.fill_check_list(self._qlv_doc_alg, cur_obj._alg, cur_obj._dAlgCheck)
 
     def collect_ui_info(self):
         out_obj = project_io.Project()
@@ -100,7 +101,7 @@ class TFWindow(QWidget):
         return info
 
     # get listview from project_object
-    def get_check_list(self, lv, item_list, check_dict):
+    def fill_check_list(self, lv, item_list, check_dict):
         model = QStandardItemModel()
         for i in item_list:
             item = QStandardItem(i)
@@ -119,7 +120,7 @@ class TFWindow(QWidget):
             item = model.item(index)
             text = item.text()
             item_list.append(text)
-            if item.checkState() == Qt.Unchecked:
+            if item.checkState() == Qt.Checked:
                 check_dict[text] = 1
 
     def create_control_region(self):

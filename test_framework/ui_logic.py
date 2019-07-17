@@ -32,6 +32,7 @@ def slot_generate_docx(ui):
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
     l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
     generate_docx(p_obj._configFile, dir_i, dir_o, file_save, l_case, l_ver, l_alg)
+    QMessageBox.about(None, "Message", "Docx wrote to {}!".format(file_save))
 
 
 def slot_open_docx(ui):

@@ -112,7 +112,6 @@ def generate_docx(file_config, dir_input, dir_output, file_save, list_case, list
         document.add_paragraph(case, style='List Bullet')
         list_cam = read_cam(os.path.join(dir_input, case, "config.txt"))
         add_case_table(document, dir_output, case, list_ver, list_alg, len(list_cam))
-    print(file_save)
     document.save(file_save)
 
 
