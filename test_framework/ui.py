@@ -4,13 +4,14 @@
 ## @author jiayanming
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
-                             QGroupBox, QListView, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit)
+                             QGroupBox, QListView, QVBoxLayout, QHBoxLayout,
+                             QLabel, QLineEdit, QPlainTextEdit)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 import os.path
 import sys
-sys.path.insert(0, r'd:/dev/py_scripts/')
+sys.path.insert(0, r'c:/dev/py_scripts/')
 
 import datetime
 from test_framework import project_io
@@ -30,6 +31,7 @@ class TFWindow(QWidget):
         self._qle_exe_demo = QLineEdit()
         self._qle_cur_ver = QLineEdit()
         self._qle_doc_name = QLineEdit()
+        self._qpt_exe_param = QPlainTextEdit()
         # listview
         self._qlv_exe_case = QListView()
         self._qlv_ss_case = QListView()
@@ -137,66 +139,78 @@ class TFWindow(QWidget):
 
     def create_exe_region(self):
         exe_region = QGroupBox("Executable Configuration")
-        ql_input = QLabel('Input Case')
-        ql_ver = QLabel('Current Version Name')
+        qb_exe_run = QPushButton('Run Demo', self)
+        #pybutton.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
+        qb_exe_run.resize(100, 32)
         grid = QGridLayout()
         grid.setSpacing(10)
-        grid.addWidget(ql_input, 0, 0)
+        grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
-        grid.addWidget(ql_ver, 1, 0)
-        grid.addWidget(self._qle_cur_ver, 1, 1)
+        grid.addWidget(QLabel('Exe Parameter line'), 1, 0)
+        grid.addWidget(self._qpt_exe_param, 1, 1)
+        grid.addWidget(QLabel('Current Version Name'), 2, 0)
+        grid.addWidget(self._qle_cur_ver, 2, 1)
+        grid.addWidget(qb_exe_run, 3, 1)
         exe_region.setLayout(grid)
         exe_region.setGeometry(300, 300, 350, 300)
-        pybutton = QPushButton('RunDemo', self)
-        #pybutton.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
-        pybutton.resize(100, 32)
-        grid.addWidget(pybutton, 2, 1)
+
+
         return exe_region
 
     def create_ss_region(self):
         ss_region = QGroupBox("ScreenShot Configuration")
-        ql_case = QLabel('Case')
-        ql_ver = QLabel('Version')
-        ql_alg = QLabel('Algorithm')
+        qb_ss_shot = QPushButton('Take Screenshot', self)
+        qb_ss_shot.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
+        qb_ss_shot.resize(100, 32)
+        qb_ss_manage = QPushButton('Manage Screen Camera', self)
+        #pybutton.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
+        qb_ss_manage.resize(100, 32)
         grid = QGridLayout()
         grid.setSpacing(10)
-        grid.addWidget(ql_case, 1, 0)
+        grid.addWidget(QLabel('Case'), 1, 0)
         grid.addWidget(self._qlv_ss_case, 1, 1)
-        grid.addWidget(ql_ver, 2, 0)
+        grid.addWidget(QLabel('Version'), 2, 0)
         grid.addWidget(self._qlv_ss_ver, 2, 1)
-        grid.addWidget(ql_alg, 3, 0)
+        grid.addWidget(QLabel('Algorithm'), 3, 0)
         grid.addWidget(self._qlv_ss_alg, 3, 1)
+        grid.addWidget(qb_ss_manage, 4, 1)
+        grid.addWidget(qb_ss_shot, 5, 1)
         ss_region.setLayout(grid)
         ss_region.setGeometry(300, 300, 350, 300)
-        pybutton = QPushButton('Take Screenshot', self)
-        pybutton.clicked.connect(lambda: ui_logic.slot_create_screenshots(self._p))
-        pybutton.resize(100, 32)
-        grid.addWidget(pybutton, 4, 1)
         return ss_region
 
     def create_doc_region(self):
         doc_region = QGroupBox("Docx Configuration")
-        ql_case = QLabel('Case')
-        ql_ver = QLabel('Version')
-        ql_alg = QLabel('Algorithm')
+        qb_g_doc = QPushButton('Generate Document', self)
+        qb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx("test", self._p))
+        qb_g_doc.resize(100, 32)
+        qb_o_doc = QPushButton('Open Document', self)
+        #qb_o_doc.clicked.connect(lambda: ui_logic.slot_generate_docx("test", self._p))
+        qb_o_doc.resize(100, 32)
+        qb_o_path = QPushButton('Open Path', self)
+        #qb_o_path.clicked.connect(lambda: ui_logic.slot_generate_docx("test", self._p))
+        qb_o_path.resize(100, 32)
         grid = QGridLayout()
         grid.setSpacing(10)
-        grid.addWidget(ql_case, 1, 0)
+        grid.addWidget(QLabel('Case'), 1, 0)
         grid.addWidget(self._qlv_doc_case, 1, 1)
-        grid.addWidget(ql_ver, 2, 0)
+        grid.addWidget(QLabel('Version'), 2, 0)
         grid.addWidget(self._qlv_doc_ver, 2, 1)
-        grid.addWidget(ql_alg, 3, 0)
+        grid.addWidget(QLabel('Algorithm'), 3, 0)
         grid.addWidget(self._qlv_doc_alg, 3, 1)
+        grid.addWidget(QLabel('Algorithm'), 3, 0)
+        grid.addWidget(self._qlv_doc_alg, 3, 1)
+        grid.addWidget(QLabel('Doc Name'), 4, 0)
+        grid.addWidget(self._qle_doc_name, 4, 1)
+        grid.addWidget(qb_o_path, 5, 0)
+        grid.addWidget(qb_o_doc, 5, 1)
+        grid.addWidget(qb_g_doc, 6, 1)
         doc_region.setLayout(grid)
         doc_region.setGeometry(300, 300, 350, 300)
-        pybutton = QPushButton('Generate Document', self)
-        pybutton.clicked.connect(lambda: ui_logic.slot_generate_docx("test", self._p))
-        pybutton.resize(100, 32)
-        grid.addWidget(pybutton, 4, 1)
         return doc_region
 
 
-p = project_io.Project("d:/dev/py_scripts/test_framework/tf_config.xml")
+p = project_io.Project("c:/dev/py_scripts/test_framework/tf_config.xml")
 p.load_project()
 
 app = QApplication(sys.argv)

@@ -9,13 +9,10 @@ import sys
 import datetime
 import xml.etree.ElementTree as ET
 import subprocess
-sys.path.insert(0, r'd:/dev/py_scripts/')
-
+sys.path.insert(0, r'c:/dev/py_scripts/')
 
 from test_framework.project_io import get_checked_items
-
 from test_framework.generate_docx import generate_docx
-#from test_framework.create_screenshots import create_screenshots
 
 
 def slot_generate_docx(filename, p_obj):
@@ -34,7 +31,7 @@ def slot_create_screenshots(p_obj):
     l_alg = get_checked_items(p_obj._alg, p_obj._sAlgCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._sVerCheck)
     # write to file
-    filename = "d:/tmp/ss_config.txt"
+    filename = "c:/tmp/ss_config.txt"
     line_case = "cas"
     for c in l_case:
         line_case = line_case + " {}".format(c)
