@@ -142,7 +142,7 @@ def add_annotation(view, text, size):
     dis = Show(annot, view)
     dis.FontFile = ''
     dis.FontSize = size
-    dis.Color = [0.0, 0.0, 0.0]
+    dis.Color = [1.0, 1.0, 0.498]
     dis.Interactivity = 0
     dis.Shadow = 1
 
