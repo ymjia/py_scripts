@@ -10,6 +10,8 @@ import sys
 import datetime
 from docx import Document
 from docx.shared import Inches
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
 from docx.shared import Mm
 
 
@@ -68,6 +70,11 @@ def add_cell_content(cell, text, pic):
     cell.add_paragraph(text)
 
 
+def shade_cell(cell):
+    shading_ele = parse_xml(r'<w:shd {} w:fill="B8B8B8"/>'.format(nsdecls('w')))
+    cell._tc.get_or_add_tcPr().append(shading_ele)
+
+
 class DocxGenerator:
     def __init__(self, dir_input, dir_output, list_case, list_ver, list_alg):
         self._dirInput = dir_input
@@ -104,6 +111,9 @@ class DocxGenerator:
                 os.makedirs(dir_state)
             file_state = os.path.join(dir_state, name_state)
             row2[0].text = file_state
+            # color title
+            shade_cell(row1.cells[0])
+            shade_cell(row2[0])
             self.get_paraview_project(file_state, case, alg)
             for cam in range(0, cam_num):
                 row_cells = table.add_row().cells
