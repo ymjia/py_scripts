@@ -9,7 +9,7 @@ import datetime
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
                              QGroupBox, QListView, QVBoxLayout, QHBoxLayout,
-                             QLabel, QLineEdit, QPlainTextEdit)
+                             QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
@@ -23,6 +23,7 @@ class TFWindow(QWidget):
     # take project object as input
     def __init__(self, parent=None):
         super(TFWindow, self).__init__(parent)
+        self._p = project_io.Project()
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -34,14 +35,15 @@ class TFWindow(QWidget):
         self._qle_doc_name = QLineEdit()
         self._qpt_exe_param = QPlainTextEdit()
         # listview
-        self._qlv_exe_case = QListView()
-        self._qlv_ss_case = QListView()
-        self._qlv_ss_alg = QListView()
-        self._qlv_ss_ver = QListView()
-        self._qlv_doc_case = QListView()
-        self._qlv_doc_alg = QListView()
-        self._qlv_doc_ver = QListView()
-        self._p = None
+        self._qlv_exe_case = self.create_QListView(self._qle_dir_in)
+        self._qlv_ss_case = self.create_QListView(self._qle_dir_in)
+        self._qlv_ss_case.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self._qlv_ss_alg = self.create_QListView()
+        self._qlv_ss_ver = self.create_QListView()
+        self._qlv_doc_case = self.create_QListView(self._qle_dir_out)
+        self._qlv_doc_alg = self.create_QListView()
+        self._qlv_doc_ver = self.create_QListView()
+
         grid = QGridLayout()
         grid.addWidget(self.create_project_manage(), 0, 0, 3, 1)
         grid.addWidget(self.create_project_info(), 0, 1)
@@ -52,6 +54,13 @@ class TFWindow(QWidget):
         self.setLayout(grid)
         self.setWindowTitle("Test Framework")
         self.resize(1024, 768)
+
+    def create_QListView(self, qle=None):
+        ql = QListView()
+        ql.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        if qle is not None:
+            ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(self, ql, qle))
+        return ql
 
     # load information from TFobject to ui
     def fill_ui_info(self, in_obj):

@@ -253,5 +253,11 @@ def slot_add_alg(ui):
     return
 
 
-def slot_qlv_double_click(ui, qlv, parent):
-    print(qlv.model().selectedIndexes())
+def slot_qlv_double_click(ui, qlv, qle):
+    sl = qlv.selectedIndexes()
+    if len(sl) < 1:
+        return
+    click_path = os.path.join(qle.text(), sl[0].data())
+    if os.path.exists(click_path):
+        os.startfile(click_path)
+    return
