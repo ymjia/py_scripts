@@ -174,20 +174,39 @@ def slot_load_project(ui):
 
 
 def slot_scan_input(ui):
+    # update project_object
+    p_obj = ui._p
+    dir_in = ui._qle_dir_in.text()
+    p_obj._dirInput = dir_in
+    p_obj._case = [f for f in os.listdir(dir_in)
+                   if os.path.isdir(os.path.join(dir_in, f))]
+    ui.fill_ui_info(p_obj)
     return
 
 
-def slot_add_case(ui):
-    text, ok = QInputDialog.getText(None, "Item", "Item list, seperate with ',':", QLineEdit.Normal, "")
+def append_input_to_list(l, label):
+    text, ok = QInputDialog.getText(None, label, "Item list, seperate with ',':", QLineEdit.Normal, "")
     if ok and text != '':
-        ui._p._case.append(text.split(","))
+        item_list = text.replace(" ", "").split(",")
+        for i in item_list:
+            l.append(i)
+        return 0
+    return 1
+
+
+def slot_add_case(ui):
+    if append_input_to_list(ui._p._case, "Case") == 0:
         ui.fill_ui_info(ui._p)
     return
 
 
 def slot_add_ver(ui):
+    if append_input_to_list(ui._p._ver, "Version") == 0:
+        ui.fill_ui_info(ui._p)
     return
 
 
 def slot_add_alg(ui):
+    if append_input_to_list(ui._p._alg, "Algorithm") == 0:
+        ui.fill_ui_info(ui._p)
     return
