@@ -157,15 +157,18 @@ def slot_exe_run(ui):
     p_obj = ui._p
     exe = p_obj._exeDemo
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
-    for case in list_case:
-        param = generate_exe_param(ui, case)
-        #QMessageBox.about(None, "Message", param)
-        #continue
-        in_param = param.split(" ")
-        in_param.insert(0, exe)
-        proc_demo = subprocess.Popen(in_param, cwd = os.path.dirname(exe))
-        proc_demo.wait()
+    if os.path.exists(exe):
+        for case in list_case:
+            param = generate_exe_param(ui, case)
+            #QMessageBox.about(None, "Message", param)
+            #continue
+            in_param = param.split(" ")
+            in_param.insert(0, exe)
+            proc_demo = subprocess.Popen(in_param, cwd = os.path.dirname(exe))
+            proc_demo.wait()
     ver = p_obj._eVer
+    if ver in p_obj._ver:
+        return
     p_obj._ver.append(ver)
     ui.fill_ui_info(p_obj)
 
