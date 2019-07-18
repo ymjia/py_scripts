@@ -159,18 +159,30 @@ def add_time_annotation(view, tfile):
     dis.Justification = 'Right'
     dis.FontSize = 14
     dis.FontFile = ''
-    dis.Color = [0.0, 0.0, 0.0]
+    dis.Color = [1.0, 1.0, 0.498]
     dis.Interactivity = 0
     dis.Shadow = 1
 
 
 # load_file for given framework config(dir, case, alg, compare version_list)
-def load_state_files(dir_in, case, alg, list_v):
+def load_state_files(dir_input, dir_output, case, alg, list_v):
     # get source list
-    list_dir = [os.path.join(dir_in, case, v) for v in list_v]
-    list_annot = ["{}_{}_{}".format(case, v, alg) for v in list_v]
-    # read file
-    list_source = [get_file(d, alg) for d in list_dir]
+    list_dir = []
+    list_annot = []
+    list_source = []
+    for v in list_v:
+        dir_source = ""
+        if v == "input":
+            dir_source = os.path.join(dir_input, case)
+            list_dir.append(dir_source)
+            list_annot.append("{}_input".format(case))
+            list_source.append(get_file(dir_input, case))
+        else:
+            dir_source = os.path.join(dir_output, case, v)
+            list_dir.append(dir_source)
+            list_annot.append("{}_{}_{}".format(case, v, alg))
+            list_source.append(get_file(dir_source, alg))
+
     list_proxy = []
     for si in range(0, len(list_source)):
         reader = read_files(list_source[si])
