@@ -107,6 +107,7 @@ def slot_get_file(qle, f_type):
 
 
 def slot_open_input_path(ui):
+    ui._p = ui.collect_ui_info()
     p_obj = ui._p
     dir_in = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
     if dir_in is None or dir_in == "":
@@ -120,13 +121,33 @@ def slot_open_input_path(ui):
     ui.fill_ui_info(p_obj)
 
 
+support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
+
+
+def get_file_list(folder):
+    res = []
+    for name in os.listdir(folder):
+        if os.path.isdir(os.path.join(folder, name)):
+            continue
+        ext = os.path.splitext(name)[1]
+        if not any(ext in e for e in support_ext):
+            continue
+        res.append(os.path.join(folder, name))
+    return res
+
+
 def generate_exe_param(ui, case):
     p_obj = ui._p
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
     ver = p_obj._eVer
-    p_i = os.path.join(dir_i, case)
-    p_o = os.path.join(dir_o, case, ver)
+    p_i = os.path.join(dir_i, case) + "/"
+    # use file name if only on file in case dir
+    i_list = get_file_list(p_i)
+    if len(i_list) == 1:
+        p_i = i_list[0]
+    # get output param
+    p_o = os.path.join(dir_o, case, ver) + "/"
     param = p_obj._exeParam
     return param.replace("{i}", p_i).replace("{o}", p_o)
 
