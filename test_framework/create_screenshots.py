@@ -42,7 +42,7 @@ class ScreenShotHelper:
         self.set_camera(view, cam)
         v_size = view.ViewSize
         view.Update()
-        SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=1)
+        SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=0)
 
 
 # read file or file list and render in given view

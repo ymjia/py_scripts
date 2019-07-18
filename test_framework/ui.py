@@ -43,9 +43,10 @@ class TFWindow(QWidget):
         self._qlv_doc_ver = QListView()
         self._p = None
         grid = QGridLayout()
-        grid.addWidget(self.create_project_manage(), 0, 0, 2, 1)
+        grid.addWidget(self.create_project_manage(), 0, 0, 3, 1)
         grid.addWidget(self.create_project_info(), 0, 1)
-        grid.addWidget(self.create_control_region(), 1, 1)
+        grid.addWidget(self.create_list_manage(), 1, 1)
+        grid.addWidget(self.create_control_region(), 2, 1)
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 3)
         self.setLayout(grid)
@@ -132,6 +133,24 @@ class TFWindow(QWidget):
         info.setGeometry(300, 300, 350, 300)
         return info
 
+    def create_list_manage(self):
+        lm = QGroupBox("List Manage")
+        l_hb = QHBoxLayout()
+        qpb_scan_input = QPushButton("Scan Input Dir")
+        qpb_add_case = QPushButton("Add Case Item") 
+        qpb_add_ver = QPushButton("Add Version Item")
+        qpb_add_alg = QPushButton("Add Algorithm Item")
+        qpb_scan_input.clicked.connect(lambda: ui_logic.slot_scan_input(self))
+        qpb_add_case.clicked.connect(lambda: ui_logic.slot_add_case(self))
+        qpb_add_ver.clicked.connect(lambda: ui_logic.slot_add_ver(self))
+        qpb_add_alg.clicked.connect(lambda: ui_logic.slot_add_alg(self))
+        l_hb.addWidget(qpb_scan_input)
+        l_hb.addWidget(qpb_add_case)
+        l_hb.addWidget(qpb_add_ver)
+        l_hb.addWidget(qpb_add_alg)
+        lm.setLayout(l_hb)
+        return lm
+
     # get listview from project_object
     def fill_check_list(self, lv, item_list, check_dict):
         model = QStandardItemModel()
@@ -186,7 +205,7 @@ class TFWindow(QWidget):
         grid.addWidget(self._qpt_exe_param, 1, 1)
         grid.addWidget(QLabel('Current Version Name'), 2, 0)
         grid.addWidget(self._qle_cur_ver, 2, 1)
-        grid.addWidget(qpb_exe_run, 3, 1)
+        grid.addWidget(qpb_exe_run, 3, 0, 1, 2)
         exe_region.setLayout(grid)
         return exe_region
 
@@ -203,8 +222,8 @@ class TFWindow(QWidget):
         grid.addWidget(self._qlv_ss_ver, 2, 1)
         grid.addWidget(QLabel('Algorithm'), 3, 0)
         grid.addWidget(self._qlv_ss_alg, 3, 1)
-        grid.addWidget(qpb_ss_manage, 4, 1)
-        grid.addWidget(qpb_ss_shot, 5, 1)
+        grid.addWidget(qpb_ss_manage, 4, 0, 1, 2)
+        grid.addWidget(qpb_ss_shot, 5, 0, 1, 2)
         ss_region.setLayout(grid)
         return ss_region
 
@@ -229,7 +248,7 @@ class TFWindow(QWidget):
         grid.addWidget(self._qle_doc_name, 4, 1)
         grid.addWidget(qpb_o_path, 5, 0)
         grid.addWidget(qpb_o_doc, 5, 1)
-        grid.addWidget(qpb_g_doc, 6, 1)
+        grid.addWidget(qpb_g_doc, 6, 0, 1, 2)
         doc_region.setLayout(grid)
         return doc_region
 

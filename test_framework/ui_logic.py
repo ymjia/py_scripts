@@ -171,3 +171,19 @@ def slot_load_project(ui):
     p.load_xml(path)
     ui.fill_ui_info(p)
     return
+
+
+def slot_scan_input(ui):
+    return
+
+
+def slot_add_case(ui):
+    return
+
+
+def slot_add_ver(ui):
+    return
+
+
+def slot_add_alg(ui):
+    return
