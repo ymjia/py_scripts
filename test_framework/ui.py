@@ -3,23 +3,25 @@
 ## @brief ui definition, transfer module between project_object and ui
 ## @author jiayanming
 
+import os.path
+import sys
+import datetime
+
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
                              QGroupBox, QListView, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit, QPlainTextEdit)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
-import os.path
-import sys
-sys.path.insert(0, r'd:/dev/py_scripts/')
+dir_parent = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.dirname(dir_parent))
+#sys.path.insert(0, r'd:/dev/py_scripts/')
 from test_framework import project_io
-import datetime
 from test_framework import ui_logic
-
 
 class TFWindow(QWidget):
     # take project object as input
-    def __init__(self, p_obj, parent=None):
+    def __init__(self, parent=None):
         super(TFWindow, self).__init__(parent)
         # info widget for updating infomation
         # text
@@ -39,7 +41,7 @@ class TFWindow(QWidget):
         self._qlv_doc_case = QListView()
         self._qlv_doc_alg = QListView()
         self._qlv_doc_ver = QListView()
-        self._p = p_obj
+        self._p = None
         grid = QGridLayout()
         grid.addWidget(self.create_project_manage(), 0, 0, 2, 1)
         grid.addWidget(self.create_project_info(), 0, 1)
@@ -51,9 +53,8 @@ class TFWindow(QWidget):
         self.resize(1024, 768)
 
     # load information from TFobject to ui
-    def load_proj_info(self, in_obj=None):
-        if in_obj is not None:
-            self._p = in_obj
+    def load_proj_info(self, in_obj):
+        self._p = in_obj
         cur_obj = self._p
         self._qle_conf_file.setText(cur_obj._configFile)
         self._qle_dir_in.setText(cur_obj._dirInput)
@@ -228,11 +229,14 @@ class TFWindow(QWidget):
         return doc_region
 
 
-p = project_io.Project("d:/dev/py_scripts/test_framework/tf_config.xml")
-p.load_project()
-
-app = QApplication(sys.argv)
-w = TFWindow(p)
-w.load_proj_info()
-w.show()
-sys.exit(app.exec_())
+if __name__ == "__main__":
+    # load initial project config
+    p = project_io.Project()
+    p.load_project(os.path.join(dir_parent, "tf_config.xml"))
+    # create ui
+    app = QApplication(sys.argv)
+    w = TFWindow()
+    # fill ui information
+    w.load_proj_info(p)
+    w.show()
+    sys.exit(app.exec_())

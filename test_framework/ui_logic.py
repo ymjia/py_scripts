@@ -4,13 +4,13 @@
 ## @author jiayanming
 
 import os.path
-import math
 import sys
 import datetime
-
 import subprocess
+
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
-sys.path.insert(0, r'd:/dev/py_scripts/')
+dir_parent = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.dirname(dir_parent))
 from test_framework import project_io
 from test_framework.project_io import get_checked_items
 from test_framework.generate_docx import generate_docx
