@@ -129,6 +129,8 @@ def slot_exe_run(ui):
 
 
 def slot_new_project(ui):
+    p = project_io.Project()
+    ui.fill_ui_info(p)
     return
 
 
@@ -151,7 +153,7 @@ def slot_load_project(ui):
     if not os.path.exists(path):
         QMessageBox.about(None, "Error", "Wrong file: {}!".format(path))
         return
-    p = project_io.Project(path)
-    p.load_project()
-    ui.load_proj_info(p)
+    p = project_io.Project()
+    p.load_project(path)
+    ui.fill_ui_info(p)
     return

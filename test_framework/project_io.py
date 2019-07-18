@@ -134,7 +134,7 @@ class Project:
             else:
                 root.append(ET.Element("item", {"name": item, "check": "0"}))
 
-    def save_project(self, filename=""):
+    def save_project(self):
         root = ET.Element("project")
         # directories
         root.append(ET.Element("input", {"path": self._dirInput}))

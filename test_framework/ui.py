@@ -15,9 +15,9 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 dir_parent = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.dirname(dir_parent))
-#sys.path.insert(0, r'd:/dev/py_scripts/')
 from test_framework import project_io
 from test_framework import ui_logic
+
 
 class TFWindow(QWidget):
     # take project object as input
@@ -53,7 +53,7 @@ class TFWindow(QWidget):
         self.resize(1024, 768)
 
     # load information from TFobject to ui
-    def load_proj_info(self, in_obj):
+    def fill_ui_info(self, in_obj):
         self._p = in_obj
         cur_obj = self._p
         self._qle_conf_file.setText(cur_obj._configFile)
@@ -237,6 +237,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = TFWindow()
     # fill ui information
-    w.load_proj_info(p)
+    w.fill_ui_info(p)
     w.show()
     sys.exit(app.exec_())
