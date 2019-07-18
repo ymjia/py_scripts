@@ -261,3 +261,52 @@ def slot_qlv_double_click(ui, qlv, qle):
     if os.path.exists(click_path):
         os.startfile(click_path)
     return
+
+
+def slot_ss_manage(ui):
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    # get dir
+    sl = ui._qlv_ss_case.selectedIndexes()
+    if len(sl) < 1:
+        QMessageBox.about(None, "Tip:", "No Selected Item in CASE LIST to Manage!")
+        return
+    dir_case = os.path.join(p_obj._dirInput, sl[0].data())
+    file_config = os.path.join(dir_case, "config.txt")
+    if not os.path.exists(file_config):
+        f= open(file_config, "w+")
+        f.close()
+    os.startfile(dir_case)
+
+
+def slot_ss_preview(ui):
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    # get dir
+    sl = ui._qlv_ss_case.selectedIndexes()
+    if len(sl) < 1:
+        QMessageBox.about(None, "Tip:", "No Selected Item in CASE LIST to Manage!")
+        return
+    case_name = sl[0].data()
+    dir_case = os.path.join(p_obj._dirInput, case_name)
+    file_config = os.path.join(dir_case, "config.txt")
+    dir_i = p_obj._dirInput
+    dir_o = p_obj._dirOutput
+    # write to file
+    filename = os.path.join(dir_o, "ss_config.txt")
+    line_str = "cas {}\n".format(case_name) + "ver input\n" + "alg tmp"
+    f_config = open(filename, "w")
+    f_config.write(line_str + "\n")
+    f_config.close()
+    # run pvpython.exe
+    exe_pvpython = p_obj._exePV
+    if not os.path.exists(exe_pvpython):
+        QMessageBox.about(None, "Error:", "PV interpator {} dose not exist!".format(exe_pvpython))
+        return
+    dir_pv_wd = os.path.dirname(exe_pvpython)
+    py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
+    proc_ss = subprocess.Popen(
+        [exe_pvpython, py_ss,
+         dir_i, dir_o, filename], cwd=dir_pv_wd)
+    proc_ss.wait()
+    return
