@@ -87,6 +87,7 @@ def slot_create_screenshots(ui):
     proc_ss.wait()
     QMessageBox.about(None, "Message", "Create Screenshots Completed!")
 
+
 # get file and set qle.text
 def slot_get_path(qle):
     path = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QFileDialog.ShowDirsOnly)
@@ -102,6 +103,18 @@ def slot_get_file(qle, f_type):
         path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'EXE (*.exe)')
     if path is not None and path != "":
         qle.setText(path)
+
+
+def slot_open_input_path(ui):
+    p_obj = ui._p
+    dir_in = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QFileDialog.ShowDirsOnly)
+    p_obj._dirInput = dir_in
+    p_obj._case = [f for f in os.listdir(dir_in)
+                   if os.path.isdir(os.path.join(dir_in, f))]
+    p_obj._eCaseCheck.clear()
+    p_obj._sCaseCheck.clear()
+    p_obj._dCaseCheck.clear()
+    ui.fill_ui_info(p_obj)
 
 
 def generate_exe_param(ui, case):
