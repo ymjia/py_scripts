@@ -93,17 +93,12 @@ def read_cam(case_file):
     return [[float(s) for s in item] for item in str_lines]
 
 # if data_file newer than ss_file, need update
-def ss_need_update(file_list, config_file, cam_num):
-    time_config = os.path.getmtime(config_file)
-    f = file_list[0]
-    time_data = os.path.getmtime(f)
-    path, filename = os.path.split(f)
-    if len(file_list) > 1: # file list, fetch parent dir
-        path, filename = os.path.split(path)
-    stem = trim_last_number(os.path.splitext(filename)[0])
-    file_pic = os.path.join(path, "ss_{}_v0.png".format(stem))
+def ss_need_update(file_list, file_cam, out_dir, pattern):
+    file_pic = os.path.join("{}/ss_{}_v0.png".format(out_dir, pattern))
     if not os.path.exists(file_pic):
         return True
+    time_config = os.path.getmtime(file_cam)
+    time_data = os.path.getmtime(file_list[0])
     time_pic = os.path.getmtime(file_pic)
     if time_config > time_pic: # new cam config
         return True
@@ -131,19 +126,20 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
             continue
         if ver_name == "input":
             i_list = get_file(dir_input, case_name)
-            if not ss_need_update(i_list, cam_file, len(cam_list)):
+            pic_out_dir = os.path.join(dir_output, case_name, "input")
+            if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
                 continue
-            create_shot(i_list, cam_list,
-                        os.path.join(dir_output, case_name, "input"), "input")
+            create_shot(i_list, cam_list, pic_out_dir, "input")
         else:
             for alg in list_alg:
                 file_list = get_file(case_files, alg)
                 if file_list is None or len(file_list) < 1:
                     continue
-                if not ss_need_update(file_list, cam_file, len(cam_list)):
+                pic_out_dir = os.path.join(dir_output, case_name, ver_name)
+                if not ss_need_update(file_list, cam_file, pic_out_dir, alg):
                     continue
                 print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
-                create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
+                create_shot(file_list, cam_list, pic_out_dir , alg)
 
 
 def create_screenshots_wrap(dir_input, dir_output, file_config):
