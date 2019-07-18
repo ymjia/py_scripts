@@ -68,6 +68,8 @@ def read_and_render(file_list, v):
 
 # create screenshots for given file from given cam_list    
 def create_shot(file_list, cam_list, out_dir, pattern):
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
     cur_view = GetActiveViewOrCreate("RenderView")
     add_light_to_view(cur_view, False)
     cur_view.CenterAxesVisibility = 0
@@ -119,22 +121,29 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
             file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
 
     #create shot
-    for case in file_dir:
-        case_name = case[0]
-        ver_name = case[1]
+    for item in file_dir:
+        case_name = item[0]
+        ver_name = item[1]
+        case_files = item[2]
         cam_file = os.path.join(dir_input, case_name, "config.txt")
         cam_list = read_cam(cam_file)
         if cam_list is None or len(cam_list) < 1:
             continue
-        case_files = case[2]
-        for alg in list_alg:
-            file_list = get_file(case_files, alg)
-            if file_list is None or len(file_list) < 1:
+        if ver_name == "input":
+            i_list = get_file(dir_input, case_name)
+            if not ss_need_update(i_list, cam_file, len(cam_list)):
                 continue
-            if not ss_need_update(file_list, cam_file, len(cam_list)):
-                continue
-            print("Updating screenshots for {}/{}/{}".format(case[0], ver_name, alg))
-            create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
+            create_shot(i_list, cam_list,
+                        os.path.join(dir_output, case_name, "input"), "input")
+        else:
+            for alg in list_alg:
+                file_list = get_file(case_files, alg)
+                if file_list is None or len(file_list) < 1:
+                    continue
+                if not ss_need_update(file_list, cam_file, len(cam_list)):
+                    continue
+                print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
+                create_shot(file_list, cam_list, os.path.join(dir_output, case_name, ver_name), alg)
 
 
 def create_screenshots_wrap(dir_input, dir_output, file_config):
