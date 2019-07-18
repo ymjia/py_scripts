@@ -8,11 +8,11 @@ import xml.etree.ElementTree as ET
 
 
 class Project:
-    def __init__(self, filename=""):
+    def __init__(self):
         # xml tree object
         self._tree = None
         # global config
-        self._configFile = filename
+        self._configFile = ""
         self._dirInput = ""
         self._dirOutput = ""
         self._exeDemo = ""
@@ -37,7 +37,7 @@ class Project:
         self._curDocName = ""
 
     # load functions
-    def load_project(self, filename=""):
+    def load_xml(self, filename):
         if filename != "":
             self._configFile = filename
         self._tree = ET.parse(self._configFile)
@@ -134,7 +134,7 @@ class Project:
             else:
                 root.append(ET.Element("item", {"name": item, "check": "0"}))
 
-    def save_project(self):
+    def collect_xml(self):
         root = ET.Element("project")
         # directories
         root.append(ET.Element("input", {"path": self._dirInput}))
@@ -162,13 +162,13 @@ class Project:
         root.append(doc_root)
         return ET.ElementTree(root)
 
-    def save_tree(self, filename=""):
+    def save_xml(self, filename=""):
         file_save = self._configFile
         if filename != "":
             file_save = filename
         self._tree.write(file_save)
 
-    def load_from_fs(self):
+    def load_case_from_fs(self):
         # load cases from input directory
         dir_in = self._dirInput
         return [f for f in os.listdir(dir_in)

@@ -143,9 +143,9 @@ def slot_save_project(ui):
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     # update xml object
-    p_obj._tree = p_obj.save_project()
+    p_obj._tree = p_obj.collect_xml()
     # save xml
-    p_obj.save_tree()
+    p_obj.save_xml()
 
 
 def slot_load_project(ui):
@@ -154,6 +154,6 @@ def slot_load_project(ui):
         QMessageBox.about(None, "Error", "Wrong file: {}!".format(path))
         return
     p = project_io.Project()
-    p.load_project(path)
+    p.load_xml(path)
     ui.fill_ui_info(p)
     return

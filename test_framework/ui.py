@@ -232,7 +232,7 @@ class TFWindow(QWidget):
 if __name__ == "__main__":
     # load initial project config
     p = project_io.Project()
-    p.load_project(os.path.join(dir_parent, "tf_config.xml"))
+    p.load_xml(os.path.join(dir_parent, "tf_config.xml"))
     # create ui
     app = QApplication(sys.argv)
     w = TFWindow()
