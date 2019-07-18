@@ -309,4 +309,7 @@ def slot_ss_preview(ui):
         [exe_pvpython, py_ss,
          dir_i, dir_o, filename], cwd=dir_pv_wd)
     proc_ss.wait()
+    first_pic = os.path.join(dir_o, case_name, "input", "ss_input_v0.png")
+    if os.path.exists(first_pic):
+        os.startfile(first_pic)
     return
