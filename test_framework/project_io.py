@@ -20,7 +20,7 @@ class Project:
         # case name list
         self._case = []
         self._alg = []
-        self._ver = []
+        self._ver = ["input"]
         # exe demo
         self._eCaseCheck = {}
         self._exeParam = ""
