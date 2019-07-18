@@ -35,9 +35,19 @@ def get_sub_dir(cur):
 
 
 # get all file from folder except subdir
+support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
+
+
 def get_file_list(folder):
-    return [os.path.join(folder, name) for name in os.listdir(folder)
-            if not os.path.isdir(os.path.join(folder, name))]
+    res = []
+    for name in os.listdir(folder):
+        if os.path.isdir(os.path.join(folder, name)):
+            continue
+        ext = os.path.splitext(name)[1]
+        if not any(ext in e for e in support_ext):
+            continue
+        res.append(os.path.join(folder, name))
+    return res
 
 
 # read file name with stem in folder, return *list*
