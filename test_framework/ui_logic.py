@@ -91,7 +91,7 @@ def slot_create_screenshots(ui):
 
 # get file and set qle.text
 def slot_get_path(qle):
-    path = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QFileDialog.ShowDirsOnly)
+    path = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
     if path is not None and path != "":
         qle.setText(path)
 
@@ -108,7 +108,9 @@ def slot_get_file(qle, f_type):
 
 def slot_open_input_path(ui):
     p_obj = ui._p
-    dir_in = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QFileDialog.ShowDirsOnly)
+    dir_in = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
+    if dir_in is None or dir_in == "":
+        return
     p_obj._dirInput = dir_in
     p_obj._case = [f for f in os.listdir(dir_in)
                    if os.path.isdir(os.path.join(dir_in, f))]
@@ -175,9 +177,9 @@ def slot_load_project(ui):
 
 def slot_scan_input(ui):
     # update project_object
+    ui._p = ui.collect_ui_info()
     p_obj = ui._p
-    dir_in = ui._qle_dir_in.text()
-    p_obj._dirInput = dir_in
+    dir_in = p_obj._dirInput
     p_obj._case = [f for f in os.listdir(dir_in)
                    if os.path.isdir(os.path.join(dir_in, f))]
     ui.fill_ui_info(p_obj)
@@ -195,18 +197,21 @@ def append_input_to_list(l, label):
 
 
 def slot_add_case(ui):
+    ui._p = ui.collect_ui_info()
     if append_input_to_list(ui._p._case, "Case") == 0:
         ui.fill_ui_info(ui._p)
     return
 
 
 def slot_add_ver(ui):
+    ui._p = ui.collect_ui_info()
     if append_input_to_list(ui._p._ver, "Version") == 0:
         ui.fill_ui_info(ui._p)
     return
 
 
 def slot_add_alg(ui):
+    ui._p = ui.collect_ui_info()
     if append_input_to_list(ui._p._alg, "Algorithm") == 0:
         ui.fill_ui_info(ui._p)
     return
