@@ -59,9 +59,10 @@ def read_compare_config(file_config):
 
 
 def add_cell_content(cell, text, pic):
-    pg = cell.paragraphs[0]
-    run = pg.add_run()
-    run.add_picture(pic, cell.width)
+    if os.path.exists(pic):
+        pg = cell.paragraphs[0]
+        run = pg.add_run()
+        run.add_picture(pic, cell.width)
     cell.add_paragraph(text)
 
 
@@ -110,22 +111,24 @@ class DocxGenerator:
                     name_pic = "ss_{}_v{}.png".format(alg, cam)
                     file_pic = os.path.join(dir_pic, name_pic)
                     add_cell_content(row_cells[vi], ver, file_pic)
+        return 0
 
     ## @brief generate docx file from given algorithm output dir, and config
     ## @param dir_input data case config directory
     ## @param dir_output algorithm/screenshots output directory
     ## @param file_config file contains user specified compare config
     def generate_docx(self, file_save, file_config):
+        doc = self._doc
         # screen shot view list
         str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-        document = Document()
-        document.add_heading("Compare Result {}".format(str_time), 0)
-        document.add_paragraph("From config file: {}".format(file_config))
+        doc.add_heading("Compare Result {}".format(str_time), 0)
+        doc.add_paragraph("From config file: {}".format(file_config))
         for case in self._listCase:
-            document.add_paragraph(case, style='List Bullet')
+            doc.add_paragraph(case, style='List Bullet')
             list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
-            self.add_case_table(case, len(list_cam))
-        document.save(file_save)
+            if self.add_case_table(case, len(list_cam)) != 0:
+                print("Case Table Error for case: {}".format(case))
+        doc.save(file_save)
 
 
 def generate_docx_wrap(dir_input, dir_output, file_config):
