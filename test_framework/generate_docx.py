@@ -63,6 +63,8 @@ def add_cell_content(cell, text, pic):
         pg = cell.paragraphs[0]
         run = pg.add_run()
         run.add_picture(pic, cell.width)
+    else:
+        print("Warning: No ScreenShot {}".format(pic))
     cell.add_paragraph(text)
 
 
@@ -109,6 +111,8 @@ class DocxGenerator:
                     ver = self._listVer[vi]
                     dir_pic = os.path.join(self._dirOutput, case, ver)
                     name_pic = "ss_{}_v{}.png".format(alg, cam)
+                    if ver == "input":
+                        name_pic = "ss_input_v{}.png".format(cam)
                     file_pic = os.path.join(dir_pic, name_pic)
                     add_cell_content(row_cells[vi], ver, file_pic)
         return 0
