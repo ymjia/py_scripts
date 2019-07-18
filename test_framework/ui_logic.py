@@ -165,6 +165,9 @@ def slot_exe_run(ui):
         in_param.insert(0, exe)
         proc_demo = subprocess.Popen(in_param, cwd = os.path.dirname(exe))
         proc_demo.wait()
+    ver = p_obj._eVer
+    p_obj._ver.append(ver)
+    ui.fill_ui_info(p_obj)
 
 
 def slot_new_project(ui):
