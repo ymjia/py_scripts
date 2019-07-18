@@ -166,8 +166,15 @@ def slot_exe_run(ui):
 
 
 def slot_new_project(ui):
-    p = project_io.Project()
-    ui.fill_ui_info(p)
+    options = QFileDialog.Options()
+    options |= QFileDialog.DontUseNativeDialog
+    fileName, _ = QFileDialog.getSaveFileName(None, "Save New Project to", "", "XML (*.xml)", options=options)
+    if fileName:
+        p = project_io.Project()
+        if os.path.splitext(fileName)[1] != ".xml":
+            fileName += ".xml"
+        p._configFile = fileName
+        ui.fill_ui_info(p)
     return
 
 
