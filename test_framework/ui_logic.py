@@ -13,7 +13,7 @@ dir_parent = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.dirname(dir_parent))
 from test_framework import project_io
 from test_framework.project_io import get_checked_items
-from test_framework.generate_docx import generate_docx
+from test_framework import generate_docx
 
 
 def slot_generate_docx(ui):
@@ -31,7 +31,8 @@ def slot_generate_docx(ui):
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
     l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
-    generate_docx(p_obj._configFile, dir_i, dir_o, file_save, l_case, l_ver, l_alg)
+    gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
+    gd.generate_docx(file_save, p_obj._configFile)
     QMessageBox.about(None, "Message", "Docx wrote to {}!".format(file_save))
 
 

@@ -12,6 +12,7 @@ from docx import Document
 from docx.shared import Inches
 from docx.shared import Mm
 
+
 ## @brief read camera positions in input config
 def read_cam(case_file):
     if not os.path.exists(case_file):
@@ -57,16 +58,6 @@ def read_compare_config(file_config):
     return case_list, ver_list, alg_list
 
 
-# generate paraview project for given data
-def get_paraview_project(filename, dir_in, case, alg, list_v):
-    str_list_v = "["
-    for v in list_v:
-        str_list_v = str_list_v + "\"{}\",".format(v)
-    str_list_v = str_list_v[:-1] + "]"
-    file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files(\"{}\", \"{}\", \"{}\", {})\n""".format(dir_in, case, alg, str_list_v)
-    with open(filename, "w") as text_file:
-        text_file.write(file_content)
-
 def add_cell_content(cell, text, pic):
     pg = cell.paragraphs[0]
     run = pg.add_run()
@@ -74,59 +65,79 @@ def add_cell_content(cell, text, pic):
     cell.add_paragraph(text)
 
 
-def add_case_table(doc, dir_in, case, list_ver, list_alg, cam_num):
-    col_num = len(list_ver)
-    for alg in list_alg:
-        table = doc.add_table(rows=1, cols=col_num)
-        table.style = 'Table Grid'
-        row1 = table.rows[0]
-        row1.cells[0].merge(row1.cells[col_num - 1])
-        row1.cells[0].text = alg
-        row2 = table.add_row().cells
-        row2[0].merge(row2[col_num-1])
-        name_state = "{}_{}_{}.py".format(case, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
-        dir_state = os.path.join(dir_in, "ParaView_projects")
-        if not os.path.exists(dir_state):
-            os.makedirs(dir_state)
-        file_state = os.path.join(dir_state, name_state)
-        row2[0].text = file_state
-        get_paraview_project(file_state, dir_in, case, alg, list_ver)
-        for cam in range(0, cam_num):
-            row_cells = table.add_row().cells
-            for vi in range(0, col_num):
-                ver = list_ver[vi]
-                dir_pic = os.path.join(dir_in, case, ver)
-                name_pic = "ss_{}_v{}.png".format(alg, cam)
-                file_pic = os.path.join(dir_pic, name_pic)
-                add_cell_content(row_cells[vi], ver, file_pic)
+class DocxGenerator:
+    def __init__(self, dir_input, dir_output, list_case, list_ver, list_alg):
+        self._dirInput = dir_input
+        self._dirOutput = dir_output
+        self._listCase = list_case
+        self._listVer = list_ver
+        self._listAlg = list_alg
+        self._doc = Document()
+        self._doc.sections[0].page_width = Mm(400)
 
+    # generate paraview project for given data
+    def get_paraview_project(self, filename, case, alg):
+        str_list_v = "["
+        for v in self._listVer:
+            str_list_v = str_list_v + "\"{}\",".format(v)
+        str_list_v = str_list_v[:-1] + "]"
+        file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files(\"{}\", \"{}\", \"{}\", \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, alg, str_list_v)
+        with open(filename, "w") as text_file:
+            text_file.write(file_content)
 
-## @brief generate docx file from given algorithm output dir, and config
-## @param dir_input data case config directory
-## @param dir_output algorithm/screenshots output directory
-## @param file_config file contains user specified compare config
-def generate_docx(file_config, dir_input, dir_output, file_save, list_case, list_ver, list_alg):
-    # screen shot view list
-    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-    document = Document()
-    document.add_heading("Compare Result {}".format(str_time), 0)
-    document.add_paragraph("From config file: {}".format(file_config))
-    for case in list_case:
-        document.add_paragraph(case, style='List Bullet')
-        list_cam = read_cam(os.path.join(dir_input, case, "config.txt"))
-        add_case_table(document, dir_output, case, list_ver, list_alg, len(list_cam))
-    document.save(file_save)
+    def add_case_table(self, case, cam_num):
+        col_num = len(self._listVer)
+        for alg in self._listAlg:
+            table = self._doc.add_table(rows=1, cols=col_num)
+            table.style = 'Table Grid'
+            row1 = table.rows[0]
+            row1.cells[0].merge(row1.cells[col_num - 1])
+            row1.cells[0].text = alg
+            row2 = table.add_row().cells
+            row2[0].merge(row2[col_num-1])
+            name_state = "{}_{}_{}.py".format(case, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+            dir_state = os.path.join(self._dirOutput, "ParaView_projects")
+            if not os.path.exists(dir_state):
+                os.makedirs(dir_state)
+            file_state = os.path.join(dir_state, name_state)
+            row2[0].text = file_state
+            self.get_paraview_project(file_state, case, alg)
+            for cam in range(0, cam_num):
+                row_cells = table.add_row().cells
+                for vi in range(0, col_num):
+                    ver = self._listVer[vi]
+                    dir_pic = os.path.join(self._dirOutput, case, ver)
+                    name_pic = "ss_{}_v{}.png".format(alg, cam)
+                    file_pic = os.path.join(dir_pic, name_pic)
+                    add_cell_content(row_cells[vi], ver, file_pic)
+
+    ## @brief generate docx file from given algorithm output dir, and config
+    ## @param dir_input data case config directory
+    ## @param dir_output algorithm/screenshots output directory
+    ## @param file_config file contains user specified compare config
+    def generate_docx(self, file_save, file_config):
+        # screen shot view list
+        str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        document = Document()
+        document.add_heading("Compare Result {}".format(str_time), 0)
+        document.add_paragraph("From config file: {}".format(file_config))
+        for case in self._listCase:
+            document.add_paragraph(case, style='List Bullet')
+            list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
+            self.add_case_table(case, len(list_cam))
+        document.save(file_save)
 
 
 def generate_docx_wrap(dir_input, dir_output, file_config):
+    listCase, listVer, listAlg = read_compare_config(file_config)
+    d = DocxGenerator(dir_input, dir_output, listCase, listVer, listAlg)
     # input data read from config file
-    list_case, list_ver, list_alg = read_compare_config(file_config)
     config_stem = os.path.splitext(os.path.split(file_config)[1])[0]
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     file_save = os.path.join(dir_output, "{}_{}.docx".format(config_stem, str_time))
     if len(sys.argv) == 2:
         file_save = str(sys.argv[1])
-    generate_docx(file_config, dir_input, dir_output, file_save, list_case, list_ver, list_alg)
+    d.generate_docx(file_save)
 
 
 if __name__ == "__main__":
