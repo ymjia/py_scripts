@@ -8,7 +8,7 @@ import sys
 import datetime
 import subprocess
 
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QLineEdit
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QLineEdit, QListView
 dir_parent = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.dirname(dir_parent))
 from test_framework import project_io
@@ -159,9 +159,11 @@ def slot_exe_run(ui):
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
     for case in list_case:
         param = generate_exe_param(ui, case)
-        QMessageBox.about(None, "Message", param)
-        continue
-        proc_demo = subprocess.Popen([exe, param])
+        #QMessageBox.about(None, "Message", param)
+        #continue
+        in_param = param.split(" ")
+        in_param.insert(0, exe)
+        proc_demo = subprocess.Popen(in_param, cwd = os.path.dirname(exe))
         proc_demo.wait()
 
 
@@ -243,3 +245,7 @@ def slot_add_alg(ui):
     if append_input_to_list(ui._p._alg, "Algorithm") == 0:
         ui.fill_ui_info(ui._p)
     return
+
+
+def slot_qlv_double_click(ui, qlv, parent):
+    print(qlv.model().selectedIndexes())
