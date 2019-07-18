@@ -40,8 +40,8 @@ class ScreenShotHelper:
 
     def take_shot(self, view, cam, filename):
         self.set_camera(view, cam)
-        view.Update()
         v_size = view.ViewSize
+        view.Update()
         SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=1)
 
 
@@ -76,6 +76,8 @@ def create_shot(file_list, cam_list, out_dir, pattern):
     for i in range(0, len(cam_list)):
         ss.take_shot(cur_view, cam_list[i],
                      "{}/ss_{}_v{}.png".format(out_dir, pattern, i))
+    Delete(cur_source)
+    del cur_source
 
 # read cam position from config file
 def read_cam(case_file):
