@@ -8,7 +8,7 @@ import sys
 import datetime
 import subprocess
 
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QLineEdit
 dir_parent = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.dirname(dir_parent))
 from test_framework import project_io
@@ -178,6 +178,10 @@ def slot_scan_input(ui):
 
 
 def slot_add_case(ui):
+    text, ok = QInputDialog.getText(None, "Item", "Item list, seperate with ',':", QLineEdit.Normal, "")
+    if ok and text != '':
+        ui._p._case.append(text.split(","))
+        ui.fill_ui_info(ui._p)
     return
 
 
