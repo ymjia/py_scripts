@@ -27,7 +27,7 @@ def ptree_add_item(pt, path):
     for item in root:
         if item.attrib["name"] == stem:
             return item
-    new_item = ET.Element("", {"name": stem, "path": path})
+    new_item = ET.Element("item", {"name": stem, "path": path})
     root.append(new_item)
     return new_item
 

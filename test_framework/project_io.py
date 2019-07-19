@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 class Project:
     def __init__(self):
         # xml tree object
-        self._tree = None
+        self._tree = ET.ElementTree()
         # global config
         self._configFile = ""
         self._dirInput = ""
@@ -166,6 +166,8 @@ class Project:
         file_save = self._configFile
         if filename != "":
             file_save = filename
+        if filename == "":
+            return
         self._tree = self.collect_xml()
         self._tree.write(file_save)
 

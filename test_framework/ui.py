@@ -192,6 +192,8 @@ class TFWindow(QWidget):
         item_list.clear()
         check_dict.clear()
         model = lv.model()
+        if model is None:
+            return
         for index in range(model.rowCount()):
             item = model.item(index)
             text = item.text()
