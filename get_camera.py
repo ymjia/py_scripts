@@ -32,8 +32,8 @@ idx += fill_list(camera_pos, idx, v.CameraViewUp)
 print(*camera_pos, sep=",")
 
 clip_str = str(camera_pos[0])
-# for i in range(1, len(camera_pos)):
-#     clip_str += ", {}".format(camera_pos[i])
+for i in range(1, len(camera_pos)):
+    clip_str += ", {}".format(camera_pos[i])
 # r = Tk()
 # r.withdraw()
 # r.clipboard_clear()

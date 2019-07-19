@@ -88,9 +88,9 @@ def read_cam(case_file):
     content = None
     with open(case_file) as f:
         content = f.readlines()
-    str_list = [l.strip() for l in content]
+    str_list = [l.strip() for l in content if len(l) > 20]
     str_lines = [line.split(", ") for line in str_list]
-    return [[float(s) for s in item] for item in str_lines]
+    return [[float(s) for s in item] for item in str_lines if len(item) == 12]
 
 # if data_file newer than ss_file, need update
 def ss_need_update(file_list, file_cam, out_dir, pattern):
