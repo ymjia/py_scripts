@@ -24,6 +24,8 @@ class TFWindow(QWidget):
     # take project object as input
     def __init__(self, parent=None):
         super(TFWindow, self).__init__(parent)
+        self._ptName = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "tf_proj.xml")
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
         # info widget for updating infomation
@@ -280,13 +282,8 @@ class TFWindow(QWidget):
 
 
 if __name__ == "__main__":
-    # load initial project config
-    p = project_io.Project()
-    p.load_xml(os.path.join(dir_parent, "tf_config.xml"))
     # create ui
     app = QApplication(sys.argv)
     w = TFWindow()
-    # fill ui information
-    w.fill_ui_info(p)
     w.show()
     sys.exit(app.exec_())

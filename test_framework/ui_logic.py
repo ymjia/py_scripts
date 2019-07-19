@@ -256,6 +256,7 @@ def slot_load_project(ui):
     new_item = ptree_add_item(ui._pTree, path)
     ui.fill_proj_list()
     set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
+    ui._pTree.write(ui._ptName)
     return
 
 
@@ -402,6 +403,7 @@ def slot_switch_proj(ui):
     new_p.load_xml(new_xml)
     ui._p = new_p
     ui.fill_ui_info(ui._p)
+    ui._pTree.write(ui._ptName)
 
 
 def slot_open_proj_path(ui):
