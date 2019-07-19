@@ -7,8 +7,12 @@ import os.path
 import sys
 import datetime
 import subprocess
+import xml.etree.ElementTree as ET
 
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QLineEdit, QListView
+from PyQt5.QtWidgets import (QFileDialog, QMessageBox, QInputDialog, QLineEdit,
+                             QListView)
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+
 dir_parent = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.dirname(dir_parent))
 from test_framework import project_io
@@ -174,16 +178,17 @@ def slot_exe_run(ui):
 
 
 def slot_new_project(ui):
-    options = QFileDialog.Options()
-    options |= QFileDialog.DontUseNativeDialog
-    fileName, _ = QFileDialog.getSaveFileName(None, "Save New Project to", "", "XML (*.xml)", options=options)
-    if fileName:
-        p = project_io.Project()
-        if os.path.splitext(fileName)[1] != ".xml":
-            fileName += ".xml"
-        p._configFile = fileName
-        ui.fill_ui_info(p)
-    return
+    path, _ = QFileDialog.getSaveFileName(None, "Save New Project", "", "XML(*.xml)")
+    if path is None or path == "":
+        return
+    p = project_io.Project()
+    if os.path.splitext(path)[1] != ".xml":
+        path += ".xml"
+    p._configFile = path
+    ui.fill_ui_info(p)
+    stem = os.path.splitext(os.path.basename(path))[0]
+    ui._pTree.getroot().append(ET.Element("", {"name": stem, "path": path}))
+    ui.fill_proj_list()
 
 
 def slot_copy_project(ui):
@@ -210,6 +215,9 @@ def slot_load_project(ui):
     p = project_io.Project()
     p.load_xml(path)
     ui.fill_ui_info(p)
+    stem = os.path.splitext(os.path.basename(path))[0]
+    ui._pTree.getroot().append(ET.Element("", {"name": stem, "path": path}))
+    ui.fill_proj_list()
     return
 
 
@@ -314,4 +322,25 @@ def slot_ss_preview(ui):
     first_pic = os.path.join(dir_o, case_name, "input")
     if os.path.exists(first_pic):
         os.startfile(first_pic)
+    return
+
+
+def load_ptree_obj(ui):
+    dir_lp = os.path.dirname(os.path.realpath(__file__))
+    file_lp = os.path.join(dir_lp, "tf_proj.xml")
+    print("loading project list in {}".format(file_lp))
+    if not os.path.exists(file_lp):
+        # create new xml
+        root_new = ET.Element("projects")
+        ui._pTree = ET.ElementTree(root_new)
+        ui._pTree.write(file_lp)
+    else:
+        # has existing, load info
+        ui._pTree = ET.parse(file_lp)
+
+
+def save_ptree_obj(ui):
+    dir_lp = os.path.dirname(os.path.realpath(__file__))
+    file_lp = os.path.join(dir_lp, "tf_proj.xml")
+    ui._pTree.write(file_lp)
     return

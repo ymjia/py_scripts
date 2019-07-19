@@ -183,7 +183,6 @@ def get_checked_items(l_all, d_check):
             res.append(i)
     return res
 
-
 if __name__ == "__main__":
     p = Project("")
     p.load_project("d:/dev/py_scripts/test_framework/tf_config.xml")

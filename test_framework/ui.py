@@ -7,6 +7,7 @@ import os.path
 import sys
 import datetime
 
+import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
                              QGroupBox, QListView, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
@@ -24,6 +25,7 @@ class TFWindow(QWidget):
     def __init__(self, parent=None):
         super(TFWindow, self).__init__(parent)
         self._p = project_io.Project()
+        self._pTree = ET.ElementTree()
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -35,15 +37,16 @@ class TFWindow(QWidget):
         self._qle_doc_name = QLineEdit()
         self._qpt_exe_param = QPlainTextEdit()
         # listview
+        self._qlv_all_proj = QListView()
+        self._qlv_all_proj.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._qlv_exe_case = self.create_QListView(self._qle_dir_in)
         self._qlv_ss_case = self.create_QListView(self._qle_dir_in)
-        self._qlv_ss_case.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._qlv_ss_alg = self.create_QListView()
         self._qlv_ss_ver = self.create_QListView()
         self._qlv_doc_case = self.create_QListView(self._qle_dir_out)
         self._qlv_doc_alg = self.create_QListView()
         self._qlv_doc_ver = self.create_QListView()
-
+        # layout
         grid = QGridLayout()
         grid.addWidget(self.create_project_manage(), 0, 0, 3, 1)
         grid.addWidget(self.create_project_info(), 0, 1)
@@ -54,6 +57,9 @@ class TFWindow(QWidget):
         self.setLayout(grid)
         self.setWindowTitle("Test Framework")
         self.resize(1024, 768)
+        # initia data(fill objects)
+        ui_logic.load_ptree_obj(self)
+        self.fill_proj_list()
 
     def create_QListView(self, qle=None):
         ql = QListView()
@@ -61,6 +67,15 @@ class TFWindow(QWidget):
         if qle is not None:
             ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(self, ql, qle))
         return ql
+
+    def fill_proj_list(self):
+        m = QStandardItemModel()
+        for item in self._pTree.getroot():
+            p_name = item.attrib["name"]
+            qsi = QStandardItem(p_name)
+            qsi.setCheckable(False)
+            m.appendRow(qsi)
+        self._qlv_all_proj.setModel(m)
 
     # load information from TFobject to ui
     def fill_ui_info(self, in_obj):
@@ -111,10 +126,8 @@ class TFWindow(QWidget):
         qpb_copy.clicked.connect(lambda: ui_logic.slot_copy_project(self))
         qpb_save.clicked.connect(lambda: ui_logic.slot_save_project(self))
         qpb_load.clicked.connect(lambda: ui_logic.slot_load_project(self))
-        
         grid = QGridLayout()
-        #grid.setSpacing(10)
-        grid.addWidget(QPlainTextEdit(), 0, 0, 1, 2)
+        grid.addWidget(self._qlv_all_proj, 0, 0, 1, 2)
         grid.addWidget(qpb_new, 1, 0)
         grid.addWidget(qpb_copy, 1, 1)
         grid.addWidget(qpb_save, 2, 0)
@@ -129,7 +142,6 @@ class TFWindow(QWidget):
         grid = QGridLayout()
         grid.setSpacing(10)
         self.get_f_bsw(self._qle_conf_file, grid, 0, "Configuration File", "xml")
-        #self.get_f_bsw(self._qle_dir_in, grid, 1, "Input Directory")
         qpb_set_dir_in = QPushButton("Browse..")
         grid.addWidget(QLabel("Input Directory"), 1, 0)
         grid.addWidget(self._qle_dir_in, 1, 1)
