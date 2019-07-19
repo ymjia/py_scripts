@@ -202,6 +202,8 @@ def slot_save_project(ui):
 
 def slot_load_project(ui):
     path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'XML (*.xml)')
+    if path is None or path == "":
+        return
     if not os.path.exists(path):
         QMessageBox.about(None, "Error", "Wrong file: {}!".format(path))
         return
