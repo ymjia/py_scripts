@@ -12,12 +12,48 @@ import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QFileDialog, QMessageBox, QInputDialog, QLineEdit,
                              QListView)
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 
 dir_parent = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.dirname(dir_parent))
 from test_framework import project_io
 from test_framework.project_io import get_checked_items
 from test_framework import generate_docx
+
+
+def ptree_add_item(pt, path):
+    stem = os.path.splitext(os.path.basename(path))[0]
+    root = pt.getroot()
+    for item in root:
+        if item.attrib["name"] == stem:
+            return item
+    new_item = ET.Element("", {"name": stem, "path": path})
+    root.append(new_item)
+    return new_item
+
+
+def get_qlist_idx(qlv, name):
+    model = qlv.model()
+    for index in range(model.rowCount()):
+        if model.item(index).text() == name:
+            return index
+    return -1
+
+
+def set_project_selected(qlv, name):
+    row = get_qlist_idx(qlv, name)
+    if row < 0:
+        return
+    q_idx = qlv.model().index(row, 0)
+    qlv.selectionModel().select(q_idx, QItemSelectionModel.Select)
+
+
+def find_ptree_item(pt, name):
+    root = pt.getroot()
+    for item in root:
+        if item.attrib["name"] == name:
+            return item
+    return None
 
 
 def slot_generate_docx(ui):
@@ -185,10 +221,12 @@ def slot_new_project(ui):
     if os.path.splitext(path)[1] != ".xml":
         path += ".xml"
     p._configFile = path
+    f = open(path, "w")
+    f.close()
     ui.fill_ui_info(p)
-    stem = os.path.splitext(os.path.basename(path))[0]
-    ui._pTree.getroot().append(ET.Element("", {"name": stem, "path": path}))
+    new_item = ptree_add_item(ui._pTree, path)
     ui.fill_proj_list()
+    set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
 
 
 def slot_copy_project(ui):
@@ -215,9 +253,9 @@ def slot_load_project(ui):
     p = project_io.Project()
     p.load_xml(path)
     ui.fill_ui_info(p)
-    stem = os.path.splitext(os.path.basename(path))[0]
-    ui._pTree.getroot().append(ET.Element("", {"name": stem, "path": path}))
+    new_item = ptree_add_item(ui._pTree, path)
     ui.fill_proj_list()
+    set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
     return
 
 
@@ -328,7 +366,6 @@ def slot_ss_preview(ui):
 def load_ptree_obj(ui):
     dir_lp = os.path.dirname(os.path.realpath(__file__))
     file_lp = os.path.join(dir_lp, "tf_proj.xml")
-    print("loading project list in {}".format(file_lp))
     if not os.path.exists(file_lp):
         # create new xml
         root_new = ET.Element("projects")

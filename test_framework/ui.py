@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
                              QGroupBox, QListView, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 dir_parent = os.path.dirname(os.path.realpath(__file__))
