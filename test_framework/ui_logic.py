@@ -229,7 +229,19 @@ def slot_new_project(ui):
     set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
 
 
-def slot_copy_project(ui):
+def slot_delete_project(ui):
+    sl = ui._qlv_all_proj.selectedIndexes()
+    if len(sl) < 1:
+        QMessageBox.about(None, "Error", "No Selection to Delete!")
+        return
+    # save old
+    del_item = find_ptree_item(ui._pTree, sl[0].data())
+    print(del_item)
+    # get new
+    new_p = project_io.Project()
+    ui._p = new_p
+    ui.fill_ui_info(ui._p)
+    ui._pTree.write(ui._ptName)
     return
 
 
