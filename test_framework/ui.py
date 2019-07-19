@@ -39,6 +39,8 @@ class TFWindow(QWidget):
         # listview
         self._qlv_all_proj = QListView()
         self._qlv_all_proj.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self._qlv_all_proj.clicked.connect(lambda: ui_logic.slot_switch_proj(self))
+        self._qlv_all_proj.doubleClicked.connect(lambda: ui_logic.slot_open_proj_path(self))
         self._qlv_exe_case = self.create_QListView(self._qle_dir_in)
         self._qlv_ss_case = self.create_QListView(self._qle_dir_in)
         self._qlv_ss_alg = self.create_QListView()

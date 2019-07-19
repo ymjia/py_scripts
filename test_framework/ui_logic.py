@@ -221,9 +221,9 @@ def slot_new_project(ui):
     if os.path.splitext(path)[1] != ".xml":
         path += ".xml"
     p._configFile = path
-    f = open(path, "w")
-    f.close()
-    ui.fill_ui_info(p)
+    ui._p = p
+    ui._p.save_xml(path)
+    ui.fill_ui_info(ui._p)
     new_item = ptree_add_item(ui._pTree, path)
     ui.fill_proj_list()
     set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
@@ -381,3 +381,16 @@ def save_ptree_obj(ui):
     file_lp = os.path.join(dir_lp, "tf_proj.xml")
     ui._pTree.write(file_lp)
     return
+
+
+def slot_switch_proj(ui):
+    return
+
+
+def slot_open_proj_path(ui):
+    sl = ui._qlv_all_proj.selectedIndexes()
+    if len(sl) < 1:
+        return
+    click_path = os.path.dirname(ui._p._configFile)
+    if os.path.exists(click_path):
+        os.startfile(click_path)
