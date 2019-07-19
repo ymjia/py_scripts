@@ -166,6 +166,7 @@ class Project:
         file_save = self._configFile
         if filename != "":
             file_save = filename
+        self._tree = self.collect_xml()
         self._tree.write(file_save)
 
     def load_case_from_fs(self):
