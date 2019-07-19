@@ -384,7 +384,24 @@ def save_ptree_obj(ui):
 
 
 def slot_switch_proj(ui):
-    return
+    sl = ui._qlv_all_proj.selectedIndexes()
+    if len(sl) < 1:
+        return
+    # save old
+    ui._p = ui.collect_ui_info()
+    ui._p.save_xml(ui._p._configFile)
+    # get new
+    new_item = find_ptree_item(ui._pTree, sl[0].data())
+    if new_item is None:
+        return
+    new_xml = new_item.attrib["path"]
+    if not os.path.exists(new_xml):
+        QMessageBox.about(None, "Error", "{} doesnot exist!".format(new_xml))
+        return
+    new_p = project_io.Project()
+    new_p.load_xml(new_xml)
+    ui._p = new_p
+    ui.fill_ui_info(ui._p)
 
 
 def slot_open_proj_path(ui):
