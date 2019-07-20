@@ -51,6 +51,8 @@ class TFWindow(QWidget):
         self._qlv_doc_ver = self.create_QListView()
         self._qlv_ss_ver.doubleClicked.connect(lambda: ui_logic.slot_open_ss_ver(self))
         self._qlv_ss_alg.doubleClicked.connect(lambda: ui_logic.slot_open_ss_alg(self))
+        self._qlv_doc_ver.doubleClicked.connect(lambda: ui_logic.slot_open_doc_ver(self))
+        self._qlv_doc_alg.doubleClicked.connect(lambda: ui_logic.slot_open_doc_alg(self))
         
         # layout
         grid = QGridLayout()

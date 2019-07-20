@@ -505,3 +505,19 @@ def slot_open_ss_alg(ui):
         print_list_error_message(res)
         return
     explore(res)
+
+
+def slot_open_doc_ver(ui):
+    res = get_ver_dir(ui._p._dirOutput, ui._qlv_doc_case, ui._qlv_doc_ver)
+    if not os.path.exists(res):
+        print_list_error_message(res)
+        return
+    explore(res)
+
+
+def slot_open_doc_alg(ui):
+    res = get_alg_file_name(ui._p._dirOutput, ui._qlv_doc_case, ui._qlv_doc_ver, ui._qlv_doc_alg)
+    if not os.path.exists(res):
+        print_list_error_message(res)
+        return
+    explore(res)
