@@ -21,6 +21,16 @@ from test_framework.project_io import get_checked_items
 from test_framework import generate_docx
 
 
+FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+def explore(path):
+    # explorer would choke on forward slashes
+    path = os.path.normpath(path)
+    if os.path.isdir(path):
+        subprocess.run([FILEBROWSER_PATH, path])
+    elif os.path.isfile(path):
+        subprocess.run([FILEBROWSER_PATH, '/select,', path])
+
+
 def ptree_add_item(pt, path):
     stem = os.path.splitext(os.path.basename(path))[0]
     root = pt.getroot()
@@ -236,12 +246,13 @@ def slot_delete_project(ui):
         return
     # save old
     del_item = find_ptree_item(ui._pTree, sl[0].data())
-    print(del_item)
+    ui._pTree.getroot().remove(del_item)
+    ui._pTree.write(ui._ptName)
+    ui.fill_proj_list()
     # get new
     new_p = project_io.Project()
     ui._p = new_p
     ui.fill_ui_info(ui._p)
-    ui._pTree.write(ui._ptName)
     return
 
 
@@ -320,7 +331,8 @@ def slot_qlv_double_click(ui, qlv, qle):
         return
     click_path = os.path.join(qle.text(), sl[0].data())
     if os.path.exists(click_path):
-        os.startfile(click_path)
+        #os.startfile(click_path)
+        explore(click_path)
     return
 
 
@@ -425,3 +437,71 @@ def slot_open_proj_path(ui):
     click_path = os.path.dirname(ui._p._configFile)
     if os.path.exists(click_path):
         os.startfile(click_path)
+
+
+def get_ver_dir(dir_o, qlv_case, qlv_ver):
+    csl = qlv_case.selectedIndexes()
+    if len(csl) < 1:
+        return "1"
+    vsl = qlv_ver.selectedIndexes()
+    if len(vsl) < 1:
+        return "2"
+    v_dir = os.path.join(dir_o, csl[0].data(), vsl[0].data())
+    return v_dir
+
+
+def get_alg_file_name(dir_o, qlv_case, qlv_ver, qlv_alg):
+    v_dir = get_ver_dir(dir_o, qlv_case, qlv_ver)
+    if len(v_dir) < 3:
+        return v_dir
+    if not os.path.exists(v_dir):
+        return "4"
+    asl = qlv_alg.selectedIndexes()
+    if len(asl) < 1:
+        return "3"
+    stem = asl[0].data()
+    alg_file = os.path.join(v_dir, stem)
+    if os.path.exists(alg_file):
+        # alg output is directory
+        return alg_file
+    # find file with alg stem
+    for f in os.listdir(v_dir):
+        cur_stem = os.path.splitext(f)[0]
+        if cur_stem == stem:
+            return os.path.join(v_dir, f)
+    return "5"
+
+
+def print_list_error_message(err_str):
+    if err_str == "1":
+        QMessageBox.about(None, "Error", "No Case slected in Case List!")
+        return
+    if err_str == "2":
+        QMessageBox.about(None, "Error", "No Version slected in Version List!")
+        return
+    if err_str == "3":
+        QMessageBox.about(None, "Error", "No FileName slected in FileName List!")
+        return
+    if err_str == "4":
+        QMessageBox.about(None, "Error", "No Version folder in Output Dir!")
+        return
+    if err_str == "5":
+        QMessageBox.about(None, "Error", "Cannot Find FileName in Output Dir!")
+        return
+    QMessageBox.about(None, "Error", "{} does not exists!".format(err_str))
+
+
+def slot_open_ss_ver(ui):
+    res = get_ver_dir(ui._p._dirOutput, ui._qlv_ss_case, ui._qlv_ss_ver)
+    if not os.path.exists(res):
+        print_list_error_message(res)
+        return
+    explore(res)
+
+
+def slot_open_ss_alg(ui):
+    res = get_alg_file_name(ui._p._dirOutput, ui._qlv_ss_case, ui._qlv_ss_ver, ui._qlv_ss_alg)
+    if not os.path.exists(res):
+        print_list_error_message(res)
+        return
+    explore(res)
