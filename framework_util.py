@@ -236,7 +236,7 @@ def read_compare_config(file_config):
     ver_list = []
     alg_list = []
     content = None
-    with open(file_config) as f:
+    with open(file_config, encoding='utf-8') as f:
         content = f.readlines()
     str_list = [l.strip() for l in content]
     for line in str_list:

@@ -123,7 +123,7 @@ def slot_create_screenshots(ui):
     line_alg = "alg"
     for c in l_alg:
         line_alg = line_alg + " {}".format(c)
-    f_config = open(filename, "w")
+    f_config = open(filename, "w", encoding='utf-8')
     f_config.write(line_case + "\n")
     f_config.write(line_ver + "\n")
     f_config.write(line_alg + "\n")
