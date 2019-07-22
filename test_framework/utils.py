@@ -18,15 +18,16 @@ def parse_time(time_str):
 # read timming info from output/case/version/
 def get_table(dir_o, case, ver):
     times = {}
-    file_time = os.path.join(dir_o, case, ver)
+    file_time = os.path.join(dir_o, case, ver, "timmings.txt")
     if not os.path.exists(file_time):
+        message("{} does not exist".format(file_time))
         return None
     with open(file_time) as f:
         content = f.readlines()
     str_list = [l.strip() for l in content if len(l) > 4]
     for line in str_list:
         name, t = parse_time(line)
-        times["name"] = t
+        times[name] = t
     return times
 
 
@@ -40,19 +41,25 @@ def get_compare_table(dir_out, l_case, l_ver, l_alg, file_out):
     # |alg1 | 0.1 | 0.2|  0.2| 0.3  |
     case_num = len(l_case)
     ver_num = len(l_ver)
+    alg_num = len(l_alg)
     total_col = case_num * ver_num + 1
     # table title
-    title_line = ["algorithm"]
+    title_line = ["Case"]
+    ver_line = ["Version"]
     for case in l_case:
         title_line.append(case)
         for i in range(0, ver_num-1):
             title_line.append("")
+        for vi in l_ver:
+            ver_line.append(vi)
     ws.append(title_line)
+    ws.append(ver_line)
     for i in range(0, case_num):
-        # merge [i, i+ver_num]
         ws.merge_cells(start_row=1, end_row=1,
                        start_column=i * ver_num + 2,
                        end_column=(i+1) * ver_num + 1)
+    for i in range(0, alg_num):
+        ws.cell(row=i + 3, column=1).value = l_alg[i]
     # table data
     d_case = {}
     d_ver = {}
@@ -75,12 +82,14 @@ def get_compare_table(dir_out, l_case, l_ver, l_alg, file_out):
 
     for case in l_case:
         for ver in l_ver:
-            d_alg = get_table(dir_out, case, ver)
+            t_alg = get_table(dir_out, case, ver)
             for alg in l_alg:
-                if alg not in d_alg:
+                if alg not in t_alg:
                     continue
                 r, c = get_pos(case, ver, alg)
-                ws.cell(row=r, column=c).value = d_alg[alg]
+                if r == -1 or c == -1:
+                    continue
+                ws.cell(row=r, column=c).value = t_alg[alg]
     wb.save(file_out)
 
 
@@ -89,4 +98,5 @@ if __name__ == "__main__":
     l_case = ["case1", "case2"]
     l_ver = ["v11", "v12"]
     l_alg = ["merge", "smooth"]
-    get_compare_table(file_out, l_case, l_ver, l_alg)
+    dir_out = "c:/data/test_framework/management/project1/output/"
+    get_compare_table(dir_out, l_case, l_ver, l_alg, file_out)
