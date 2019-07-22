@@ -14,7 +14,7 @@ from PyQt5.QtCore import QItemSelectionModel
 from test_framework import project_io
 from test_framework.project_io import get_checked_items
 from test_framework import generate_docx
-
+from test_framework import utils
 
 FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
 
@@ -81,6 +81,23 @@ def slot_generate_docx(ui):
     gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
     gd.generate_docx(file_save, p_obj._configFile)
     QMessageBox.about(None, "Message", "Docx wrote to {}!".format(file_save))
+
+
+def slot_generate_time_docx(ui):
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    dir_o = p_obj._dirOutput
+    dir_doc = os.path.join(dir_o, "doc")
+    tdoc_name = p_obj._docName + "_time"
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    tdoc_name_final = "{}_{}.xlsx".format(tdoc_name, str_time)
+    if not os.path.exists(dir_doc):
+        os.makedirs(dir_doc)
+    file_save = os.path.join(dir_doc, tdoc_name_final)
+    l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
+    l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
+    l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
+    utils.get_compare_table(dir_o, l_case, l_ver, l_alg, file_save)
 
 
 def slot_open_docx(ui):

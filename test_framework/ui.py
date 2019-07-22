@@ -272,8 +272,10 @@ class TFWindow(QWidget):
 
     def create_doc_region(self):
         doc_region = QGroupBox("Docx Configuration")
-        qpb_g_doc = QPushButton('Generate Document', self)
+        qpb_g_doc = QPushButton('Pic Docx', self)
         qpb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx(self))
+        qpb_gt_doc = QPushButton('Time Docx', self)
+        qpb_gt_doc.clicked.connect(lambda: ui_logic.slot_generate_time_docx(self))
         qpb_o_doc = QPushButton('Open Document', self)
         qpb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx(self))
         qpb_o_path = QPushButton('Open Path', self)
@@ -291,7 +293,8 @@ class TFWindow(QWidget):
         grid.addWidget(self._qle_doc_name, 4, 1)
         grid.addWidget(qpb_o_path, 5, 0)
         grid.addWidget(qpb_o_doc, 5, 1)
-        grid.addWidget(qpb_g_doc, 6, 0, 1, 2)
+        grid.addWidget(qpb_gt_doc, 6, 0)
+        grid.addWidget(qpb_g_doc, 6, 1)
         doc_region.setLayout(grid)
         return doc_region
 

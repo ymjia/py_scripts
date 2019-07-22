@@ -33,7 +33,6 @@ def get_table(dir_o, case, ver):
 
 # generate xlsx table file
 def get_compare_table(dir_out, l_case, l_ver, l_alg, file_out):
-    time_str = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     wb = Workbook()
     ws = wb.active
     # | alg | case     |    case2   |
@@ -42,7 +41,6 @@ def get_compare_table(dir_out, l_case, l_ver, l_alg, file_out):
     case_num = len(l_case)
     ver_num = len(l_ver)
     alg_num = len(l_alg)
-    total_col = case_num * ver_num + 1
     # table title
     title_line = ["Case"]
     ver_line = ["Version"]
