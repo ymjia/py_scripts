@@ -4,24 +4,21 @@
 ## @author jiayanming
 
 import os.path
-import sys
 import datetime
 import subprocess
 import xml.etree.ElementTree as ET
 
-from PyQt5.QtWidgets import (QFileDialog, QMessageBox, QInputDialog, QLineEdit,
-                             QListView)
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
+from PyQt5.QtWidgets import (QFileDialog, QMessageBox, QInputDialog, QLineEdit)
+from PyQt5.QtCore import QItemSelectionModel
 
-dir_parent = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, os.path.dirname(dir_parent))
 from test_framework import project_io
 from test_framework.project_io import get_checked_items
 from test_framework import generate_docx
 
 
 FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+
+
 def explore(path):
     # explorer would choke on forward slashes
     path = os.path.normpath(path)
@@ -210,11 +207,9 @@ def slot_exe_run(ui):
     if os.path.exists(exe):
         for case in list_case:
             param = generate_exe_param(ui, case)
-            #QMessageBox.about(None, "Message", param)
-            #continue
             in_param = param.split(" ")
             in_param.insert(0, exe)
-            proc_demo = subprocess.Popen(in_param, cwd = os.path.dirname(exe))
+            proc_demo = subprocess.Popen(in_param, cwd=os.path.dirname(exe))
             proc_demo.wait()
     ver = p_obj._eVer
     if ver in p_obj._ver:
@@ -390,8 +385,6 @@ def slot_ss_preview(ui):
         QMessageBox.about(None, "Tip:", "No Selected Item in CASE LIST to Manage!")
         return
     case_name = sl[0].data()
-    dir_case = os.path.join(p_obj._dirInput, case_name)
-    file_config = os.path.join(dir_case, "config.txt")
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
     # write to file

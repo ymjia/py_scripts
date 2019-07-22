@@ -185,12 +185,3 @@ def get_checked_items(l_all, d_check):
         if i in d_check:
             res.append(i)
     return res
-
-if __name__ == "__main__":
-    p = Project("")
-    p.load_project("d:/dev/py_scripts/test_framework/tf_config.xml")
-    p.save_project("d:/tmp/test_input.xml")
-    tree = p.save_project()
-    tree.write("d:/tmp/test_output.xml")
-    #p.load_from_fs()
-    print(p._case)

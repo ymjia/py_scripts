@@ -13,9 +13,6 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-
-dir_parent = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, os.path.dirname(dir_parent))
 from test_framework import project_io
 from test_framework import ui_logic
 
