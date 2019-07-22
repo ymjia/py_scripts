@@ -20,7 +20,7 @@ def get_table(dir_o, case, ver):
     times = {}
     file_time = os.path.join(dir_o, case, ver, "timmings.txt")
     if not os.path.exists(file_time):
-        message("{} does not exist".format(file_time))
+        print("{} does not exist".format(file_time))
         return None
     with open(file_time) as f:
         content = f.readlines()
@@ -81,6 +81,8 @@ def get_compare_table(dir_out, l_case, l_ver, l_alg, file_out):
     for case in l_case:
         for ver in l_ver:
             t_alg = get_table(dir_out, case, ver)
+            if t_alg is None:
+                continue
             for alg in l_alg:
                 if alg not in t_alg:
                     continue
