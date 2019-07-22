@@ -166,7 +166,7 @@ class Project:
         file_save = self._configFile
         if filename != "":
             file_save = filename
-        if filename == "":
+        if file_save == "":
             return
         self._tree = self.collect_xml()
         self._tree.write(file_save)
