@@ -23,6 +23,7 @@ class TFWindow(QWidget):
         super(TFWindow, self).__init__(parent)
         self._ptName = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "tf_proj.xml")
+            #os.getcwd(), "tf_proj.xml")
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
         # info widget for updating infomation

@@ -294,6 +294,8 @@ def append_input_to_list(l, label):
     if ok and text != '':
         item_list = text.replace(" ", "").split(",")
         for i in item_list:
+            if i in l:
+                continue
             l.append(i)
         return 0
     return 1
@@ -329,21 +331,25 @@ def del_list_item(ui, qlv, item_list):
     for i in range(0, len(item_list)):
         if item_list[i] == item_name:
             item_list.pop(i)
+            break
 
 
 def slot_del_case(ui):
+    ui._p = ui.collect_ui_info()
     del_list_item(ui, ui._qlv_ss_case, ui._p._case)
     ui.fill_ui_info(ui._p)
     return
 
 
 def slot_del_ver(ui):
+    ui._p = ui.collect_ui_info()
     del_list_item(ui, ui._qlv_ss_ver, ui._p._ver)
     ui.fill_ui_info(ui._p)
     return
 
 
 def slot_del_alg(ui):
+    ui._p = ui.collect_ui_info()
     del_list_item(ui, ui._qlv_ss_alg, ui._p._alg)
     ui.fill_ui_info(ui._p)
     return

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+## @file tf_main.py
+## @brief test framework entry point
+## @author jiayanming
+
+
 import sys
 import os
 from PyQt5.QtWidgets import QApplication
