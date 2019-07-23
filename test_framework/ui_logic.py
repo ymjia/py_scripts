@@ -23,7 +23,7 @@ def explore(path):
     # explorer would choke on forward slashes
     path = os.path.normpath(path)
     if os.path.isdir(path):
-        subprocess.run([FILEBROWSER_PATH, path])
+        os.startfile(path)
     elif os.path.isfile(path):
         subprocess.run([FILEBROWSER_PATH, '/select,', path])
 
@@ -392,7 +392,6 @@ def slot_qlv_double_click(ui, qlv, qle):
         return
     click_path = os.path.join(qle.text(), sl[0].data())
     if os.path.exists(click_path):
-        #os.startfile(click_path)
         explore(click_path)
     return
 
@@ -493,10 +492,11 @@ def slot_open_proj_path(ui):
     sl = ui._qlv_all_proj.selectedIndexes()
     if len(sl) < 1:
         return
-    click_path = os.path.dirname(ui._p._configFile)
-    if os.path.exists(click_path):
-        os.startfile(click_path)
-
+    click_path = ui._p._configFile
+    if not os.path.exists(click_path):
+        QMessageBox.about(None, "Error", "{} doesnot exist!".format(click_path))
+        return
+    explore(click_path)
 
 def get_ver_dir(dir_o, qlv_case, qlv_ver):
     csl = qlv_case.selectedIndexes()

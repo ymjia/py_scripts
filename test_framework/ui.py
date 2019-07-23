@@ -190,7 +190,6 @@ class TFWindow(QWidget):
     # get listview from project_object
     def fill_check_list(self, lv, item_list, check_dict):
         model = QStandardItemModel()
-        model.setSize
         for i in item_list:
             item = QStandardItem(i)
             check = Qt.Checked if i in check_dict else Qt.Unchecked
