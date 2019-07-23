@@ -96,8 +96,8 @@ def slot_generate_time_docx(ui):
     file_save = os.path.join(dir_doc, tdoc_name_final)
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
-    l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
-    utils.get_compare_table(dir_o, l_case, l_ver, l_alg, file_save)
+    utils.get_compare_table(dir_o, l_case, l_ver, file_save)
+    QMessageBox.about(None, "Message", "Docx wrote to {}!".format(file_save))
 
 
 def slot_open_docx(ui):
