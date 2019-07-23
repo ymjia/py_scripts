@@ -9,7 +9,7 @@ import datetime
 
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
-                             QGroupBox, QListView, QVBoxLayout, QHBoxLayout,
+                             QGroupBox, QListView, QHBoxLayout,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -62,13 +62,15 @@ class TFWindow(QWidget):
         grid.setColumnStretch(1, 3)
         self.setLayout(grid)
         self.setWindowTitle("Test Framework")
-        self.resize(1024, 768)
+        self.resize(1280, 800)
         # initia data(fill objects)
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
 
     def create_QListView(self, qle=None):
-        ql = QListView()
+        ql = QListView(self)
+        #ql.setMinimumHeight(20)
+        #ql.sizeHintForRow(20)
         ql.setEditTriggers(QAbstractItemView.NoEditTriggers)
         if qle is not None:
             ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(self, ql, qle))
@@ -146,7 +148,6 @@ class TFWindow(QWidget):
         # create widget
         info = QGroupBox("Project Information")
         grid = QGridLayout()
-        grid.setSpacing(10)
         self.get_f_bsw(self._qle_conf_file, grid, 0, "Configuration File", "xml")
         qpb_set_dir_in = QPushButton("Browse..")
         grid.addWidget(QLabel("Input Directory"), 1, 0)
@@ -157,7 +158,6 @@ class TFWindow(QWidget):
         self.get_f_bsw(self._qle_exe_pv, grid, 3, "PVPython Interpreter", "exe")
         self.get_f_bsw(self._qle_exe_demo, grid, 4, "Demo Executable", "exe")
         info.setLayout(grid)
-        info.setGeometry(300, 300, 350, 300)
         return info
 
     def create_list_manage(self):
@@ -190,6 +190,7 @@ class TFWindow(QWidget):
     # get listview from project_object
     def fill_check_list(self, lv, item_list, check_dict):
         model = QStandardItemModel()
+        model.setSize
         for i in item_list:
             item = QStandardItem(i)
             check = Qt.Checked if i in check_dict else Qt.Unchecked
