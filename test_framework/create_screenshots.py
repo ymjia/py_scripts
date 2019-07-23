@@ -71,6 +71,7 @@ def create_shot(file_list, cam_list, out_dir, pattern):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
     cur_view = GetActiveViewOrCreate("RenderView")
+    cur_view.ViewSize = [1024, 768]
     add_light_to_view(cur_view, False)
     cur_view.CenterAxesVisibility = 0
     cur_source = read_and_render(file_list, cur_view)

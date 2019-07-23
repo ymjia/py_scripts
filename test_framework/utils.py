@@ -93,7 +93,6 @@ def get_compare_table(dir_out, l_case, l_ver, file_out):
     # alg name column
     for item in d_alg.items():
         ws.cell(row=item[1] + 3, column=1).value = item[0]
-
     wb.save(file_out)
 
 
