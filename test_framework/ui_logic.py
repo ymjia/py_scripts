@@ -235,6 +235,20 @@ def slot_exe_run(ui):
     ui.fill_ui_info(p_obj)
 
 
+def slot_exe_param(ui):
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
+    if len(list_case) < 1:
+        QMessageBox.about(None, "Error", "No CheckItem in Input Case!")
+        return
+    param_list = "ParamLine Preview:"
+    for case in list_case:
+        param_list += "\n\n"
+        param_list += generate_exe_param(ui, case)
+    QMessageBox.about(None, "Message", param_list)
+
+
 def slot_new_project(ui):
     path, _ = QFileDialog.getSaveFileName(None, "Save New Project", "", "XML(*.xml)")
     if path is None or path == "":

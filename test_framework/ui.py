@@ -236,6 +236,8 @@ class TFWindow(QWidget):
         exe_region = QGroupBox("Executable Configuration")
         qpb_exe_run = QPushButton('Run Demo', self)
         qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
+        qpb_exe_param = QPushButton("命令预览", self)
+        qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
         grid = QGridLayout()
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
@@ -245,7 +247,8 @@ class TFWindow(QWidget):
         grid.addWidget(self._qpt_exe_param, 1, 1)
         grid.addWidget(QLabel('Use Version Name'), 2, 0)
         grid.addWidget(self._qle_cur_ver, 2, 1)
-        grid.addWidget(qpb_exe_run, 3, 0, 1, 2)
+        grid.addWidget(qpb_exe_param, 3, 0)
+        grid.addWidget(qpb_exe_run, 3, 1)
         exe_region.setLayout(grid)
         return exe_region
 
