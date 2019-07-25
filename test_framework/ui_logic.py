@@ -229,7 +229,7 @@ def slot_exe_run(ui):
             proc_demo = subprocess.Popen(in_param, cwd=os.path.dirname(exe))
             proc_demo.wait()
     ver = p_obj._eVer
-    if ver in p_obj._ver:
+    if ver == "" or ver in p_obj._ver:
         return
     p_obj._ver.append(ver)
     ui.fill_ui_info(p_obj)
@@ -318,6 +318,21 @@ def slot_scan_input(ui):
                    if os.path.isdir(os.path.join(dir_in, f))]
     ui.fill_ui_info(p_obj)
     return
+
+
+# build dir for all case/version
+def slot_build_output(ui):
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    dir_out = p_obj._dirOutput
+    l_case = get_checked_items(p_obj._case, p_obj._sCaseCheck)
+    l_ver = get_checked_items(p_obj._ver, p_obj._sVerCheck)
+    for c in l_case:
+        for v in l_ver:
+            n_dir = os.path.join(dir_out, c, v)
+            if os.path.exists(n_dir):
+                continue
+            os.makedirs(n_dir)
 
 
 def append_input_to_list(l, label):
