@@ -155,17 +155,33 @@ def slot_create_screenshots(ui):
 
 # get file and set qle.text
 def slot_get_path(qle):
-    path = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
+    d = qle.text()
+    while not os.path.exists(d):
+        pd = os.path.dirname(d)
+        if pd == d or len(pd) < 1:
+            break
+        d = pd
+    if not os.path.exists(d):
+        d = "c:/"
+    path = QFileDialog.getExistingDirectory(None, 'Select a folder:', d, QFileDialog.ShowDirsOnly)
     if path is not None and path != "":
         qle.setText(path)
 
 
 def slot_get_file(qle, f_type):
     path = ""
+    d = qle.text()
+    while not os.path.exists(d):
+        pd = os.path.dirname(d)
+        if pd == d or len(pd) < 1:
+            break
+        d = pd
+    if not os.path.exists(d):
+        d = "c:/"
     if f_type == "xml":
-        path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'XML (*.xml)')
+        path, _filter = QFileDialog.getOpenFileName(None, 'Open File', d, 'XML (*.xml)')
     else:
-        path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'EXE (*.exe)')
+        path, _filter = QFileDialog.getOpenFileName(None, 'Open File', d, 'EXE (*.exe)')
     if path is not None and path != "":
         qle.setText(path)
 
