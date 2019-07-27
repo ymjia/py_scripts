@@ -85,6 +85,10 @@ class TFWindow(QWidget):
             m.appendRow(qsi)
         self._qlv_all_proj.setModel(m)
 
+    def get_pv_path(self):
+        tr = self._pTree.getroot()
+        return tr.find(pv_default).attrib["path"]
+
     # load information from TFobject to ui
     def fill_ui_info(self, in_obj):
         self._p = in_obj
