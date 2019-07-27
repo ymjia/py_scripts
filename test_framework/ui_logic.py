@@ -118,7 +118,7 @@ def slot_open_docx(ui):
     dir_doc = os.path.join(p_obj._dirOutput, "doc")
     file_doc = os.path.join(dir_doc, p_obj._curDocName)
     if os.path.exists(file_doc):
-        os.startfile(file_doc)
+        open_file(file_doc)
     else:
         QMessageBox.about(None, "Error", "Document doesnot Exist! Try Generate Docx First.")
 
@@ -128,12 +128,16 @@ def slot_open_docx_path(ui):
     dir_doc = os.path.join(p_obj._dirOutput, "doc")
     if not os.path.exists(dir_doc):
         os.makedirs(dir_doc)
-    os.startfile(dir_doc)
+    open_file(dir_doc)
 
 
 def slot_create_screenshots(ui):
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
+    exe_pvpython = p_obj._exePV
+    if not os.path.exists(exe_pvpython):
+        QMessageBox.about(None, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
+        return
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
     l_case = get_checked_items(p_obj._case, p_obj._sCaseCheck)
@@ -156,7 +160,6 @@ def slot_create_screenshots(ui):
     f_config.write(line_alg + "\n")
     f_config.close()
     # run pvpython.exe
-    exe_pvpython = p_obj._exePV
     dir_pv_wd = os.path.dirname(exe_pvpython)
     py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
     proc_ss = subprocess.Popen(
@@ -249,6 +252,9 @@ def slot_exe_run(ui):
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     exe = p_obj._exeDemo
+    if not os.path.exists(exe):
+        QMessageBox.about(None, "Error", "Demo {} does not exist!".format(exe))
+        return
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
     if os.path.exists(exe):
         for case in list_case:
@@ -453,7 +459,7 @@ def slot_ss_manage(ui):
     if not os.path.exists(file_config):
         f= open(file_config, "w+")
         f.close()
-    os.startfile(dir_case)
+    open_file(dir_case)
 
 
 def slot_ss_preview(ui):
@@ -486,7 +492,7 @@ def slot_ss_preview(ui):
     proc_ss.wait()
     first_pic = os.path.join(dir_o, case_name, "input")
     if os.path.exists(first_pic):
-        os.startfile(first_pic)
+        open_file(first_pic)
     return
 
 
