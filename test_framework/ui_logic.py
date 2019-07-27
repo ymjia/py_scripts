@@ -4,6 +4,7 @@
 ## @author jiayanming
 
 import os.path
+import sys
 import datetime
 import subprocess
 import xml.etree.ElementTree as ET
@@ -16,11 +17,23 @@ from test_framework.project_io import get_checked_items
 from test_framework import generate_docx
 from test_framework import utils
 
-FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+FILEBROWSER_PATH = ""
+if sys.platform == "win32":
+    FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
 
+# open file for mac
+def open_file(filename):
+    if sys.platform == "win32":
+        os.startfile(filename)
+    else:
+        opener ="open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, filename])
 
 def explore(path):
     # explorer would choke on forward slashes
+    if sys.platform != "win32":
+        open_file(path)
+        return
     path = os.path.normpath(path)
     if os.path.isdir(path):
         os.startfile(path)
