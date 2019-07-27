@@ -84,10 +84,11 @@ def slot_generate_docx(ui):
     dir_doc = os.path.join(dir_o, "doc")
     doc_name = p_obj._docName
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-    p_obj._curDocName = "{}_{}.docx".format(doc_name, str_time)
+    doc_name_final = "{}_{}.docx".format(doc_name, str_time)
+    p_obj._curDocName = doc_name_final
     if not os.path.exists(dir_doc):
         os.makedirs(dir_doc)
-    file_save = os.path.join(dir_doc, p_obj._curDocName)
+    file_save = os.path.join(dir_doc, doc_name_final)
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
     l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
@@ -104,6 +105,7 @@ def slot_generate_time_docx(ui):
     tdoc_name = p_obj._docName + "_time"
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     tdoc_name_final = "{}_{}.xlsx".format(tdoc_name, str_time)
+    p_obj._curDocName = tdoc_name_final
     if not os.path.exists(dir_doc):
         os.makedirs(dir_doc)
     file_save = os.path.join(dir_doc, tdoc_name_final)
