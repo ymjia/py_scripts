@@ -83,7 +83,6 @@ class DocxGenerator:
         self._listVer = list_ver
         self._listAlg = list_alg
         self._doc = Document()
-        self._doc.sections[0].page_width = Mm(400)
 
     # generate paraview project for given data
     def get_paraview_project(self, filename, case, alg):
