@@ -72,6 +72,9 @@ class TFWindow(QWidget):
         #ql.setMinimumHeight(20)
         #ql.sizeHintForRow(20)
         ql.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        ql.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        ql.setDefaultDropAction(Qt.MoveAction)
+        ql.setDragDropMode(QAbstractItemView.InternalMove);
         if qle is not None:
             ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(self, ql, qle))
         return ql
