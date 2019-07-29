@@ -81,9 +81,11 @@ class TFWindow(QWidget):
 
     def fill_proj_list(self):
         m = QStandardItemModel()
+        flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
         for item in self._pTree.getroot():
             p_name = item.attrib["name"]
             qsi = QStandardItem(p_name)
+            qsi.setFlags(flag)
             qsi.setCheckable(False)
             m.appendRow(qsi)
         self._qlv_all_proj.setModel(m)
@@ -200,8 +202,11 @@ class TFWindow(QWidget):
     # get listview from project_object
     def fill_check_list(self, lv, item_list, check_dict):
         model = QStandardItemModel()
+        #pt_item = QStandardItem()
+        flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
         for i in item_list:
             item = QStandardItem(i)
+            item.setFlags(flag)
             check = Qt.Checked if i in check_dict else Qt.Unchecked
             item.setCheckState(check)
             item.setCheckable(True)
