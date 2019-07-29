@@ -17,9 +17,9 @@ from test_framework.project_io import get_checked_items
 from test_framework import generate_docx
 from test_framework import utils
 
-FILEBROWSER_PATH = ""
-if sys.platform == "win32":
-    FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+FILEBROWSER = "explorer"
+if sys.platform != "win32":
+    FILEBROWSER = "open" if sys.platform == "darwin" else "xdg-open"
 
 
 # open file for mac
@@ -27,8 +27,7 @@ def open_file(filename):
     if sys.platform == "win32":
         os.startfile(filename)
     else:
-        opener = "open" if sys.platform == "darwin" else "xdg-open"
-        subprocess.call([opener, filename])
+        subprocess.call([FILEBROWSER, filename])
 
 
 def explore(path):
@@ -37,9 +36,9 @@ def explore(path):
         open_file(path)
     elif os.path.isfile(path):
         if sys.platform == "win32":
-            subprocess.run([FILEBROWSER_PATH, '/select,', path])
+            subprocess.call([FILEBROWSER, '/select,', path])
         else:
-            open_file(path)
+            subprocess.call([FILEBROWSER, path])
 
 
 def ptree_add_item(pt, path):
@@ -173,6 +172,8 @@ def slot_create_screenshots(ui):
 
 
 def get_default_path(in_path):
+    if in_path is None:
+        return "c:/"
     d = in_path
     while not os.path.exists(d):
         pd = os.path.dirname(d)
@@ -182,6 +183,22 @@ def get_default_path(in_path):
     if not os.path.exists(d):
         d = "c:/"
     return d
+
+
+def get_default_proj_path(ui):
+    p_obj = ui._p
+    if p_obj is not None:
+        config_file = p_obj._configFile
+        if os.path.exists(config_file):
+            return get_default_path(config_file)
+    # get default from p_list
+    if ui._pTree is not None:
+        for item in ui._pTree.getroot():
+            p_path = item.attrib["path"]
+            if os.path.exists(p_path):
+                return get_default_path(p_path)
+    # return project path
+    return get_default_path(ui._ptName)
 
 
 # get file and set qle.text
@@ -287,7 +304,8 @@ def slot_exe_param(ui):
 
 
 def slot_new_project(ui):
-    path, _ = QFileDialog.getSaveFileName(None, "Save New Project", "", "XML(*.xml)")
+    dp = get_default_proj_path(ui)
+    path, _ = QFileDialog.getSaveFileName(None, "Save New Project", dp, "XML(*.xml)")
     if path is None or path == "":
         return
     p = project_io.Project()
@@ -330,7 +348,8 @@ def slot_save_project(ui):
 
 
 def slot_load_project(ui):
-    path, _filter = QFileDialog.getOpenFileName(None, 'Open File', '', 'XML (*.xml)')
+    dp = get_default_proj_path(ui)
+    path, _filter = QFileDialog.getOpenFileName(None, 'Open File', dp, 'XML (*.xml)')
     if path is None or path == "":
         return
     if not os.path.exists(path):
