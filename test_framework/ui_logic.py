@@ -652,3 +652,7 @@ def slot_open_doc_alg(ui):
         print_list_error_message(res)
         return
     explore(res)
+
+
+def slot_drop_item(ui):
+    print("dropped")
