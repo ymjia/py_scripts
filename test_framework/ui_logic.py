@@ -172,9 +172,8 @@ def slot_create_screenshots(ui):
     QMessageBox.about(None, "Message", "Create Screenshots Completed!")
 
 
-# get file and set qle.text
-def slot_get_path(qle):
-    d = qle.text()
+def get_default_path(in_path):
+    d = in_path
     while not os.path.exists(d):
         pd = os.path.dirname(d)
         if pd == d or len(pd) < 1:
@@ -182,6 +181,12 @@ def slot_get_path(qle):
         d = pd
     if not os.path.exists(d):
         d = "c:/"
+    return d
+
+
+# get file and set qle.text
+def slot_get_path(qle):
+    d = get_default_path(qle.text())
     path = QFileDialog.getExistingDirectory(None, 'Select a folder:', d, QFileDialog.ShowDirsOnly)
     if path is not None and path != "":
         qle.setText(path)
@@ -189,14 +194,7 @@ def slot_get_path(qle):
 
 def slot_get_file(qle, f_type):
     path = ""
-    d = qle.text()
-    while not os.path.exists(d):
-        pd = os.path.dirname(d)
-        if pd == d or len(pd) < 1:
-            break
-        d = pd
-    if not os.path.exists(d):
-        d = "c:/"
+    d = get_default_path(qle.text())
     if f_type == "xml":
         path, _filter = QFileDialog.getOpenFileName(None, 'Open File', d, 'XML (*.xml)')
     else:
@@ -208,7 +206,8 @@ def slot_get_file(qle, f_type):
 def slot_open_input_path(ui):
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
-    dir_in = QFileDialog.getExistingDirectory(None, 'Select a folder:', '', QFileDialog.ShowDirsOnly)
+    d = get_default_path(p_obj._dirInput)
+    dir_in = QFileDialog.getExistingDirectory(None, 'Select a folder:', d, QFileDialog.ShowDirsOnly)
     if dir_in is None or dir_in == "":
         return
     p_obj._dirInput = dir_in
