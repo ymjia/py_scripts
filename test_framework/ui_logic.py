@@ -36,7 +36,7 @@ def explore(path):
     if os.path.isdir(path):
         open_file(path)
     elif os.path.isfile(path):
-        if sys.platform != "win32":
+        if sys.platform == "win32":
             subprocess.run([FILEBROWSER_PATH, '/select,', path])
         else:
             open_file(path)
