@@ -429,11 +429,12 @@ def del_list_item(ui, qlv, item_list):
     if len(sl) < 1:
         #QMessageBox.about(None, "Error", "No Selection to Delete!")
         return
-    item_name = sl[0].data()
-    for i in range(0, len(item_list)):
-        if item_list[i] == item_name:
-            item_list.pop(i)
-            break
+    for s in sl:
+        item_name = s.data()
+        for i in range(0, len(item_list)):
+            if item_list[i] == item_name:
+                item_list.pop(i)
+                break
 
 
 def slot_del_case(ui):
