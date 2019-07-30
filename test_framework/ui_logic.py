@@ -257,7 +257,7 @@ def generate_exe_param(ui, case):
     dir_o = p_obj._dirOutput
     ver = p_obj._eVer
     p_i = os.path.join(dir_i, case) + "/"
-    # use file name if only on file in case dir
+    # use file name if only one file in case dir
     i_list = get_file_list(p_i)
     if len(i_list) == 1:
         p_i = i_list[0]
