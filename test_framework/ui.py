@@ -17,6 +17,32 @@ from test_framework import project_io
 from test_framework import ui_logic
 
 
+def create_QListView(ui, qle=None):
+    ql = QListView(ui)
+    ql.setEditTriggers(QAbstractItemView.NoEditTriggers)
+    ql.setSelectionMode(QAbstractItemView.ExtendedSelection)
+    ql.setDefaultDropAction(Qt.TargetMoveAction)
+    ql.setDragDropMode(QAbstractItemView.InternalMove);
+    if qle is not None:
+        ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(ui, ql, qle))
+    return ql
+
+
+class CMDHistory(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+        self._qlv_demo = create_QListView(self)
+        self._qlv_cmd = create_QListView(self)
+        grid = QGridLayout()
+        grid.addWidget(QLabel("Demo Name"), 0, 0)
+        grid.addWidget(self._qlv_demo, 1, 0)
+        grid.addWidget(QLabel("CMD History"), 0, 1)
+        grid.addWidget(self._qlv_cmd, 1, 1)
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 4)
+        self.setLayout(grid)
+
+
 class TFWindow(QWidget):
     # take project object as input
     def __init__(self, parent=None):
@@ -26,6 +52,7 @@ class TFWindow(QWidget):
             #os.getcwd(), "tf_proj.xml")
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
+        self._cmd = None
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -37,16 +64,16 @@ class TFWindow(QWidget):
         self._qle_doc_name = QLineEdit()
         self._qpt_exe_param = QPlainTextEdit()
         # listview
-        self._qlv_all_proj = self.create_QListView()
+        self._qlv_all_proj = create_QListView(self)
         self._qlv_all_proj.clicked.connect(lambda: ui_logic.slot_switch_proj(self))
         self._qlv_all_proj.doubleClicked.connect(lambda: ui_logic.slot_open_proj_path(self))
-        self._qlv_exe_case = self.create_QListView(self._qle_dir_in)
-        self._qlv_ss_case = self.create_QListView(self._qle_dir_in)
-        self._qlv_ss_alg = self.create_QListView()
-        self._qlv_ss_ver = self.create_QListView()
-        self._qlv_doc_case = self.create_QListView(self._qle_dir_out)
-        self._qlv_doc_alg = self.create_QListView()
-        self._qlv_doc_ver = self.create_QListView()
+        self._qlv_exe_case = create_QListView(self, self._qle_dir_in)
+        self._qlv_ss_case = create_QListView(self, self._qle_dir_in)
+        self._qlv_ss_alg = create_QListView(self)
+        self._qlv_ss_ver = create_QListView(self)
+        self._qlv_doc_case = create_QListView(self, self._qle_dir_out)
+        self._qlv_doc_alg = create_QListView(self)
+        self._qlv_doc_ver = create_QListView(self)
         self._qlv_ss_ver.doubleClicked.connect(lambda: ui_logic.slot_open_ss_ver(self))
         self._qlv_ss_alg.doubleClicked.connect(lambda: ui_logic.slot_open_ss_alg(self))
         self._qlv_doc_ver.doubleClicked.connect(lambda: ui_logic.slot_open_doc_ver(self))
@@ -67,18 +94,6 @@ class TFWindow(QWidget):
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
 
-    def create_QListView(self, qle=None):
-        ql = QListView(self)
-        #ql.setMinimumHeight(20)
-        #ql.sizeHintForRow(20)
-        ql.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        ql.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        ql.setDefaultDropAction(Qt.TargetMoveAction)
-        ql.setDragDropMode(QAbstractItemView.InternalMove);
-        #ql.dropEvent.connect(lambda: ui_logic.slot_drop_item(self))
-        if qle is not None:
-            ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(self, ql, qle))
-        return ql
 
     def fill_proj_list(self):
         m = QStandardItemModel()
@@ -254,17 +269,20 @@ class TFWindow(QWidget):
         qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
         qpb_exe_param = QPushButton("命令预览", self)
         qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
+        qpb_cmd_his = QPushButton("历史命令", self)
+        qpb_cmd_his.clicked.connect(self.slot_show_cmd_history)
         grid = QGridLayout()
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
         ql_param = QLabel("Parameter Line\n{i} for input\n{o} for output")
         ql_param.setWordWrap(True);
         grid.addWidget(ql_param, 1, 0)
-        grid.addWidget(self._qpt_exe_param, 1, 1)
-        grid.addWidget(QLabel('Use Version Name'), 2, 0)
-        grid.addWidget(self._qle_cur_ver, 2, 1)
-        grid.addWidget(qpb_exe_param, 3, 0)
-        grid.addWidget(qpb_exe_run, 3, 1)
+        grid.addWidget(qpb_cmd_his, 2, 0)
+        grid.addWidget(self._qpt_exe_param, 1, 1, 2, 1)
+        grid.addWidget(QLabel('Use Version Name'), 3, 0)
+        grid.addWidget(self._qle_cur_ver, 3, 1)
+        grid.addWidget(qpb_exe_param, 4, 0)
+        grid.addWidget(qpb_exe_run, 4, 1)
         exe_region.setLayout(grid)
         return exe_region
 
@@ -317,6 +335,10 @@ class TFWindow(QWidget):
         doc_region.setLayout(grid)
         return doc_region
 
+    def slot_show_cmd_history(self):
+        self._cmd = CMDHistory()
+        #self.w.setGeometry(QRect(100, 100, 400, 200))
+        self._cmd.show()
 
 if __name__ == "__main__":
     # create ui
