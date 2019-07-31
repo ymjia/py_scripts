@@ -28,8 +28,8 @@ def create_QListView(ui, qle=None):
     return ql
 
 
-class CMDHistory(QWidget):
-    def __init__(self):
+class CMDHistory(QDialog):
+    def __init__(self, qpt):
         QWidget.__init__(self)
         self._qlv_demo = create_QListView(self)
         self._qlv_cmd = create_QListView(self)
@@ -41,6 +41,15 @@ class CMDHistory(QWidget):
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 4)
         self.setLayout(grid)
+        self._file = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "cmd_history.xml")
+        qpt.setPlainText("popup")
+
+    #def click_
+
+    def fill_list(self, tree):
+        
+        return
 
 
 class TFWindow(QWidget):
@@ -52,7 +61,8 @@ class TFWindow(QWidget):
             #os.getcwd(), "tf_proj.xml")
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
-        self._cmd = None
+        self._cmdDialog = None
+        self._cmdTree = ET.ElementTree()
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -336,9 +346,13 @@ class TFWindow(QWidget):
         return doc_region
 
     def slot_show_cmd_history(self):
-        self._cmd = CMDHistory()
+        cd = self._cmdDialog
+        if cd is None:
+            cd = CMDHistory()
+        cd._selText = ""
+        cd.fill_list(self._cmdTree)
         #self.w.setGeometry(QRect(100, 100, 400, 200))
-        self._cmd.show()
+        self._cmdDialog.show()
 
 if __name__ == "__main__":
     # create ui

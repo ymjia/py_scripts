@@ -318,6 +318,7 @@ def slot_new_project(ui):
     new_item = ptree_add_item(ui._pTree, path)
     ui.fill_proj_list()
     set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
+    ui._pTree.write(ui._ptName)
 
 
 def slot_delete_project(ui):
@@ -652,7 +653,3 @@ def slot_open_doc_alg(ui):
         print_list_error_message(res)
         return
     explore(res)
-
-
-def slot_drop_item(ui):
-    print("dropped")
