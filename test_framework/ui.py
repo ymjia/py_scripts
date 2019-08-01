@@ -23,7 +23,7 @@ def create_QListView(ui, qle=None):
     ql.setSelectionMode(QAbstractItemView.ExtendedSelection)
     ql.setDefaultDropAction(Qt.TargetMoveAction)
     ql.setDragDropMode(QAbstractItemView.InternalMove);
-    ql.setMinimumHeight(100)
+    ql.setMinimumHeight(80)
 
     if qle is not None:
         ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(ui, ql, qle))
@@ -190,8 +190,7 @@ class TFWindow(QWidget):
         grid.setColumnStretch(1, 3)
         self.setLayout(grid)
         self.setWindowTitle("Test Framework")
-        #self.resize(1280, 800)
-        # initia data(fill objects)
+        self.resize(1000, 800)
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
 
