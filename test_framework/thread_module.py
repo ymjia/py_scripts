@@ -27,7 +27,7 @@ class ExeRunThread(QThread):
         pg = float(1) / len(list_case)
         cur_pg = 0
         for case in list_case:
-            self.sleep(2)
+            self.sleep(1)
             cur_pg += pg
             self._sigProgress.emit(cur_pg)
             param = ui_logic.generate_exe_param(p_obj, case)
@@ -36,8 +36,7 @@ class ExeRunThread(QThread):
             proc_demo = subprocess.Popen(in_param, cwd=os.path.dirname(exe))
             proc_demo.wait()
         ver = p_obj._eVer
-        if ver == "" or ver in p_obj._ver:
-            return
-        p_obj._ver.append(ver)
-        self._mainWindow.fill_ui_info(p_obj)
-
+        if ver != "" and ver not in p_obj._ver:
+            p_obj._ver.append(ver)
+            self._mainWindow.fill_ui_info(p_obj)
+        self._mainWindow._qpb_exe_run.setEnabled(True)

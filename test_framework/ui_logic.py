@@ -269,7 +269,18 @@ def slot_exe_run(ui):
     ui._cmdDialog.add_cmd(exe, param_text)
     ui._threadExe = thread_module.ExeRunThread(ui)
     ui._threadExe._sigProgress.connect(ui.exe_progress)
+    ui._qpb_exe_run.setEnabled(False)
+    #ui._lyExe.removeWidget(ui._qpb_exe_run)
+    #ui._lyExe.addWidget(ui._qpb_exe_stop, 4, 1)
     ui._threadExe.start()
+
+
+def slot_exe_stop(ui):
+    if ui._threadExe is not None:
+        ui._threadExe.terminate()
+        ui._threadExe.wait()
+    #ui._lyExe.removeWidget(ui._qpb_exe_stop)
+    #ui._lyExe.addWidget(ui._qpb_exe_run, 4, 1)
 
 
 def slot_exe_param(ui):
