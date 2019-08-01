@@ -33,6 +33,7 @@ class CMDHistory(QWidget):
         QWidget.__init__(self)
         self._qlv_demo = create_QListView(self)
         self._qtv_cmd = QTreeView(self)
+        self._qtv_cmd.doubleClicked.connect(lambda: self.slot_update_cmd(qpt))
         grid = QGridLayout()
         grid.addWidget(QLabel("Demo Name"), 0, 0)
         grid.addWidget(self._qlv_demo, 1, 0)
@@ -44,7 +45,6 @@ class CMDHistory(QWidget):
         self._file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "cmd_history.xml")
         self._cmdTree = ET.ElementTree()
-        qpt.setPlainText("popup")
 
     def fill_list(self):
         self._cmdTree = ET.parse(self._file)
@@ -67,7 +67,7 @@ class CMDHistory(QWidget):
     def fill_cmd_list(self, root):
         m = QStandardItemModel()
         m.setColumnCount(3)
-        m.setHeaderData(0, Qt.Horizontal, "Last Modified");
+        m.setHeaderData(0, Qt.Horizontal, "Last Use");
         m.setHeaderData(1, Qt.Horizontal, "First Use");
         m.setHeaderData(2, Qt.Horizontal, "Cmd String");
         flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
@@ -81,6 +81,14 @@ class CMDHistory(QWidget):
             m.appendRow([l_time, i_time, name])
         self._qtv_cmd.setModel(m)
 
+    def slot_update_cmd(self, qpt):
+        sl = self._qtv_cmd.selectedIndexes()
+        if len(sl) < 1:
+            return
+        sel_row = sl[0].row()
+        q_idx = self._qtv_cmd.model().index(sel_row, 2)
+        qpt.setPlainText(q_idx.data())
+
 
 class TFWindow(QWidget):
     # take project object as input
@@ -88,7 +96,6 @@ class TFWindow(QWidget):
         super(TFWindow, self).__init__(parent)
         self._ptName = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "tf_proj.xml")
-            #os.getcwd(), "tf_proj.xml")
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
         self._cmdDialog = None
