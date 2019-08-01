@@ -62,6 +62,11 @@ class CMDHistory(QWidget):
             return
         self._qlv_demo.selectionModel().select(q_idx, QItemSelectionModel.Select)
         self.fill_cmd_list(rt.find(q_idx.data()))
+        # set width
+        #self._qtv_cmd
+        self._qtv_cmd.setColumnWidth(0, 120)
+        self._qtv_cmd.setColumnWidth(1, 120)
+        self._qtv_cmd.setColumnWidth(2, 400)
         return
 
     def fill_demo_list(self, root):
@@ -92,6 +97,7 @@ class CMDHistory(QWidget):
             name.setFlags(flag)
             m.appendRow([l_time, i_time, name])
         self._qtv_cmd.setModel(m)
+        self._qtv_cmd.sortByColumn(0, Qt.DescendingOrder)
 
     def slot_switch_demo(self):
         sl = self._qlv_demo.selectedIndexes()
@@ -141,7 +147,7 @@ class CMDHistory(QWidget):
 class TFWindow(QWidget):
     # take project object as input
     def __init__(self, parent=None):
-        super(TFWindow, self).__init__(parent)
+        QWidget.__init__(self)
         self._ptName = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "tf_proj.xml")
         self._p = project_io.Project()
@@ -322,6 +328,7 @@ class TFWindow(QWidget):
             item.setCheckable(True)
             model.appendRow(item)
         lv.setModel(model)
+        lv.setMinimumHeight(100)
 
     # get project_object info from listview
     def read_check_list(self, lv, item_list, check_dict):
@@ -430,6 +437,7 @@ class TFWindow(QWidget):
         return doc_region
 
     def slot_show_cmd_history(self):
+        self._cmdDialog.resize(800, 200)
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
 
