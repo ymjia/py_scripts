@@ -51,7 +51,7 @@ class CMDHistory(QWidget):
         self._cmdTree = ET.parse(self._file)
         rt = self._cmdTree.getroot()
         self.fill_demo_list(rt)
-        q_idx = self._qlv_demo.model().index(0, 0)
+        q_idx = self._qlv_demo.model().index(8, 0)
         self._qlv_demo.selectionModel().select(q_idx, QItemSelectionModel.Select)
         self.fill_cmd_list(rt.find(q_idx.data()))
         return
