@@ -23,6 +23,8 @@ def create_QListView(ui, qle=None):
     ql.setSelectionMode(QAbstractItemView.ExtendedSelection)
     ql.setDefaultDropAction(Qt.TargetMoveAction)
     ql.setDragDropMode(QAbstractItemView.InternalMove);
+    ql.setMinimumHeight(100)
+
     if qle is not None:
         ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(ui, ql, qle))
     return ql
@@ -63,7 +65,6 @@ class CMDHistory(QWidget):
         self._qlv_demo.selectionModel().select(q_idx, QItemSelectionModel.Select)
         self.fill_cmd_list(rt.find(q_idx.data()))
         # set width
-        #self._qtv_cmd
         self._qtv_cmd.setColumnWidth(0, 120)
         self._qtv_cmd.setColumnWidth(1, 120)
         self._qtv_cmd.setColumnWidth(2, 400)
@@ -189,7 +190,7 @@ class TFWindow(QWidget):
         grid.setColumnStretch(1, 3)
         self.setLayout(grid)
         self.setWindowTitle("Test Framework")
-        self.resize(1280, 800)
+        #self.resize(1280, 800)
         # initia data(fill objects)
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
@@ -328,7 +329,6 @@ class TFWindow(QWidget):
             item.setCheckable(True)
             model.appendRow(item)
         lv.setModel(model)
-        lv.setMinimumHeight(100)
 
     # get project_object info from listview
     def read_check_list(self, lv, item_list, check_dict):
@@ -375,9 +375,7 @@ class TFWindow(QWidget):
         grid = QGridLayout()
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
-        ql_param = QLabel("Parameter Line\n{i} for input\n{o} for output")
-        ql_param.setWordWrap(True);
-        grid.addWidget(ql_param, 1, 0)
+        grid.addWidget(QLabel("Parameter Line\n{i} for input\n{o} for output"), 1, 0)
         grid.addWidget(qpb_cmd_his, 2, 0)
         grid.addWidget(self._qpt_exe_param, 1, 1, 2, 1)
         grid.addWidget(QLabel('Use Version Name'), 3, 0)
