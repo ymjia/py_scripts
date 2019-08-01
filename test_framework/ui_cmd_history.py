@@ -32,14 +32,16 @@ class CMDHistory(QWidget):
             os.path.dirname(os.path.realpath(__file__)), "cmd_history.xml")
         self._cmdTree = ET.ElementTree()
 
-    def fill_list(self):
-        # initial empty cmd history file
+    def create_xml(self):
         if not os.path.exists(self._file):
             root_new = ET.Element("cmd_history")
             self._cmdTree = ET.ElementTree(root_new)
             self._cmdTree.write(self._file)
-        else:
-            self._cmdTree = ET.parse(self._file)
+
+    def fill_list(self):
+        # initial empty cmd history file
+        self.create_xml()
+        self._cmdTree = ET.parse(self._file)
         rt = self._cmdTree.getroot()
         self.fill_demo_list(rt)
         q_idx = self._qlv_demo.model().index(0, 0)
@@ -107,6 +109,7 @@ class CMDHistory(QWidget):
         # get info
         stem = os.path.splitext(os.path.basename(exe))[0]
         # create file
+        self.create_xml()
         self._cmdTree = ET.parse(self._file)
         rt = self._cmdTree.getroot()
         # add or find demo
