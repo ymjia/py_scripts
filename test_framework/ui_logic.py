@@ -9,8 +9,8 @@ import datetime
 import subprocess
 import xml.etree.ElementTree as ET
 
-from PyQt5.QtWidgets import (QFileDialog, QMessageBox, QInputDialog, QLineEdit)
-from PyQt5.QtCore import QItemSelectionModel
+from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox, QInputDialog, QLineEdit, QAbstractItemView)
+from PyQt5.QtCore import QItemSelectionModel, Qt
 
 from test_framework import project_io
 from test_framework.project_io import get_checked_items
@@ -661,3 +661,16 @@ def slot_open_doc_alg(ui):
         print_list_error_message(res)
         return
     explore(res)
+
+
+def create_QListView(ui, qle=None):
+    ql = QListView(ui)
+    ql.setEditTriggers(QAbstractItemView.NoEditTriggers)
+    ql.setSelectionMode(QAbstractItemView.ExtendedSelection)
+    ql.setDefaultDropAction(Qt.TargetMoveAction)
+    ql.setDragDropMode(QAbstractItemView.InternalMove);
+    ql.setMinimumHeight(80)
+
+    if qle is not None:
+        ql.doubleClicked.connect(lambda: slot_qlv_double_click(ui, ql, qle))
+    return ql

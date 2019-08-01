@@ -14,21 +14,9 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from test_framework import project_io
+from test_framework import ui_cmd_history
 from test_framework import ui_logic
-
-
-def create_QListView(ui, qle=None):
-    ql = QListView(ui)
-    ql.setEditTriggers(QAbstractItemView.NoEditTriggers)
-    ql.setSelectionMode(QAbstractItemView.ExtendedSelection)
-    ql.setDefaultDropAction(Qt.TargetMoveAction)
-    ql.setDragDropMode(QAbstractItemView.InternalMove);
-    ql.setMinimumHeight(80)
-
-    if qle is not None:
-        ql.doubleClicked.connect(lambda: ui_logic.slot_qlv_double_click(ui, ql, qle))
-    return ql
-
+from test_framework.ui_logic import create_QListView
 
 class CMDHistory(QWidget):
     def __init__(self, qpt):
