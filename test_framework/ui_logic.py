@@ -94,7 +94,7 @@ def slot_generate_docx(ui):
     l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
     gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
     gd.generate_docx(file_save, p_obj._configFile)
-    QMessageBox.about(None, "Message", "Docx wrote to {}!".format(file_save))
+    QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
 
 
 def slot_generate_time_docx(ui):
@@ -112,7 +112,7 @@ def slot_generate_time_docx(ui):
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
     utils.get_compare_table(dir_o, l_case, l_ver, file_save)
-    QMessageBox.about(None, "Message", "Docx wrote to {}!".format(file_save))
+    QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
 
 
 def slot_open_docx(ui):
@@ -122,7 +122,7 @@ def slot_open_docx(ui):
     if os.path.exists(file_doc):
         open_file(file_doc)
     else:
-        QMessageBox.about(None, "Error", "Document doesnot Exist! Try Generate Docx First.")
+        QMessageBox.about(ui, "Error", "Document doesnot Exist! Try Generate Docx First.")
 
 
 def slot_open_docx_path(ui):
@@ -138,13 +138,19 @@ def slot_create_screenshots(ui):
     p_obj = ui._p
     exe_pvpython = p_obj._exePV
     if not os.path.exists(exe_pvpython):
-        QMessageBox.about(None, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
+        QMessageBox.about(ui, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
         return
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
     l_case = get_checked_items(p_obj._case, p_obj._sCaseCheck)
     l_alg = get_checked_items(p_obj._alg, p_obj._sAlgCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._sVerCheck)
+    if len(l_case) < 1:
+        QMessageBox.about(ui, "Error", "No Case checked")
+        return
+    if len(l_ver) < 1:
+        QMessageBox.about(ui, "Error", "No Version checked")
+        return
     # write to file
     filename = os.path.join(dir_o, "ss_config.txt")
     line_case = "cas"
@@ -168,7 +174,7 @@ def slot_create_screenshots(ui):
         [exe_pvpython, py_ss,
          dir_i, dir_o, filename], cwd=dir_pv_wd)
     proc_ss.wait()
-    QMessageBox.about(None, "Message", "Create Screenshots Completed!")
+    QMessageBox.about(ui, "Message", "Create Screenshots Completed!")
 
 
 def get_default_path(in_path):
@@ -273,7 +279,7 @@ def slot_exe_run(ui):
     exe = p_obj._exeDemo
     param_text = p_obj._exeParam
     if not os.path.exists(exe):
-        QMessageBox.about(None, "Error", "Demo {} does not exist!".format(exe))
+        QMessageBox.about(ui, "Error", "Demo {} does not exist!".format(exe))
         return
     ui._cmdDialog.add_cmd(exe, param_text)
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
@@ -296,13 +302,13 @@ def slot_exe_param(ui):
     p_obj = ui._p
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
     if len(list_case) < 1:
-        QMessageBox.about(None, "Error", "No CheckItem in Input Case!")
+        QMessageBox.about(ui, "Error", "No CheckItem in Input Case!")
         return
     param_list = "ParamLine Preview:"
     for case in list_case:
         param_list += "\n\n"
         param_list += generate_exe_param(ui, case)
-    QMessageBox.about(None, "Message", param_list)
+    QMessageBox.about(ui, "Message", param_list)
 
 
 def slot_new_project(ui):
@@ -326,7 +332,7 @@ def slot_new_project(ui):
 def slot_delete_project(ui):
     sl = ui._qlv_all_proj.selectedIndexes()
     if len(sl) < 1:
-        QMessageBox.about(None, "Error", "No Selection to Delete!")
+        QMessageBox.about(ui, "Error", "No Selection to Delete!")
         return
     # save old
     del_item = find_ptree_item(ui._pTree, sl[0].data())
