@@ -32,12 +32,13 @@ class CMDHistory(QWidget):
     def __init__(self, qpt):
         QWidget.__init__(self)
         self._qlv_demo = create_QListView(self)
+        self._qlv_demo.clicked.connect(self.slot_switch_demo)
         self._qtv_cmd = QTreeView(self)
         self._qtv_cmd.doubleClicked.connect(lambda: self.slot_update_cmd(qpt))
         grid = QGridLayout()
         grid.addWidget(QLabel("Demo Name"), 0, 0)
         grid.addWidget(self._qlv_demo, 1, 0)
-        grid.addWidget(QLabel("CMD History"), 0, 1)
+        grid.addWidget(QLabel("CMD History, Double click to Use"), 0, 1)
         grid.addWidget(self._qtv_cmd, 1, 1)
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 4)
@@ -50,7 +51,9 @@ class CMDHistory(QWidget):
         self._cmdTree = ET.parse(self._file)
         rt = self._cmdTree.getroot()
         self.fill_demo_list(rt)
-        self.fill_cmd_list(rt.find("demo"))
+        q_idx = self._qlv_demo.model().index(0, 0)
+        self._qlv_demo.selectionModel().select(q_idx, QItemSelectionModel.Select)
+        self.fill_cmd_list(rt.find(q_idx.data()))
         return
 
     def fill_demo_list(self, root):
@@ -64,6 +67,7 @@ class CMDHistory(QWidget):
             m.appendRow(qsi)
         self._qlv_demo.setModel(m)
 
+    # update cmd view
     def fill_cmd_list(self, root):
         m = QStandardItemModel()
         m.setColumnCount(3)
@@ -81,6 +85,18 @@ class CMDHistory(QWidget):
             m.appendRow([l_time, i_time, name])
         self._qtv_cmd.setModel(m)
 
+    def slot_switch_demo(self):
+        sl = self._qlv_demo.selectedIndexes()
+        if len(sl) < 1:
+            return
+        #ui._p.save_xml(ui._p._configFile)
+        rt = self._cmdTree.getroot()
+        demo = rt.find(sl[0].data())
+        if demo is None:
+            return
+        self.fill_cmd_list(demo)
+
+    # set main window text
     def slot_update_cmd(self, qpt):
         sl = self._qtv_cmd.selectedIndexes()
         if len(sl) < 1:
