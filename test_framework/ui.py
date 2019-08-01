@@ -29,10 +29,11 @@ class TFWindow(QWidget):
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
         # widgets for multithread
+        self._lyExe = QGridLayout()
         self._qpb_exe_run = QPushButton('Run Demo')
-        self._qpb_exe_stop = QPushButton('中断')
+        #self._qpb_exe_stop = QPushButton('中断')
         self._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
-        self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
+        #self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -248,8 +249,8 @@ class TFWindow(QWidget):
         qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
         qpb_cmd_his = QPushButton("历史命令", self)
         qpb_cmd_his.clicked.connect(self.slot_show_cmd_history)
-        #grid = self._lyExe
-        grid = QGridLayout()
+        grid = self._lyExe
+        #grid = QGridLayout()
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
         grid.addWidget(QLabel("Parameter Line\n{i} for input\n{o} for output"), 1, 0)
@@ -259,8 +260,8 @@ class TFWindow(QWidget):
         grid.addWidget(self._qle_cur_ver, 3, 1)
         grid.addWidget(qpb_exe_param, 4, 0)
         grid.addWidget(self._qpb_exe_run, 4, 1)
-        #exe_region.setLayout(self._lyExe)
-        exe_region.setLayout(grid)
+        exe_region.setLayout(self._lyExe)
+        #exe_region.setLayout(grid)
         return exe_region
 
     def create_ss_region(self):

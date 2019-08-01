@@ -9,7 +9,7 @@ import datetime
 import subprocess
 import xml.etree.ElementTree as ET
 
-from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox, QInputDialog, QLineEdit, QAbstractItemView)
+from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox, QInputDialog, QLineEdit, QPushButton, QAbstractItemView)
 from PyQt5.QtCore import QItemSelectionModel, Qt
 
 from test_framework import project_io
@@ -259,6 +259,7 @@ def generate_exe_param(p_obj, case):
 
 
 def slot_exe_run(ui):
+    QMessageBox.about(None, "Message", "run!")
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     exe = p_obj._exeDemo
@@ -269,18 +270,15 @@ def slot_exe_run(ui):
     ui._cmdDialog.add_cmd(exe, param_text)
     ui._threadExe = thread_module.ExeRunThread(ui)
     ui._threadExe._sigProgress.connect(ui.exe_progress)
-    ui._qpb_exe_run.setEnabled(False)
-    #ui._lyExe.removeWidget(ui._qpb_exe_run)
-    #ui._lyExe.addWidget(ui._qpb_exe_stop, 4, 1)
     ui._threadExe.start()
 
+    
 
 def slot_exe_stop(ui):
+    QMessageBox.about(ui, "Error", "stop")
     if ui._threadExe is not None:
         ui._threadExe.terminate()
         ui._threadExe.wait()
-    #ui._lyExe.removeWidget(ui._qpb_exe_stop)
-    #ui._lyExe.addWidget(ui._qpb_exe_run, 4, 1)
 
 
 def slot_exe_param(ui):

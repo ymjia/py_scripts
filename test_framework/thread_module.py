@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+## @file thread_module.py
+## @brief run exe in different thread
+## @author jiayanming
+
+
 import subprocess
 import os.path
 
@@ -20,6 +26,9 @@ class ExeRunThread(QThread):
     def run(self):
         p_obj = self._mainWindow._p
         exe = p_obj._exeDemo
+        self._mainWindow._qpb_exe_run.setText("中断")
+        self._mainWindow._qpb_exe_run.clicked.disconnect()
+        self._mainWindow._lyExe._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_stop(self._mainWindow))
         list_case = ui_logic.get_checked_items(p_obj._case, p_obj._eCaseCheck)
         if len(list_case) < 1:
             QMessageBox.about(self._mainWindow, "Error", "No Case Checked!!")
@@ -39,4 +48,8 @@ class ExeRunThread(QThread):
         if ver != "" and ver not in p_obj._ver:
             p_obj._ver.append(ver)
             self._mainWindow.fill_ui_info(p_obj)
-        self._mainWindow._qpb_exe_run.setEnabled(True)
+        #self._mainWindow._qpb_exe_run.clicked.disconnect()
+        #self._mainWindow._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self._mainWindow))
+        self._mainWindow._qpb_exe_run.setText("Run Demo")
+
+
