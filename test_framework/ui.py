@@ -312,6 +312,9 @@ class TFWindow(QWidget):
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
 
+    def exe_progress(self, p):
+        self._qpt_exe_param.setPlainText(str(p))
+
 if __name__ == "__main__":
     # create ui
     app = QApplication(sys.argv)

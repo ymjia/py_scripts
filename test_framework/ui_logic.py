@@ -268,6 +268,7 @@ def slot_exe_run(ui):
         return
     ui._cmdDialog.add_cmd(exe, param_text)
     ui._threadExe = thread_module.ExeRunThread(ui)
+    ui._threadExe._sigProgress.connect(ui.exe_progress)
     ui._threadExe.start()
 
 
