@@ -16,6 +16,7 @@ from test_framework import project_io
 from test_framework.project_io import get_checked_items
 from test_framework import generate_docx
 from test_framework import utils
+from test_framework import thread_module
 
 FILEBROWSER = "explorer"
 if sys.platform != "win32":
@@ -242,29 +243,13 @@ def slot_open_input_path(ui):
     ui.fill_ui_info(p_obj)
 
 
-support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
-
-
-def get_file_list(folder):
-    res = []
-    for name in os.listdir(folder):
-        if os.path.isdir(os.path.join(folder, name)):
-            continue
-        ext = os.path.splitext(name)[1]
-        if not any(ext in e for e in support_ext):
-            continue
-        res.append(os.path.join(folder, name))
-    return res
-
-
-def generate_exe_param(ui, case):
-    p_obj = ui._p
+def generate_exe_param(p_obj, case):
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
     ver = p_obj._eVer
     p_i = os.path.join(dir_i, case) + "/"
     # use file name if only one file in case dir
-    i_list = get_file_list(p_i)
+    i_list = utils.get_file_list(p_i)
     if len(i_list) == 1:
         p_i = i_list[0]
     # get output param
@@ -282,19 +267,8 @@ def slot_exe_run(ui):
         QMessageBox.about(ui, "Error", "Demo {} does not exist!".format(exe))
         return
     ui._cmdDialog.add_cmd(exe, param_text)
-    list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
-    if os.path.exists(exe):
-        for case in list_case:
-            param = generate_exe_param(ui, case)
-            in_param = param.split(" ")
-            in_param.insert(0, exe)
-            proc_demo = subprocess.Popen(in_param, cwd=os.path.dirname(exe))
-            proc_demo.wait()
-    ver = p_obj._eVer
-    if ver == "" or ver in p_obj._ver:
-        return
-    p_obj._ver.append(ver)
-    ui.fill_ui_info(p_obj)
+    ui._threadExe = thread_module.ExeRunThread(ui)
+    ui._threadExe.start()
 
 
 def slot_exe_param(ui):
@@ -307,7 +281,7 @@ def slot_exe_param(ui):
     param_list = "ParamLine Preview:"
     for case in list_case:
         param_list += "\n\n"
-        param_list += generate_exe_param(ui, case)
+        param_list += generate_exe_param(p_obj, case)
     QMessageBox.about(ui, "Message", param_list)
 
 

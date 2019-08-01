@@ -96,6 +96,21 @@ def get_compare_table(dir_out, l_case, l_ver, file_out):
     wb.save(file_out)
 
 
+support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
+
+
+def get_file_list(folder):
+    res = []
+    for name in os.listdir(folder):
+        if os.path.isdir(os.path.join(folder, name)):
+            continue
+        ext = os.path.splitext(name)[1]
+        if not any(ext in e for e in support_ext):
+            continue
+        res.append(os.path.join(folder, name))
+    return res
+
+
 if __name__ == "__main__":
     file_out = "c:/tmp/time.xlsx"
     l_case = ["case1", "case2"]

@@ -22,6 +22,8 @@ class TFWindow(QWidget):
     # take project object as input
     def __init__(self, parent=None):
         QWidget.__init__(self)
+        self._threadExe = None
+        self._threadSS = None
         self._ptName = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "tf_proj.xml")
         self._p = project_io.Project()
