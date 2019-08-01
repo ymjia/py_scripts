@@ -9,7 +9,7 @@ import datetime
 
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
-                             QGroupBox, QListView, QHBoxLayout,
+                             QGroupBox, QListView, QHBoxLayout, QTreeView,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -28,28 +28,58 @@ def create_QListView(ui, qle=None):
     return ql
 
 
-class CMDHistory(QDialog):
+class CMDHistory(QWidget):
     def __init__(self, qpt):
         QWidget.__init__(self)
         self._qlv_demo = create_QListView(self)
-        self._qlv_cmd = create_QListView(self)
+        self._qtv_cmd = QTreeView(self)
         grid = QGridLayout()
         grid.addWidget(QLabel("Demo Name"), 0, 0)
         grid.addWidget(self._qlv_demo, 1, 0)
         grid.addWidget(QLabel("CMD History"), 0, 1)
-        grid.addWidget(self._qlv_cmd, 1, 1)
+        grid.addWidget(self._qtv_cmd, 1, 1)
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 4)
         self.setLayout(grid)
         self._file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "cmd_history.xml")
+        self._cmdTree = ET.ElementTree()
         qpt.setPlainText("popup")
 
-    #def click_
-
-    def fill_list(self, tree):
-        
+    def fill_list(self):
+        self._cmdTree = ET.parse(self._file)
+        rt = self._cmdTree.getroot()
+        self.fill_demo_list(rt)
+        self.fill_cmd_list(rt.find("demo"))
         return
+
+    def fill_demo_list(self, root):
+        m = QStandardItemModel()
+        flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
+        for item in root:
+            p_name = item.tag
+            qsi = QStandardItem(p_name)
+            qsi.setFlags(flag)
+            qsi.setCheckable(False)
+            m.appendRow(qsi)
+        self._qlv_demo.setModel(m)
+
+    def fill_cmd_list(self, root):
+        m = QStandardItemModel()
+        m.setColumnCount(3)
+        m.setHeaderData(0, Qt.Horizontal, "Last Modified");
+        m.setHeaderData(1, Qt.Horizontal, "First Use");
+        m.setHeaderData(2, Qt.Horizontal, "Cmd String");
+        flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
+        for item in root:
+            i_time = QStandardItem(item.attrib["init_t"])
+            l_time = QStandardItem(item.attrib["last_t"])
+            name = QStandardItem(item.attrib["cmd"])
+            i_time.setFlags(flag)
+            l_time.setFlags(flag)
+            name.setFlags(flag)
+            m.appendRow([l_time, i_time, name])
+        self._qtv_cmd.setModel(m)
 
 
 class TFWindow(QWidget):
@@ -62,7 +92,6 @@ class TFWindow(QWidget):
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
         self._cmdDialog = None
-        self._cmdTree = ET.ElementTree()
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -346,12 +375,9 @@ class TFWindow(QWidget):
         return doc_region
 
     def slot_show_cmd_history(self):
-        cd = self._cmdDialog
-        if cd is None:
-            cd = CMDHistory()
-        cd._selText = ""
-        cd.fill_list(self._cmdTree)
-        #self.w.setGeometry(QRect(100, 100, 400, 200))
+        if self._cmdDialog is None:
+            self._cmdDialog = CMDHistory(self._qpt_exe_param)
+        self._cmdDialog.fill_list()
         self._cmdDialog.show()
 
 if __name__ == "__main__":
