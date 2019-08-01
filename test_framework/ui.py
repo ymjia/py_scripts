@@ -48,7 +48,13 @@ class CMDHistory(QWidget):
         self._cmdTree = ET.ElementTree()
 
     def fill_list(self):
-        self._cmdTree = ET.parse(self._file)
+        # initial empty cmd history file
+        if not os.path.exists(self._file):
+            root_new = ET.Element("cmd_history")
+            self._cmdTree = ET.ElementTree(root_new)
+            self._cmdTree.write(self._file)
+        else:
+            self._cmdTree = ET.parse(self._file)
         rt = self._cmdTree.getroot()
         self.fill_demo_list(rt)
         q_idx = self._qlv_demo.model().index(0, 0)
@@ -91,7 +97,6 @@ class CMDHistory(QWidget):
         sl = self._qlv_demo.selectedIndexes()
         if len(sl) < 1:
             return
-        #ui._p.save_xml(ui._p._configFile)
         rt = self._cmdTree.getroot()
         demo = rt.find(sl[0].data())
         if demo is None:
@@ -107,6 +112,31 @@ class CMDHistory(QWidget):
         q_idx = self._qtv_cmd.model().index(sel_row, 2)
         qpt.setPlainText(q_idx.data())
 
+    def add_cmd(self, exe, param):
+        str_time = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+        # get info
+        stem = os.path.splitext(os.path.basename(exe))[0]
+        # create file
+        self._cmdTree = ET.parse(self._file)
+        rt = self._cmdTree.getroot()
+        # add or find demo
+        demo = rt.find(stem)
+        if demo is None:
+            demo = ET.Element(stem)
+            rt.append(demo)
+        # add or update cmd
+        exist = False
+        for item in demo:
+            if item.attrib["cmd"] != param:
+                continue
+            item.attrib["last_t"] = str_time
+            exist = True
+            break;
+        if not exist:
+            demo.append(ET.Element(
+                "item", {"last_t":str_time, "init_t":str_time, "cmd": param}))
+        self._cmdTree.write(self._file)
+
 
 class TFWindow(QWidget):
     # take project object as input
@@ -116,7 +146,6 @@ class TFWindow(QWidget):
             os.path.dirname(os.path.realpath(__file__)), "tf_proj.xml")
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
-        self._cmdDialog = None
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -143,6 +172,7 @@ class TFWindow(QWidget):
         self._qlv_doc_ver.doubleClicked.connect(lambda: ui_logic.slot_open_doc_ver(self))
         self._qlv_doc_alg.doubleClicked.connect(lambda: ui_logic.slot_open_doc_alg(self))
         
+        self._cmdDialog = CMDHistory(self._qpt_exe_param)
         # layout
         grid = QGridLayout()
         grid.addWidget(self.create_project_manage(), 0, 0, 3, 1)
@@ -400,8 +430,6 @@ class TFWindow(QWidget):
         return doc_region
 
     def slot_show_cmd_history(self):
-        if self._cmdDialog is None:
-            self._cmdDialog = CMDHistory(self._qpt_exe_param)
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
 

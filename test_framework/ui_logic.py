@@ -271,9 +271,11 @@ def slot_exe_run(ui):
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     exe = p_obj._exeDemo
+    param_text = p_obj._exeParam
     if not os.path.exists(exe):
         QMessageBox.about(None, "Error", "Demo {} does not exist!".format(exe))
         return
+    ui._cmdDialog.add_cmd(exe, param_text)
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
     if os.path.exists(exe):
         for case in list_case:
