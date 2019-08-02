@@ -259,7 +259,6 @@ def generate_exe_param(p_obj, case):
 
 
 def slot_exe_run(ui):
-    QMessageBox.about(None, "Message", "run!")
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     exe = p_obj._exeDemo
@@ -269,16 +268,18 @@ def slot_exe_run(ui):
         return
     ui._cmdDialog.add_cmd(exe, param_text)
     ui._threadExe = thread_module.ExeRunThread(ui)
+    ui._threadExe.setTerminationEnabled()
     ui._threadExe._sigProgress.connect(ui.exe_progress)
+    ui._threadExe.finished.connect(ui.exe_finish)
+    ui.new_stop_button()
     ui._threadExe.start()
 
-    
 
 def slot_exe_stop(ui):
-    QMessageBox.about(ui, "Error", "stop")
     if ui._threadExe is not None:
         ui._threadExe.terminate()
         ui._threadExe.wait()
+        QMessageBox.about(ui, "Message", "Demo Terminated!")
 
 
 def slot_exe_param(ui):

@@ -9,7 +9,7 @@ import datetime
 
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
-                             QGroupBox, QListView, QHBoxLayout, QTreeView,
+                             QGroupBox, QListView, QHBoxLayout, QTreeView, QProgressBar,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -31,9 +31,12 @@ class TFWindow(QWidget):
         # widgets for multithread
         self._lyExe = QGridLayout()
         self._qpb_exe_run = QPushButton('Run Demo')
-        #self._qpb_exe_stop = QPushButton('中断')
+        self._qpb_exe_stop = QPushButton('中断')
         self._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
-        #self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
+        self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
+        self._qpb_exe_param = QPushButton("命令预览", self)
+        self._qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
+        self._qpr_exe_progress = QProgressBar()
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -245,8 +248,6 @@ class TFWindow(QWidget):
 
     def create_exe_region(self):
         exe_region = QGroupBox("Executable Configuration")
-        qpb_exe_param = QPushButton("命令预览", self)
-        qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
         qpb_cmd_his = QPushButton("历史命令", self)
         qpb_cmd_his.clicked.connect(self.slot_show_cmd_history)
         grid = self._lyExe
@@ -258,7 +259,7 @@ class TFWindow(QWidget):
         grid.addWidget(self._qpt_exe_param, 1, 1, 2, 1)
         grid.addWidget(QLabel('Use Version Name'), 3, 0)
         grid.addWidget(self._qle_cur_ver, 3, 1)
-        grid.addWidget(qpb_exe_param, 4, 0)
+        grid.addWidget(self._qpb_exe_param, 4, 0)
         grid.addWidget(self._qpb_exe_run, 4, 1)
         exe_region.setLayout(self._lyExe)
         #exe_region.setLayout(grid)
@@ -318,8 +319,36 @@ class TFWindow(QWidget):
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
 
+    def new_run_button(self):
+        self._lyExe.removeWidget(self._qpb_exe_stop)
+        self._lyExe.removeWidget(self._qpr_exe_progress)
+        
+        self._qpb_exe_run = QPushButton('Run Demo', self)
+        self._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
+        self._qpb_exe_param = QPushButton("命令预览", self)
+        self._qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
+
+        self._lyExe.addWidget(self._qpb_exe_run, 4, 1)
+        self._lyExe.addWidget(self._qpb_exe_param, 4, 0)
+
+
+    def new_stop_button(self):
+        self._lyExe.removeWidget(self._qpb_exe_run)
+        self._lyExe.removeWidget(self._qpb_exe_param)
+        self._qpb_exe_stop = QPushButton('中断', self)
+        self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
+        self._qpr_exe_progress = QProgressBar()
+        self._qpr_exe_progress.setRange(0, 1)
+        self._lyExe.addWidget(self._qpb_exe_stop, 4, 1)
+        self._lyExe.addWidget(self._qpr_exe_progress, 4, 0)
+
+
     def exe_progress(self, p):
         self._qpt_exe_param.setPlainText(str(p))
+        self._qpr_exe_progress.setValue(p)
+
+    def exe_finish(self):
+        self.new_run_button()
 
 if __name__ == "__main__":
     # create ui
