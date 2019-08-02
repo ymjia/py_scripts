@@ -29,7 +29,6 @@ class TFWindow(QWidget):
         self._p = project_io.Project()
         self._pTree = ET.ElementTree()
         # widgets for multithread
-        self._lyExe = QGridLayout()
         self._qst_exe_button = QStackedWidget()
         self._qst_exe_param = QStackedWidget()
         self._qpr_exe_progress = QProgressBar()
@@ -264,7 +263,7 @@ class TFWindow(QWidget):
         self._qst_exe_param.setCurrentIndex(0)
         self._qst_exe_button.setCurrentIndex(0)
         
-        grid = self._lyExe
+        grid = QGridLayout()
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
         grid.addWidget(QLabel("Parameter Line\n{i} for input\n{o} for output"), 1, 0)
@@ -274,8 +273,7 @@ class TFWindow(QWidget):
         grid.addWidget(self._qle_cur_ver, 3, 1)
         grid.addWidget(self._qst_exe_param, 4, 0)
         grid.addWidget(self._qst_exe_button, 4, 1)
-        exe_region.setLayout(self._lyExe)
-        #exe_region.setLayout(grid)
+        exe_region.setLayout(grid)
         return exe_region
 
     def create_ss_region(self):
@@ -335,29 +333,11 @@ class TFWindow(QWidget):
     def new_run_button(self):
         self._qst_exe_button.setCurrentIndex(0)
         self._qst_exe_param.setCurrentIndex(0)
-        # self._lyExe.removeWidget(self._qpb_exe_stop)
-        # self._lyExe.removeWidget(self._qpr_exe_progress)
-        
-        # self._qpb_exe_run = QPushButton('Run Demo', self)
-        # self._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
-        # self._qpb_exe_param = QPushButton("命令预览", self)
-        # self._qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
-
-        # self._lyExe.addWidget(self._qpb_exe_run, 4, 1)
-        # self._lyExe.addWidget(self._qpb_exe_param, 4, 0)
 
 
     def new_stop_button(self):
         self._qst_exe_button.setCurrentIndex(1)
         self._qst_exe_param.setCurrentIndex(1)
-        # self._lyExe.removeWidget(self._qpb_exe_run)
-        # self._lyExe.removeWidget(self._qpb_exe_param)
-        # self._qpb_exe_stop = QPushButton('中断', self)
-        # self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
-        # self._qpr_exe_progress = QProgressBar()
-        # self._qpr_exe_progress.setRange(0, 1)
-        # self._lyExe.addWidget(self._qpb_exe_stop, 4, 1)
-        # self._lyExe.addWidget(self._qpr_exe_progress, 4, 0)
 
 
     def exe_progress(self, p):
