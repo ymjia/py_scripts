@@ -131,6 +131,7 @@ class TFWindow(QWidget):
     def create_project_manage(self):
         manage = QGroupBox("Project Manage")
         qpb_new = QPushButton("New Project")
+        qpb_new.setStyleSheet("background-color:#9a9a9a")
         qpb_delete = QPushButton("Delete Project")
         qpb_save = QPushButton("Save Project")
         qpb_load = QPushButton("Load Project")
@@ -154,6 +155,7 @@ class TFWindow(QWidget):
         grid = QGridLayout()
         self.get_f_bsw(self._qle_conf_file, grid, 0, "Configuration File", "xml")
         qpb_set_dir_in = QPushButton("Browse..")
+        qpb_set_dir_in.setStyleSheet("background-color:#9a9a9a")
         grid.addWidget(QLabel("Input Directory"), 1, 0)
         grid.addWidget(self._qle_dir_in, 1, 1)
         grid.addWidget(qpb_set_dir_in, 1, 2)
@@ -250,6 +252,7 @@ class TFWindow(QWidget):
         qpb_exe_run = QPushButton('Run Demo')
         qpb_exe_stop = QPushButton('中断')
         qpb_exe_param = QPushButton("命令预览", self)
+        qpb_exe_stop.setStyleSheet("background-color: red")
         qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
         qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
         qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
