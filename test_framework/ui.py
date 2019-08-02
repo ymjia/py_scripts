@@ -8,7 +8,7 @@ import sys
 import datetime
 
 import xml.etree.ElementTree as ET
-from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
+from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout, QStackedWidget,
                              QGroupBox, QListView, QHBoxLayout, QTreeView, QProgressBar,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
@@ -30,12 +30,8 @@ class TFWindow(QWidget):
         self._pTree = ET.ElementTree()
         # widgets for multithread
         self._lyExe = QGridLayout()
-        self._qpb_exe_run = QPushButton('Run Demo')
-        self._qpb_exe_stop = QPushButton('中断')
-        self._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
-        self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
-        self._qpb_exe_param = QPushButton("命令预览", self)
-        self._qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
+        self._qst_exe_button = QStackedWidget()
+        self._qst_exe_param = QStackedWidget()
         self._qpr_exe_progress = QProgressBar()
         # info widget for updating infomation
         # text
@@ -250,8 +246,25 @@ class TFWindow(QWidget):
         exe_region = QGroupBox("Executable Configuration")
         qpb_cmd_his = QPushButton("历史命令", self)
         qpb_cmd_his.clicked.connect(self.slot_show_cmd_history)
+
+        qpb_exe_run = QPushButton('Run Demo')
+        qpb_exe_stop = QPushButton('中断')
+        qpb_exe_param = QPushButton("命令预览", self)
+        qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
+        qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
+        qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
+        # initial stack widget
+        # 1st group
+        self._qst_exe_param.addWidget(qpb_exe_param)
+        self._qst_exe_button.addWidget(qpb_exe_run)
+        # 2nd group
+        self._qst_exe_param.addWidget(self._qpr_exe_progress)
+        self._qst_exe_button.addWidget(qpb_exe_stop)
+        # initi group
+        self._qst_exe_param.setCurrentIndex(0)
+        self._qst_exe_button.setCurrentIndex(0)
+        
         grid = self._lyExe
-        #grid = QGridLayout()
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
         grid.addWidget(QLabel("Parameter Line\n{i} for input\n{o} for output"), 1, 0)
@@ -259,8 +272,8 @@ class TFWindow(QWidget):
         grid.addWidget(self._qpt_exe_param, 1, 1, 2, 1)
         grid.addWidget(QLabel('Use Version Name'), 3, 0)
         grid.addWidget(self._qle_cur_ver, 3, 1)
-        grid.addWidget(self._qpb_exe_param, 4, 0)
-        grid.addWidget(self._qpb_exe_run, 4, 1)
+        grid.addWidget(self._qst_exe_param, 4, 0)
+        grid.addWidget(self._qst_exe_button, 4, 1)
         exe_region.setLayout(self._lyExe)
         #exe_region.setLayout(grid)
         return exe_region
@@ -320,27 +333,31 @@ class TFWindow(QWidget):
         self._cmdDialog.show()
 
     def new_run_button(self):
-        self._lyExe.removeWidget(self._qpb_exe_stop)
-        self._lyExe.removeWidget(self._qpr_exe_progress)
+        self._qst_exe_button.setCurrentIndex(0)
+        self._qst_exe_param.setCurrentIndex(0)
+        # self._lyExe.removeWidget(self._qpb_exe_stop)
+        # self._lyExe.removeWidget(self._qpr_exe_progress)
         
-        self._qpb_exe_run = QPushButton('Run Demo', self)
-        self._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
-        self._qpb_exe_param = QPushButton("命令预览", self)
-        self._qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
+        # self._qpb_exe_run = QPushButton('Run Demo', self)
+        # self._qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
+        # self._qpb_exe_param = QPushButton("命令预览", self)
+        # self._qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
 
-        self._lyExe.addWidget(self._qpb_exe_run, 4, 1)
-        self._lyExe.addWidget(self._qpb_exe_param, 4, 0)
+        # self._lyExe.addWidget(self._qpb_exe_run, 4, 1)
+        # self._lyExe.addWidget(self._qpb_exe_param, 4, 0)
 
 
     def new_stop_button(self):
-        self._lyExe.removeWidget(self._qpb_exe_run)
-        self._lyExe.removeWidget(self._qpb_exe_param)
-        self._qpb_exe_stop = QPushButton('中断', self)
-        self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
-        self._qpr_exe_progress = QProgressBar()
-        self._qpr_exe_progress.setRange(0, 1)
-        self._lyExe.addWidget(self._qpb_exe_stop, 4, 1)
-        self._lyExe.addWidget(self._qpr_exe_progress, 4, 0)
+        self._qst_exe_button.setCurrentIndex(1)
+        self._qst_exe_param.setCurrentIndex(1)
+        # self._lyExe.removeWidget(self._qpb_exe_run)
+        # self._lyExe.removeWidget(self._qpb_exe_param)
+        # self._qpb_exe_stop = QPushButton('中断', self)
+        # self._qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
+        # self._qpr_exe_progress = QProgressBar()
+        # self._qpr_exe_progress.setRange(0, 1)
+        # self._lyExe.addWidget(self._qpb_exe_stop, 4, 1)
+        # self._lyExe.addWidget(self._qpr_exe_progress, 4, 0)
 
 
     def exe_progress(self, p):
