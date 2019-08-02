@@ -9,8 +9,8 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "c:/data/xls/input_6/"
-dir_output = "c:/data/xls/output_6/"
+dir_input = "c:/data/xls/1908/"
+dir_output = "c:/data/xls/output_1908/"
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
@@ -200,10 +200,10 @@ def load_verify_item(ver_table, ver_list):
     ws = ver_table.active
     rid = 2
     for r in ws.iter_rows(min_row=2, max_col=8, values_only=True):
-        cid = r[1]
+        cid = r[2]
         #cid = r[2]
         ver_map[cid] = len(ver_list)
-        ver_list.append(CheckItem(cid, float(r[4]), r[7], rid))
+        ver_list.append(CheckItem(cid, float(r[7]), r[4], rid))
         #ver_list.append(CheckItem(cid, float(r[7]), r[4], rid))
         rid += 1
 

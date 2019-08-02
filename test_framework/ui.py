@@ -73,7 +73,6 @@ class TFWindow(QWidget):
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
 
-
     def fill_proj_list(self):
         m = QStandardItemModel()
         flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled

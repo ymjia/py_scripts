@@ -45,3 +45,6 @@ class ExeRunThread(QThread):
         if ver != "" and ver not in p_obj._ver:
             p_obj._ver.append(ver)
             self._mainWindow.fill_ui_info(p_obj)
+
+    def closeEvent(self):
+        self._sigProgress.cancel()

@@ -34,6 +34,9 @@ class CMDHistory(QWidget):
 
     def create_xml(self):
         if not os.path.exists(self._file):
+            dir_f = os.path.dirname(self._file)
+            if not os.path.exists(dir_f):
+                os.makedirs(dir_f)
             root_new = ET.Element("cmd_history")
             self._cmdTree = ET.ElementTree(root_new)
             self._cmdTree.write(self._file)

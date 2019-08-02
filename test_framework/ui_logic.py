@@ -517,6 +517,8 @@ def load_ptree_obj(ui):
     file_lp = os.path.join(dir_lp, "tf_proj.xml")
     if not os.path.exists(file_lp):
         # create new xml
+        if not os.path.exists(dir_lp):
+            os.makedirs(dir_lp)
         root_new = ET.Element("projects")
         ui._pTree = ET.ElementTree(root_new)
         ui._pTree.write(file_lp)
