@@ -32,6 +32,7 @@ class TFWindow(QWidget):
         self._qst_exe_button = QStackedWidget()
         self._qst_exe_param = QStackedWidget()
         self._qpr_exe_progress = QProgressBar()
+        self._qpr_exe_progress.setRange(0, 100)
         # info widget for updating infomation
         # text
         self._qle_conf_file = QLineEdit()
@@ -341,7 +342,6 @@ class TFWindow(QWidget):
 
 
     def exe_progress(self, p):
-        self._qpt_exe_param.setPlainText(str(p))
         self._qpr_exe_progress.setValue(p)
 
     def exe_finish(self):

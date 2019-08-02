@@ -30,17 +30,17 @@ class ExeRunThread(QThread):
         if len(list_case) < 1:
             QMessageBox.about(self._mainWindow, "Error", "No Case Checked!!")
             return
-        pg = float(1) / len(list_case)
-        cur_pg = 0
+        pg = 95 / len(list_case)
+        cur_pg = 5
         for case in list_case:
-            self.sleep(2)
-            cur_pg += pg
             self._sigProgress.emit(cur_pg)
+            cur_pg += pg
             param = ui_logic.generate_exe_param(p_obj, case)
             in_param = param.split(" ")
             in_param.insert(0, exe)
             proc_demo = subprocess.Popen(in_param, cwd=os.path.dirname(exe))
             proc_demo.wait()
+        self._sigProgress.emit(99)
         ver = p_obj._eVer
         if ver != "" and ver not in p_obj._ver:
             p_obj._ver.append(ver)
