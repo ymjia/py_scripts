@@ -104,7 +104,7 @@ def find_next_number(input_str, pos):
 def parse_check_id(input_id, out_list=[]):
     out_list.clear()
     if len(input_id) <= 8:
-        return
+        return 1
     prefix = input_id[0:8]
     #lenth judge for short ids
     if not prefix.isdigit():
@@ -190,7 +190,8 @@ def id_group_equal(ver_list, ap_item):
         if res_n2 is True:  # if first n-2 equal
             return True
     return False
-    
+
+# ##################### FILE LOAD ####################    
 # column
 #          check  amount  sup
 # verify :   B      E      H
@@ -240,7 +241,7 @@ def load_ap_input(ap_table, ap_input_list):
             old_item = ap_input_list[old_pos]
             old_item.amount += am
             old_item.dup_list.append(rid)
-
+# end##################### FILE LOAD ####################    
 
 ## load ap check items
 ## @return:
