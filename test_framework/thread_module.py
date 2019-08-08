@@ -45,7 +45,11 @@ class ExeRunThread(QThread):
             if not os.path.exists(dir_log):
                 os.makedirs(dir_log)
             st = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-            self._fLog = open(os.path.join(dir_log, "tfl_{}.log".format(st)), "w")
+            file_log = os.path.join(dir_log, "tfl_{}.log".format(st))
+            try:
+                self._fLog = open(file_log, "w")
+            except IOError:
+                print("Warning! Fail to open log file {}".format(file_log))
             # run demo
             param = ui_logic.generate_exe_param(p_obj, case)
             in_param = param.split(" ")
@@ -54,7 +58,9 @@ class ExeRunThread(QThread):
                 in_param, cwd=os.path.dirname(exe),
                 stdout=self._fLog, stderr=self._fLog)
             self._demoProc.wait()
-            self._fLog.close()
+            if self._fLog is not None:
+                if not self._fLog.closed:
+                    self._fLog.close()
         self._sigProgress.emit(99)
         ver = p_obj._eVer
         if ver != "" and ver not in p_obj._ver:
