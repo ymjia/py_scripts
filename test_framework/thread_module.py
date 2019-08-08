@@ -19,6 +19,7 @@ class ExeRunThread(QThread):
     def __init__(self, w_main):
         QThread.__init__(self)
         self._mainWindow = w_main
+        self._demoProc = None
 
     def __del__(self):
         self.wait()
@@ -38,8 +39,8 @@ class ExeRunThread(QThread):
             param = ui_logic.generate_exe_param(p_obj, case)
             in_param = param.split(" ")
             in_param.insert(0, exe)
-            proc_demo = subprocess.Popen(in_param, cwd=os.path.dirname(exe))
-            proc_demo.wait()
+            self._demoProc = subprocess.Popen(in_param, cwd=os.path.dirname(exe))
+            self._demoProc.wait()
         self._sigProgress.emit(99)
         ver = p_obj._eVer
         if ver != "" and ver not in p_obj._ver:

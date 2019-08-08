@@ -256,9 +256,9 @@ def generate_exe_param(p_obj, case):
     p_o = os.path.join(dir_o, case, ver) + "/"
     param = p_obj._exeParam.replace("{i}", p_i).replace("{o}", p_o)
     if sys.platform == "win32":
-        return param.replace("/", "\\").relpace("\\\\", "\\")
+        return param.replace("/", "\\").replace("\\\\", "\\")
     else:
-        return param.replace("\\", "/").relpace("//", "/")
+        return param.replace("\\", "/").replace("//", "/")
 
 
 def slot_exe_run(ui):
@@ -280,6 +280,8 @@ def slot_exe_run(ui):
 
 def slot_exe_stop(ui):
     if ui._threadExe is not None:
+        if ui._threadExe._demoProc is not None:
+            ui._threadExe._demoProc.kill()
         ui._threadExe.terminate()
         ui._threadExe.wait()
         QMessageBox.about(ui, "Message", "Demo Terminated!")
