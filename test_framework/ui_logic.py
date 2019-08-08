@@ -282,6 +282,9 @@ def slot_exe_stop(ui):
     if ui._threadExe is not None:
         if ui._threadExe._demoProc is not None:
             ui._threadExe._demoProc.kill()
+        if ui._threadExe._fLog is not None:
+            if not ui._threadExe._fLog.closed:
+                ui._threadExe._fLog.close()
         ui._threadExe.terminate()
         ui._threadExe.wait()
         QMessageBox.about(ui, "Message", "Demo Terminated!")
