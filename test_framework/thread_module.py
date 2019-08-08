@@ -5,6 +5,7 @@
 
 
 import subprocess
+import time
 import os.path
 import datetime
 import sys
@@ -13,6 +14,7 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from test_framework import ui_logic
+from test_framework import utils
 
 
 class ExeRunThread(QThread):
@@ -56,14 +58,22 @@ class ExeRunThread(QThread):
             param = ui_logic.generate_exe_param(p_obj, case)
             in_param = param.split(" ")
             in_param.insert(0, exe)
-            self._demoProc = subprocess.Popen(
-                in_param, cwd=os.path.dirname(exe),
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            for line in self._demoProc.stdout:
-                lined = line.decode('utf-8')
-                sys.stdout.write(lined)
-                self._fLog.write(lined)
-            self._demoProc.wait()
+            self._demoProc = utils.ProcessMonitor(in_param)
+            try:
+                self._demoProc.execute()
+                while self._demoProc.poll():
+                    time.sleep(.5)
+                for line in self._demoProc.p.stdout:
+                    lined = line.decode('utf-8')
+                    sys.stdout.write(lined)
+                    self._fLog.write(lined)
+            finally:
+                self._demoProc.close()
+            print('return code: {}'.format(self._demoProc.p.returncode))
+            print('time: {}'.format(self._demoProc.t1 - self._demoProc.t0))
+            print('max_vms_memory: {}'.format(self._demoProc.max_vms_memory))
+            print('max_rss_memory: {}'.format(self._demoProc.max_rss_memory))
+            #self._demoProc.wait()
             if self._fLog is not None:
                 if not self._fLog.closed:
                     self._fLog.close()

@@ -125,7 +125,9 @@ class ProcessMonitor:
         if len(self.command) < 1:
             return
         dir_exe = os.path.dirname(self.command[0])
-        self.p = subprocess.Popen(self.command, shell=False, cwd=dir_exe)
+        self.p = subprocess.Popen(
+            self.command, shell=False, cwd=dir_exe,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.execution_state = True
 
     def poll(self):

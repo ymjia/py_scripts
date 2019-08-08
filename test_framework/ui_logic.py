@@ -281,7 +281,7 @@ def slot_exe_run(ui):
 def slot_exe_stop(ui):
     if ui._threadExe is not None:
         if ui._threadExe._demoProc is not None:
-            ui._threadExe._demoProc.kill()
+            ui._threadExe._demoProc.close(kill=True)
         if ui._threadExe._fLog is not None:
             if not ui._threadExe._fLog.closed:
                 ui._threadExe._fLog.close()
