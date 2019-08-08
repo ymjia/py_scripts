@@ -4,9 +4,12 @@
 ## @author jiayanming
 
 import os.path
-import math
-import datetime
-from openpyxl import *
+import sys
+import psutil
+import time
+import subprocess
+import socket
+from openpyxl import Workbook
 
 
 def parse_time(time_str):
@@ -111,10 +114,108 @@ def get_file_list(folder):
     return res
 
 
+def get_sys_info():
+    res = []
+    res.append("CPU_freq {}MHz\n".format(psutil.cpu_freq().max))
+    res.append("CPU_core {}\n".format(psutil.cpu_count(logical=False)))
+    res.append("CPU_thread {}\n".format(psutil.cpu_count()))
+    res.append("MEM_total {0:.2f}MB\n".format(psutil.virtual_memory().total / 1e6))
+    res.append("MEM_virtual {0:.2f}MB\n".format(psutil.swap_memory().total / 1e6))
+    net_info = psutil.net_if_addrs()
+    net_id = 0
+    for net in net_info:
+        cur_net = net_info[net]
+        for item in cur_net:
+            if item.family != socket.AF_INET:
+                continue
+            res.append("PC_ip_{} {}\n".format(net_id, item.address))
+            net_id += 1
+    res.append("USER {}\n".format(os.getlogin()))
+    res.append("Platform {}\n".format(sys.platform))
+    return res
+
+
+class ProcessMonitor:
+    def __init__(self, command):
+        self.command = command
+        self.execution_state = False
+
+    def execute(self):
+        self.max_vmem = 0
+        self.max_pmem = 0
+        self.t1 = None
+        self.t0 = time.time()
+        if len(self.command) < 1:
+            return
+        dir_exe = os.path.dirname(self.command[0])
+        self.p = subprocess.Popen(
+            self.command, shell=False, cwd=dir_exe,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.execution_state = True
+
+    def poll(self):
+        if not self.check_execution_state():
+            return False
+        self.t1 = time.time()
+        try:
+            pp = psutil.Process(self.p.pid)
+            # obtain a list of the subprocess and all its descendants
+            descendants = list(pp.children(recursive=True))
+            descendants = descendants + [pp]
+
+            rss_memory = 0
+            vms_memory = 0
+
+            #calculate and sum up the memory of the subprocess and all its descendants 
+            for descendant in descendants:
+                try:
+                    mem_info = descendant.memory_info()
+                    rss_memory += mem_info[0]
+                    vms_memory += mem_info[1]
+                except psutil.NoSuchProcess:
+                    #sometimes a subprocess descendant will have terminated between the tim
+                    # we obtain a list of descendants, and the time we actually poll this
+                    # descendant's memory usage.
+                    pass
+            self.max_vmem = max(self.max_vmem, vms_memory)
+            self.max_pmem = max(self.max_pmem, rss_memory)
+        except psutil.NoSuchProcess:
+            return self.check_execution_state()
+        return self.check_execution_state()
+
+    def is_running(self):
+        return psutil.pid_exists(self.p.pid) and self.p.poll() is None
+
+    def check_execution_state(self):
+        if not self.execution_state:
+            return False
+        if self.is_running():
+            return True
+        self.executation_state = False
+        self.t1 = time.time()
+        return False
+
+    def close(self, kill=False):
+        try:
+            pp = psutil.Process(self.p.pid)
+            if kill:
+                pp.kill()
+            else:
+                pp.terminate()
+        except psutil.NoSuchProcess:
+            pass
+
+
 if __name__ == "__main__":
-    file_out = "c:/tmp/time.xlsx"
-    l_case = ["case1", "case2"]
-    l_ver = ["v11", "v12"]
-    #l_alg = ["merge", "smooth"]
-    dir_out = "c:/data/test_framework/management/project1/output/"
-    get_compare_table(dir_out, l_case, l_ver, file_out)
+    f = open("c:/tmp/sys.txt", "w")
+    sys_info = get_sys_info()
+    for l in sys_info:
+        f.write(l)
+    f.close()
+    # I am executing "make target" here
+    # file_out = "c:/tmp/time.xlsx"
+    # l_case = ["case1", "case2"]
+    # l_ver = ["v11", "v12"]
+    # #l_alg = ["merge", "smooth"]
+    # dir_out = "c:/data/test_framework/management/project1/output/"
+    # get_compare_table(dir_out, l_case, l_ver, file_out)
