@@ -254,8 +254,11 @@ def generate_exe_param(p_obj, case):
         p_i = i_list[0]
     # get output param
     p_o = os.path.join(dir_o, case, ver) + "/"
-    param = p_obj._exeParam
-    return param.replace("{i}", p_i).replace("{o}", p_o)
+    param = p_obj._exeParam.replace("{i}", p_i).replace("{o}", p_o)
+    if sys.platform == "win32":
+        return param.replace("/", "\\").relpace("\\\\", "\\")
+    else:
+        return param.replace("\\", "/").relpace("//", "/")
 
 
 def slot_exe_run(ui):
