@@ -70,12 +70,12 @@ class ExeRunThread(QThread):
             try:
                 self._demoProc.execute()
                 while self._demoProc.poll():
-                    for line in self._demoProc.p.stdout:
-                        lined = line.decode('utf-8')
-                        sys.stdout.write(lined)
-                        if self._fLog is not None:
-                            self._fLog.write(lined)
                     time.sleep(.5)
+                for line in self._demoProc.p.stdout:
+                    lined = line.decode('utf-8')
+                    sys.stdout.write(lined)
+                    if self._fLog is not None:
+                        self._fLog.write(lined)
             finally:
                 self._demoProc.close()
             if self._fSts is not None:
