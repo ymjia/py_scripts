@@ -49,6 +49,7 @@ class ExeRunThread(QThread):
             try:
                 self._fLog = open(file_log, "w")
             except IOError:
+                self._fLog = None
                 print("Warning! Fail to open log file {}".format(file_log))
             # run demo
             param = ui_logic.generate_exe_param(p_obj, case)
