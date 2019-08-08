@@ -7,6 +7,7 @@
 import subprocess
 import os.path
 import datetime
+import sys
 
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -57,7 +58,11 @@ class ExeRunThread(QThread):
             in_param.insert(0, exe)
             self._demoProc = subprocess.Popen(
                 in_param, cwd=os.path.dirname(exe),
-                stdout=self._fLog, stderr=self._fLog)
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            for line in self._demoProc.stdout:
+                lined = line.decode('utf-8')
+                sys.stdout.write(lined)
+                self._fLog.write(lined)
             self._demoProc.wait()
             if self._fLog is not None:
                 if not self._fLog.closed:
