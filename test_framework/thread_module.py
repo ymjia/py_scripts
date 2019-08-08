@@ -62,17 +62,17 @@ class ExeRunThread(QThread):
             try:
                 self._demoProc.execute()
                 while self._demoProc.poll():
+                    for line in self._demoProc.p.stdout:
+                        lined = line.decode('utf-8')
+                        sys.stdout.write(lined)
+                        self._fLog.write(lined)
                     time.sleep(.5)
-                for line in self._demoProc.p.stdout:
-                    lined = line.decode('utf-8')
-                    sys.stdout.write(lined)
-                    self._fLog.write(lined)
             finally:
                 self._demoProc.close()
             print('return code: {}'.format(self._demoProc.p.returncode))
             print('time: {}'.format(self._demoProc.t1 - self._demoProc.t0))
-            print('max_vms_memory: {}'.format(self._demoProc.max_vms_memory))
-            print('max_rss_memory: {}'.format(self._demoProc.max_rss_memory))
+            print('max_virtual_memory: {}'.format(self._demoProc.max_vms_memory))
+            print('max_memory: {}'.format(self._demoProc.max_rss_memory))
             #self._demoProc.wait()
             if self._fLog is not None:
                 if not self._fLog.closed:
