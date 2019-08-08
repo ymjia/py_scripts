@@ -112,7 +112,7 @@ def get_file_list(folder):
     return res
 
 
-class ProcessTimer:
+class ProcessMonitor:
     def __init__(self, command):
         self.command = command
         self.execution_state = False
@@ -122,7 +122,10 @@ class ProcessTimer:
         self.max_rss_memory = 0
         self.t1 = None
         self.t0 = time.time()
-        self.p = subprocess.Popen(self.command, shell=False)
+        if len(self.command) < 1:
+            return
+        dir_exe = os.path.dirname(self.command[0])
+        self.p = subprocess.Popen(self.command, shell=False, cwd=dir_exe)
         self.execution_state = True
 
     def poll(self):
@@ -132,7 +135,7 @@ class ProcessTimer:
         try:
             pp = psutil.Process(self.p.pid)
             # obtain a list of the subprocess and all its descendants
-            descendants = list(pp.get_children(recursive=True))
+            descendants = list(pp.children(recursive=True))
             descendants = descendants + [pp]
 
             rss_memory = 0
@@ -141,17 +144,17 @@ class ProcessTimer:
             #calculate and sum up the memory of the subprocess and all its descendants 
             for descendant in descendants:
                 try:
-                    mem_info = descendant.get_memory_info()
+                    mem_info = descendant.memory_info()
                     rss_memory += mem_info[0]
                     vms_memory += mem_info[1]
-                except psutil.error.NoSuchProcess:
+                except psutil.NoSuchProcess:
                     #sometimes a subprocess descendant will have terminated between the tim
                     # we obtain a list of descendants, and the time we actually poll this
                     # descendant's memory usage.
                     pass
-            self.max_vms_memory = max(self.max_vms_memory,vms_memory)
-            self.max_rss_memory = max(self.max_rss_memory,rss_memory)
-        except psutil.error.NoSuchProcess:
+            self.max_vms_memory = max(self.max_vms_memory, vms_memory)
+            self.max_rss_memory = max(self.max_rss_memory, rss_memory)
+        except psutil.NoSuchProcess:
             return self.check_execution_state()
         return self.check_execution_state()
 
@@ -174,14 +177,17 @@ class ProcessTimer:
                 pp.kill()
             else:
                 pp.terminate()
-        except psutil.error.NoSuchProcess:
+        except psutil.NoSuchProcess:
             pass
 
 
 if __name__ == "__main__":
     # I am executing "make target" here
     test_exe = "C:/data/send/autoscan_socket/tools/JYMTest/JYMTest.exe"
-    ptimer = ProcessTimer(['make', 'target'])
+    param = "-a io -i c:/data/test_framework/management/project1/input/case1/old_3M.ply -o c:/data/test_framework/management/project1/output/case1/test/test"
+    p_list = param.split(" ")
+    p_list.insert(0, test_exe)
+    ptimer = ProcessMonitor(p_list)
     try:
         ptimer.execute()
         # poll as often as possible; otherwise the subprocess might 
