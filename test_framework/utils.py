@@ -4,9 +4,11 @@
 ## @author jiayanming
 
 import os.path
+import sys
 import psutil
 import time
 import subprocess
+import socket
 from openpyxl import Workbook
 
 
@@ -112,14 +114,35 @@ def get_file_list(folder):
     return res
 
 
+def get_sys_info():
+    res = []
+    res.append("CPU_freq {}MHz\n".format(psutil.cpu_freq().max))
+    res.append("CPU_core {}\n".format(psutil.cpu_count(logical=False)))
+    res.append("CPU_thread {}\n".format(psutil.cpu_count()))
+    res.append("MEM_total {0:.2f}MB\n".format(psutil.virtual_memory().total / 1e6))
+    res.append("MEM_virtual {0:.2f}MB\n".format(psutil.swap_memory().total / 1e6))
+    net_info = psutil.net_if_addrs()
+    net_id = 0
+    for net in net_info:
+        cur_net = net_info[net]
+        for item in cur_net:
+            if item.family != socket.AF_INET:
+                continue
+            res.append("PC_ip_{} {}\n".format(net_id, item.address))
+            net_id += 1
+    res.append("USER {}\n".format(os.getlogin()))
+    res.append("Platform {}\n".format(sys.platform))
+    return res
+
+
 class ProcessMonitor:
     def __init__(self, command):
         self.command = command
         self.execution_state = False
 
     def execute(self):
-        self.max_vms_memory = 0
-        self.max_rss_memory = 0
+        self.max_vmem = 0
+        self.max_pmem = 0
         self.t1 = None
         self.t0 = time.time()
         if len(self.command) < 1:
@@ -154,8 +177,8 @@ class ProcessMonitor:
                     # we obtain a list of descendants, and the time we actually poll this
                     # descendant's memory usage.
                     pass
-            self.max_vms_memory = max(self.max_vms_memory, vms_memory)
-            self.max_rss_memory = max(self.max_rss_memory, rss_memory)
+            self.max_vmem = max(self.max_vmem, vms_memory)
+            self.max_pmem = max(self.max_pmem, rss_memory)
         except psutil.NoSuchProcess:
             return self.check_execution_state()
         return self.check_execution_state()
@@ -184,26 +207,12 @@ class ProcessMonitor:
 
 
 if __name__ == "__main__":
+    f = open("c:/tmp/sys.txt", "w")
+    sys_info = get_sys_info()
+    for l in sys_info:
+        f.write(l)
+    f.close()
     # I am executing "make target" here
-    test_exe = "C:/data/send/autoscan_socket/tools/JYMTest/JYMTest.exe"
-    param = "-a io -i c:/data/test_framework/management/project1/input/case1/old_3M.ply -o c:/data/test_framework/management/project1/output/case1/test/test"
-    p_list = param.split(" ")
-    p_list.insert(0, test_exe)
-    ptimer = ProcessMonitor(p_list)
-    try:
-        ptimer.execute()
-        # poll as often as possible; otherwise the subprocess might 
-        # "sneak" in some extra memory usage while you aren't looking
-        while ptimer.poll():
-            time.sleep(.5)
-    finally:
-        # make sure that we don't leave the process dangling?
-        ptimer.close()
-
-    print('return code: {}'.format(ptimer.p.returncode))
-    print('time: {}'.format(ptimer.t1 - ptimer.t0))
-    print('max_vms_memory: {}'.format(ptimer.max_vms_memory))
-    print('max_rss_memory: {}'.format(ptimer.max_rss_memory))
     # file_out = "c:/tmp/time.xlsx"
     # l_case = ["case1", "case2"]
     # l_ver = ["v11", "v12"]
