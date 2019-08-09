@@ -10,6 +10,7 @@ import psutil
 import time
 import threading
 import socket
+import glob
 from openpyxl import Workbook
 
 
@@ -18,9 +19,32 @@ def parse_time(time_str):
     return tuple[0], float(tuple[1])
 
 
+def get_latest_file(folder, ext):
+    list_f = glob.glob('{}/*.{}'.format(folder, ext))
+    if len(list_f) < 1:
+        return ""
+    return max(list_f, key=os.path.getctime)
+
+
+def get_sys_table(dir_o, case, ver):
+    sys = {}
+    dir_log = os.path.join(dir_o, case, ver, "logs")
+    file_sys = get_latest_file(dir_log, "sts")
+    if not os.path.exists(file_sys):
+        print("No log file in {}".format(dir_log))
+        return None
+    with open(file_sys) as f:
+        content = f.readlines()
+    str_list = [l.strip() for l in content if len(l) > 4]
+    for line in str_list:
+        name, v = line.split(" ", 1)
+        sys[name] = v
+    return sys
+
+
 # timming table
 # read timming info from output/case/version/
-def get_table(dir_o, case, ver):
+def get_time_table(dir_o, case, ver):
     times = {}
     file_time = os.path.join(dir_o, case, ver, "timmings.txt")
     if not os.path.exists(file_time):
@@ -36,7 +60,7 @@ def get_table(dir_o, case, ver):
 
 
 # generate xlsx table file
-def get_compare_table(dir_out, l_case, l_ver, file_out):
+def get_compare_table(dir_out, l_case, l_ver, file_out, table_func):
     wb = Workbook()
     ws = wb.active
     # | alg | case     |    case2   |
@@ -72,7 +96,8 @@ def get_compare_table(dir_out, l_case, l_ver, file_out):
     time_quad = []
     for case in l_case:
         for ver in l_ver:
-            t_alg = get_table(dir_out, case, ver)
+            #t_alg = get_time_table(dir_out, case, ver)
+            t_alg = table_func(dir_out, case, ver)
             if t_alg is None:
                 continue
             for alg, t in t_alg.items():
@@ -97,7 +122,11 @@ def get_compare_table(dir_out, l_case, l_ver, file_out):
     # alg name column
     for item in d_alg.items():
         ws.cell(row=item[1] + 3, column=1).value = item[0]
-    wb.save(file_out)
+    try:
+        wb.save(file_out)
+    except PermissionError:
+        return 1
+    return 0
 
 
 support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
@@ -218,15 +247,12 @@ class ProcessMonitor:
 
 
 if __name__ == "__main__":
-    f = open("c:/tmp/sys.txt", "w")
-    sys_info = get_sys_info()
-    for l in sys_info:
-        f.write(l)
-    f.close()
+    dir_log = "c:/data/test_framework/management/project1/output/case1/test/logs/"
     # I am executing "make target" here
-    # file_out = "c:/tmp/time.xlsx"
-    # l_case = ["case1", "case2"]
-    # l_ver = ["v11", "v12"]
-    # #l_alg = ["merge", "smooth"]
-    # dir_out = "c:/data/test_framework/management/project1/output/"
-    # get_compare_table(dir_out, l_case, l_ver, file_out)
+    file_out = "c:/tmp/time.xlsx"
+    l_case = ["case1", "case2"]
+    l_ver = ["test"]
+    #l_alg = ["merge", "smooth"]
+    dir_out = "c:/data/test_framework/management/project1/output/"
+    #get_compare_table(dir_out, l_case, l_ver, file_out, get_time_table)
+    get_compare_table(dir_out, l_case, l_ver, file_out, get_sys_table)
