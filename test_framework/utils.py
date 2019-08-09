@@ -5,8 +5,10 @@
 
 import os.path
 import sys
+import subprocess
 import psutil
 import time
+import threading
 import socket
 from openpyxl import Workbook
 
@@ -134,6 +136,11 @@ def get_sys_info():
     return res
 
 
+def background_monitor(pm):
+    while pm.poll():
+        time.sleep(.5)
+
+
 class ProcessMonitor:
     def __init__(self, command, f_log):
         self.command = command
@@ -150,9 +157,12 @@ class ProcessMonitor:
         dir_exe = os.path.dirname(self.command[0])
         self.p = psutil.Popen(
             self.command, shell=False, cwd=dir_exe,
-            #stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            stdout=self._fLog, stderr=self._fLog)
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.execution_state = True
+
+    def monite_execution(self):
+        t = threading.Thread(target=background_monitor, args=(self,), daemon=True)
+        t.start()
 
     def poll(self):
         if not self.check_execution_state():

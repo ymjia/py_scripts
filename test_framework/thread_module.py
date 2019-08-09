@@ -69,13 +69,12 @@ class ExeRunThread(QThread):
             self._demoProc = utils.ProcessMonitor(in_param, self._fLog)
             try:
                 self._demoProc.execute()
-                while self._demoProc.poll():
-                    time.sleep(.5)
-                # for line in self._demoProc.p.stdout:
-                #     lined = line.decode('utf-8')
-                #     sys.stdout.write(lined)
-                #     if self._fLog is not None:
-                #         self._fLog.write(lined)
+                self._demoProc.monite_execution()
+                for line in iter(self._demoProc.p.stdout.readline, b''):
+                    lined = line.decode('utf-8')
+                    sys.stdout.write(lined)
+                    self._fLog.write(lined)
+                self._demoProc.p.wait()
             finally:
                 self._demoProc.close()
             if self._fSts is not None:
