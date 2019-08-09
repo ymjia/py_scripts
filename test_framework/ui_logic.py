@@ -9,7 +9,9 @@ import datetime
 import subprocess
 import xml.etree.ElementTree as ET
 
-from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox, QInputDialog, QLineEdit, QPushButton, QAbstractItemView)
+from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox,
+                             QInputDialog, QLineEdit, QPushButton,
+                             QAbstractItemView)
 from PyQt5.QtCore import QItemSelectionModel, Qt
 
 from test_framework import project_io
@@ -112,8 +114,32 @@ def slot_generate_time_docx(ui):
     file_save = os.path.join(dir_doc, tdoc_name_final)
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
-    utils.get_compare_table(dir_o, l_case, l_ver, file_save)
-    QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
+    res = utils.get_compare_table(dir_o, l_case, l_ver, file_save, utils.get_time_table)
+    if res == 0:
+        QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
+    else:
+        QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
+
+
+def slot_generate_proc_docx(ui):
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    dir_o = p_obj._dirOutput
+    dir_doc = os.path.join(dir_o, "doc")
+    pdoc_name = p_obj._docName + "_proc"
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    pdoc_name_final = "{}_{}.xlsx".format(pdoc_name, str_time)
+    p_obj._curDocName = pdoc_name_final
+    if not os.path.exists(dir_doc):
+        os.makedirs(dir_doc)
+    file_save = os.path.join(dir_doc, pdoc_name_final)
+    l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
+    l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
+    res = utils.get_compare_table(dir_o, l_case, l_ver, file_save, utils.get_sys_table)
+    if res == 0:
+        QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
+    else:
+        QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
 
 
 def slot_open_docx(ui):

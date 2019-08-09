@@ -8,7 +8,8 @@ import sys
 import datetime
 
 import xml.etree.ElementTree as ET
-from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout, QStackedWidget,
+from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
+                             QStackedWidget,
                              QGroupBox, QListView, QHBoxLayout, QTreeView, QProgressBar,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
@@ -306,10 +307,19 @@ class TFWindow(QWidget):
         qpb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx(self))
         qpb_gt_doc = QPushButton('Time Docx', self)
         qpb_gt_doc.clicked.connect(lambda: ui_logic.slot_generate_time_docx(self))
+        qpb_gp_doc = QPushButton('Proc Docx', self)
+        qpb_gp_doc.clicked.connect(lambda: ui_logic.slot_generate_proc_docx(self))
         qpb_o_doc = QPushButton('Open Document', self)
         qpb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx(self))
         qpb_o_path = QPushButton('Open Path', self)
         qpb_o_path.clicked.connect(lambda: ui_logic.slot_open_docx_path(self))
+        qw_doc = QWidget()
+        hbox = QHBoxLayout()
+        hbox.setContentsMargins(0, 0, 0, 0)
+        hbox.addWidget(qpb_gt_doc)
+        hbox.addWidget(qpb_gp_doc)
+        hbox.addWidget(qpb_g_doc)
+        qw_doc.setLayout(hbox)
         grid = QGridLayout()
         grid.addWidget(QLabel('Case'), 1, 0)
         grid.addWidget(self._qlv_doc_case, 1, 1)
@@ -323,8 +333,7 @@ class TFWindow(QWidget):
         grid.addWidget(self._qle_doc_name, 4, 1)
         grid.addWidget(qpb_o_path, 5, 0)
         grid.addWidget(qpb_o_doc, 5, 1)
-        grid.addWidget(qpb_gt_doc, 6, 0)
-        grid.addWidget(qpb_g_doc, 6, 1)
+        grid.addWidget(qw_doc, 6, 0, 1, 2)
         doc_region.setLayout(grid)
         return doc_region
 
