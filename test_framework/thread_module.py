@@ -78,9 +78,9 @@ class ExeRunThread(QThread):
             finally:
                 self._demoProc.close()
             if self._fSts is not None:
-                self._fSts.write('Time {}\n'.format(self._demoProc.t1 - self._demoProc.t0))
-                self._fSts.write('Max_p_mem {}MB\n'.format(self._demoProc.max_pmem / 1e6))
-                self._fSts.write('Max_v_mem {}MB\n'.format(self._demoProc.max_vmem / 1e6))
+                self._fSts.write('Time {0:.2f}\n'.format(self._demoProc.t1 - self._demoProc.t0))
+                self._fSts.write('Max_p_mem {0:.2f}MB\n'.format(self._demoProc.max_pmem / 1e6))
+                self._fSts.write('Max_v_mem {0:.2f}MB\n'.format(self._demoProc.max_vmem / 1e6))
             self.release_files()
         self._sigProgress.emit(99)
         ver = p_obj._eVer
