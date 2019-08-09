@@ -7,7 +7,6 @@ import os.path
 import sys
 import psutil
 import time
-import subprocess
 import socket
 from openpyxl import Workbook
 
@@ -136,9 +135,10 @@ def get_sys_info():
 
 
 class ProcessMonitor:
-    def __init__(self, command):
+    def __init__(self, command, f_log):
         self.command = command
         self.execution_state = False
+        self._fLog = f_log
 
     def execute(self):
         self.max_vmem = 0
@@ -148,9 +148,10 @@ class ProcessMonitor:
         if len(self.command) < 1:
             return
         dir_exe = os.path.dirname(self.command[0])
-        self.p = subprocess.Popen(
+        self.p = psutil.Popen(
             self.command, shell=False, cwd=dir_exe,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            #stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            stdout=self._fLog, stderr=self._fLog)
         self.execution_state = True
 
     def poll(self):
