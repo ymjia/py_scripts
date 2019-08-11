@@ -34,6 +34,13 @@ class ExeRunThread(QThread):
         p_obj = self._mainWindow._p
         exe = p_obj._exeDemo
         ext = os.path.splitext(exe)[1]
+        exe_py = ""
+        if ext == ".py":
+            # findout python interpreter
+            if sys.platform == "win32":
+                exe_py = "c:/python/python.exe"
+            else:
+                exe_py = os.path.join(os.__file__.split("lib")[0], "bin", "python3"))
         # prepare exe parameters
         dir_o = p_obj._dirOutput
         cur_ver = p_obj._eVer
@@ -69,7 +76,7 @@ class ExeRunThread(QThread):
             in_param = param.split(" ")
             in_param.insert(0, exe)
             if ext == ".py":
-                in_param.insert(0, os.__file__)
+                in_param.insert(0, exe_py)
             self._demoProc = utils.ProcessMonitor(in_param, self._fLog)
             try:
                 run_st = self._demoProc.execute()
