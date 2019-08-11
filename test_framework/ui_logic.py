@@ -41,7 +41,7 @@ def explore(path):
         if sys.platform == "win32":
             subprocess.call([FILEBROWSER, '/select,', path])
         else:
-            subprocess.call([FILEBROWSER, path])
+            subprocess.call([FILEBROWSER, os.path.dirname(path)])
 
 
 def ptree_add_item(pt, path):
@@ -248,7 +248,7 @@ def slot_get_file(qle, f_type):
     if f_type == "xml":
         path, _filter = QFileDialog.getOpenFileName(None, 'Open File', d, 'XML (*.xml)')
     else:
-        path, _filter = QFileDialog.getOpenFileName(None, 'Open File', d, 'EXE (*.exe)')
+        path, _filter = QFileDialog.getOpenFileName(None, 'Open File', d, 'EXE (*.exe);;PY (*.py);;All Files (*)')
     if path is not None and path != "":
         qle.setText(path)
 
