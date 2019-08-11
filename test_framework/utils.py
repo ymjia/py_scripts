@@ -175,6 +175,7 @@ class ProcessMonitor:
         self.command = command
         self.execution_state = False
         self._fLog = f_log
+        self.p = None
 
     def execute(self):
         self.max_vmem = 0
@@ -236,6 +237,8 @@ class ProcessMonitor:
         return False
 
     def close(self, kill=False):
+        if self.p is None:
+            return
         try:
             pp = psutil.Process(self.p.pid)
             if kill:

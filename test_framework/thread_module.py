@@ -33,6 +33,8 @@ class ExeRunThread(QThread):
     def run(self):
         p_obj = self._mainWindow._p
         exe = p_obj._exeDemo
+        ext = os.path.splitext(exe)[1]
+        # prepare exe parameters
         dir_o = p_obj._dirOutput
         cur_ver = p_obj._eVer
         list_case = ui_logic.get_checked_items(p_obj._case, p_obj._eCaseCheck)
@@ -66,6 +68,8 @@ class ExeRunThread(QThread):
             param = ui_logic.generate_exe_param(p_obj, case)
             in_param = param.split(" ")
             in_param.insert(0, exe)
+            if ext == ".py":
+                in_param.insert(0, os.__file__)
             self._demoProc = utils.ProcessMonitor(in_param, self._fLog)
             try:
                 self._demoProc.execute()

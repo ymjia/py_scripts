@@ -32,6 +32,4 @@ def read_compare_config(file_config):
             alg_list = read_config_list(line, "alg")
     return case_list, ver_list, alg_list
 
-print(sys.argv[1])
-
-read_compare_config("c:/data/test_framework/management/project1/output/ss_config.txt")
+print(os.__file__)
