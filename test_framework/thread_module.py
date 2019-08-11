@@ -72,7 +72,9 @@ class ExeRunThread(QThread):
                 in_param.insert(0, os.__file__)
             self._demoProc = utils.ProcessMonitor(in_param, self._fLog)
             try:
-                self._demoProc.execute()
+                run_st = self._demoProc.execute()
+                if not run_st: # return when executable face error
+                    continue
                 self._demoProc.monite_execution()
                 for line in iter(self._demoProc.p.stdout.readline, b''):
                     lined = line.decode('utf-8')

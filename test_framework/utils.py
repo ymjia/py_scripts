@@ -185,10 +185,15 @@ class ProcessMonitor:
         if len(self.command) < 1:
             return
         dir_exe = os.path.dirname(self.command[0])
-        self.p = psutil.Popen(
-            self.command, shell=False, cwd=dir_exe,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        try:
+            self.p = psutil.Popen(
+                self.command, shell=False, cwd=dir_exe,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        except:
+            print("Running Error in: {}".format(" ".join(self.command)))
+            return False
         self.execution_state = True
+        return True
 
     def monite_execution(self):
         t = threading.Thread(target=background_monitor, args=(self,), daemon=True)
