@@ -101,7 +101,8 @@ def find_next_number(input_str, pos):
 ## 1 prefix invalid
 ## 2 prefix valid & no valid number following
 ## 3 ambiguous parse
-def parse_check_id(input_id, out_list=[]):
+def parse_check_id(ap_item, out_list=[]):
+    input_id = ap_item.check_id
     out_list.clear()
     if len(input_id) <= 8:
         return 1
@@ -109,6 +110,10 @@ def parse_check_id(input_id, out_list=[]):
     #lenth judge for short ids
     if not prefix.isdigit():
         return 1
+    if prefix in ver_map:
+        ap_item.map_id = ver_map[prefix]
+        ap_item.sup = ver_list[ap_item.map_id].sup
+    
     next_number = find_next_number(input_id, 8)
     len_next = len(next_number)
     if len_next == 0 or len_next >= 8:
@@ -172,7 +177,7 @@ def amount_equal(ver_list, ap_item, cid_list):
 ## return ver_ids specify verified item positions in ver_list
 def id_group_equal(ver_list, ap_item):
     id_list = []
-    id_type = parse_check_id(ap_item.check_id, id_list)
+    id_type = parse_check_id(ap_item, id_list)
     if id_type == 0:
         return amount_equal(ver_list, ap_item, id_list)
     if id_type == 1:
