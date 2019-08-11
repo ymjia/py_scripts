@@ -14,6 +14,7 @@ from test_framework import ui
 
 # create ui
 app = QApplication(sys.argv)
+app.setStyleSheet("QMessageBox { messagebox-text-interaction-flags: 5; }")
 w = ui.TFWindow()
 w.show()
 sys.exit(app.exec_())

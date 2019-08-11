@@ -4,9 +4,14 @@
 ## @author jiayanming
 
 import os.path
-import math
-import datetime
-from openpyxl import *
+import sys
+import subprocess
+import psutil
+import time
+import threading
+import socket
+import glob
+from openpyxl import Workbook
 
 
 def parse_time(time_str):
@@ -14,9 +19,32 @@ def parse_time(time_str):
     return tuple[0], float(tuple[1])
 
 
+def get_latest_file(folder, ext):
+    list_f = glob.glob('{}/*.{}'.format(folder, ext))
+    if len(list_f) < 1:
+        return ""
+    return max(list_f, key=os.path.getctime)
+
+
+def get_sys_table(dir_o, case, ver):
+    sys = {}
+    dir_log = os.path.join(dir_o, case, ver, "logs")
+    file_sys = get_latest_file(dir_log, "sts")
+    if not os.path.exists(file_sys):
+        print("No log file in {}".format(dir_log))
+        return None
+    with open(file_sys) as f:
+        content = f.readlines()
+    str_list = [l.strip() for l in content if len(l) > 4]
+    for line in str_list:
+        name, v = line.split(" ", 1)
+        sys[name] = v
+    return sys
+
+
 # timming table
 # read timming info from output/case/version/
-def get_table(dir_o, case, ver):
+def get_time_table(dir_o, case, ver):
     times = {}
     file_time = os.path.join(dir_o, case, ver, "timmings.txt")
     if not os.path.exists(file_time):
@@ -32,7 +60,7 @@ def get_table(dir_o, case, ver):
 
 
 # generate xlsx table file
-def get_compare_table(dir_out, l_case, l_ver, file_out):
+def get_compare_table(dir_out, l_case, l_ver, file_out, table_func):
     wb = Workbook()
     ws = wb.active
     # | alg | case     |    case2   |
@@ -68,7 +96,8 @@ def get_compare_table(dir_out, l_case, l_ver, file_out):
     time_quad = []
     for case in l_case:
         for ver in l_ver:
-            t_alg = get_table(dir_out, case, ver)
+            #t_alg = get_time_table(dir_out, case, ver)
+            t_alg = table_func(dir_out, case, ver)
             if t_alg is None:
                 continue
             for alg, t in t_alg.items():
@@ -93,7 +122,11 @@ def get_compare_table(dir_out, l_case, l_ver, file_out):
     # alg name column
     for item in d_alg.items():
         ws.cell(row=item[1] + 3, column=1).value = item[0]
-    wb.save(file_out)
+    try:
+        wb.save(file_out)
+    except PermissionError:
+        return 1
+    return 0
 
 
 support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
@@ -111,10 +144,115 @@ def get_file_list(folder):
     return res
 
 
+def get_sys_info():
+    res = []
+    res.append("CPU_freq {}MHz\n".format(psutil.cpu_freq().max))
+    res.append("CPU_core {}\n".format(psutil.cpu_count(logical=False)))
+    res.append("CPU_thread {}\n".format(psutil.cpu_count()))
+    res.append("MEM_total {0:.2f}MB\n".format(psutil.virtual_memory().total / 1e6))
+    res.append("MEM_virtual {0:.2f}MB\n".format(psutil.swap_memory().total / 1e6))
+    net_info = psutil.net_if_addrs()
+    net_id = 0
+    for net in net_info:
+        cur_net = net_info[net]
+        for item in cur_net:
+            if item.family != socket.AF_INET:
+                continue
+            res.append("PC_ip_{} {}\n".format(net_id, item.address))
+            net_id += 1
+    res.append("USER {}\n".format(os.getlogin()))
+    res.append("Platform {}\n".format(sys.platform))
+    return res
+
+
+def background_monitor(pm):
+    while pm.poll():
+        time.sleep(.5)
+
+
+class ProcessMonitor:
+    def __init__(self, command, f_log):
+        self.command = command
+        self.execution_state = False
+        self._fLog = f_log
+
+    def execute(self):
+        self.max_vmem = 0
+        self.max_pmem = 0
+        self.t1 = None
+        self.t0 = time.time()
+        if len(self.command) < 1:
+            return
+        dir_exe = os.path.dirname(self.command[0])
+        self.p = psutil.Popen(
+            self.command, shell=False, cwd=dir_exe,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.execution_state = True
+
+    def monite_execution(self):
+        t = threading.Thread(target=background_monitor, args=(self,), daemon=True)
+        t.start()
+
+    def poll(self):
+        if not self.check_execution_state():
+            return False
+        self.t1 = time.time()
+        try:
+            pp = psutil.Process(self.p.pid)
+            # obtain a list of the subprocess and all its descendants
+            descendants = list(pp.children(recursive=True))
+            descendants = descendants + [pp]
+
+            rss_memory = 0
+            vms_memory = 0
+
+            #calculate and sum up the memory of the subprocess and all its descendants 
+            for descendant in descendants:
+                try:
+                    mem_info = descendant.memory_info()
+                    rss_memory += mem_info[0]
+                    vms_memory += mem_info[1]
+                except psutil.NoSuchProcess:
+                    #sometimes a subprocess descendant will have terminated between the tim
+                    # we obtain a list of descendants, and the time we actually poll this
+                    # descendant's memory usage.
+                    pass
+            self.max_vmem = max(self.max_vmem, vms_memory)
+            self.max_pmem = max(self.max_pmem, rss_memory)
+        except psutil.NoSuchProcess:
+            return self.check_execution_state()
+        return self.check_execution_state()
+
+    def is_running(self):
+        return psutil.pid_exists(self.p.pid) and self.p.poll() is None
+
+    def check_execution_state(self):
+        if not self.execution_state:
+            return False
+        if self.is_running():
+            return True
+        self.executation_state = False
+        self.t1 = time.time()
+        return False
+
+    def close(self, kill=False):
+        try:
+            pp = psutil.Process(self.p.pid)
+            if kill:
+                pp.kill()
+            else:
+                pp.terminate()
+        except psutil.NoSuchProcess:
+            pass
+
+
 if __name__ == "__main__":
+    dir_log = "c:/data/test_framework/management/project1/output/case1/test/logs/"
+    # I am executing "make target" here
     file_out = "c:/tmp/time.xlsx"
     l_case = ["case1", "case2"]
-    l_ver = ["v11", "v12"]
+    l_ver = ["test"]
     #l_alg = ["merge", "smooth"]
     dir_out = "c:/data/test_framework/management/project1/output/"
-    get_compare_table(dir_out, l_case, l_ver, file_out)
+    #get_compare_table(dir_out, l_case, l_ver, file_out, get_time_table)
+    get_compare_table(dir_out, l_case, l_ver, file_out, get_sys_table)
