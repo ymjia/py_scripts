@@ -347,7 +347,7 @@ def slot_new_project(ui):
     new_item = ptree_add_item(ui._pTree, path)
     ui.fill_proj_list()
     set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
-    utils.inden_xml(ui._pTree.getroot())
+    utils.indent_xml(ui._pTree.getroot())
     ui._pTree.write(ui._ptName)
 
 

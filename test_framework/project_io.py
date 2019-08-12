@@ -25,7 +25,7 @@ class Project:
         self._ver = ["input"]
         # exe demo
         self._eCaseCheck = {}
-        self._exeParam = ""
+        self._exeParam = "{i} {o}"
         self._eVer = ""
         # screen shot
         self._sCaseCheck = {}
