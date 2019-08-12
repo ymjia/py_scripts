@@ -295,6 +295,10 @@ def slot_exe_run(ui):
     if not os.path.exists(exe):
         QMessageBox.about(ui, "Error", "Demo {} does not exist!".format(exe))
         return
+    list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
+    if len(list_case) < 1:
+        QMessageBox.about(ui, "Error", "No Case Checked!!")
+        return
     ui._cmdDialog.add_cmd(exe, param_text)
     ui._threadExe = thread_module.ExeRunThread(ui)
     ui._threadExe.setTerminationEnabled()
