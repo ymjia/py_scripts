@@ -12,6 +12,38 @@ import threading
 import socket
 import glob
 from openpyxl import Workbook
+if sys.platform == "win32":
+    import winreg as wr
+
+
+def get_py_in_reg():
+    exe_py = ""
+    for reg in [wr.HKEY_CURRENT_USER, wr.HKEY_LOCAL_MACHINE]:
+        try:
+            reg_table = wr.ConnectRegistry(None, reg)
+            for ver in ["3.6", "3.7"]:
+                rp = r"Software\Python\PythonCore\3.6\InstallPath".format(ver)
+                key = wr.OpenKey(reg_table, rp, 0, wr.KEY_READ)
+                try:
+                    exe_py, _ = wr.QueryValueEx(key, "ExecutablePath")
+                    if exe_py is not None and os.path.exists(exe_py):
+                        wr.CloseKey(key)
+                        return exe_py
+                finally:
+                    wr.CloseKey(key)
+        except WindowsError:
+            pass
+
+
+def get_py_interpretor():
+    exe_py = ""
+    # findout python interpreter
+    if sys.platform == "win32":
+        exe_py = get_py_in_reg()
+    else:
+        exe_rt = os.__file__.split("lib")[0]
+        exe_py = os.path.join(exe_rt, "bin", "python3")
+    return exe_py
 
 
 def parse_time(time_str):
@@ -189,7 +221,7 @@ class ProcessMonitor:
             self.p = psutil.Popen(
                 self.command, shell=False, cwd=dir_exe,
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        except:
+        except PermissionError:
             print("Running Error in: {}".format(" ".join(self.command)))
             return False
         self.execution_state = True
@@ -255,12 +287,5 @@ class ProcessMonitor:
 
 
 if __name__ == "__main__":
-    dir_log = "c:/data/test_framework/management/project1/output/case1/test/logs/"
-    # I am executing "make target" here
-    file_out = "c:/tmp/time.xlsx"
-    l_case = ["case1", "case2"]
-    l_ver = ["test"]
-    #l_alg = ["merge", "smooth"]
-    dir_out = "c:/data/test_framework/management/project1/output/"
-    #get_compare_table(dir_out, l_case, l_ver, file_out, get_time_table)
-    get_compare_table(dir_out, l_case, l_ver, file_out, get_sys_table)
+    exe_py = get_py_interpretor()
+    print(exe_py)

@@ -36,11 +36,7 @@ class ExeRunThread(QThread):
         ext = os.path.splitext(exe)[1]
         exe_py = ""
         if ext == ".py":
-            # findout python interpreter
-            if sys.platform == "win32":
-                exe_py = "c:/python/python.exe"
-            else:
-                exe_py = os.path.join(os.__file__.split("lib")[0], "bin", "python3"))
+            exe_py = utils.get_py_interpretor()
         # prepare exe parameters
         dir_o = p_obj._dirOutput
         cur_ver = p_obj._eVer

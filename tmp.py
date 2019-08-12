@@ -2,6 +2,7 @@ import re
 import os
 import sys
 
+
 def read_config_list(config_str, pattern):
     lc = len(config_str)
     lp = len(pattern)
@@ -31,6 +32,8 @@ def read_compare_config(file_config):
         elif line[0:3] == "alg":
             alg_list = read_config_list(line, "alg")
     return case_list, ver_list, alg_list
+
+
 
 print(str(sys.argv[1]))
 print(str(sys.argv[2]))
