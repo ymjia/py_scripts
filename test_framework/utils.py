@@ -286,6 +286,23 @@ class ProcessMonitor:
             pass
 
 
+# indent xml ElementTree.root
+def indent_xml(elem, level=0):
+    i = "\n" + level*"  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent_xml(elem, level+1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
+
 if __name__ == "__main__":
     exe_py = get_py_interpretor()
     print(exe_py)

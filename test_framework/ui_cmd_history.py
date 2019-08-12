@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QTreeView, QLabel
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from test_framework.ui_logic import create_QListView
+from test_framework.utils import indent_xml
 
 
 class CMDHistory(QWidget):
@@ -39,6 +40,7 @@ class CMDHistory(QWidget):
                 os.makedirs(dir_f)
             root_new = ET.Element("cmd_history")
             self._cmdTree = ET.ElementTree(root_new)
+            indent_xml(root_new)
             self._cmdTree.write(self._file)
 
     def fill_list(self):
@@ -131,4 +133,5 @@ class CMDHistory(QWidget):
         if not exist:
             demo.append(ET.Element(
                 "item", {"last_t":str_time, "init_t":str_time, "cmd": param}))
+        indent_xml(rt)
         self._cmdTree.write(self._file)

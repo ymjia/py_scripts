@@ -347,6 +347,7 @@ def slot_new_project(ui):
     new_item = ptree_add_item(ui._pTree, path)
     ui.fill_proj_list()
     set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
+    utils.inden_xml(ui._pTree.getroot())
     ui._pTree.write(ui._ptName)
 
 
@@ -358,6 +359,7 @@ def slot_delete_project(ui):
     # save old
     del_item = find_ptree_item(ui._pTree, sl[0].data())
     ui._pTree.getroot().remove(del_item)
+    utils.indent_xml(ui._pTree.getroot())
     ui._pTree.write(ui._ptName)
     ui.fill_proj_list()
     # get new
@@ -391,6 +393,7 @@ def slot_load_project(ui):
     new_item = ptree_add_item(ui._pTree, path)
     ui.fill_proj_list()
     set_project_selected(ui._qlv_all_proj, new_item.attrib["name"])
+    utils.indent_xml(ui._pTree.getroot())
     ui._pTree.write(ui._ptName)
     return
 
@@ -557,6 +560,7 @@ def load_ptree_obj(ui):
             os.makedirs(dir_lp)
         root_new = ET.Element("projects")
         ui._pTree = ET.ElementTree(root_new)
+        utils.indent_xml(ui._pTree.getroot())
         ui._pTree.write(file_lp)
     else:
         # has existing, load info
@@ -566,6 +570,7 @@ def load_ptree_obj(ui):
 def save_ptree_obj(ui):
     dir_lp = os.path.dirname(os.path.realpath(__file__))
     file_lp = os.path.join(dir_lp, "tf_proj.xml")
+    utils.indent_xml(ui._pTree.getroot())
     ui._pTree.write(file_lp)
     return
 

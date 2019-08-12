@@ -1,1 +1,67 @@
-<project><input path="c:/data/test_framework/management/project1/input/" /><output path="c:/data/test_framework/management/project1/output/" /><exe_demo path="C:/dev/py_scripts/tmp.py" /><exe_pv path="C:/ParaView/bin/pvpython.exe" /><all><case><item check="1" name="case1" /><item check="1" name="case2" /></case><version><item check="1" name="input" /><item check="1" name="v12" /><item check="1" name="v11" /><item check="1" name="v13" /><item check="1" name="test" /></version><algorithm><item check="1" name="smooth" /><item check="1" name="merge" /></algorithm></all><exe><case><item check="1" name="case1" /><item check="1" name="case2" /></case><version str="test" /><param str="1 2" /></exe><screenshot><case><item check="0" name="case1" /><item check="0" name="case2" /></case><version><item check="0" name="input" /><item check="0" name="v12" /><item check="0" name="v11" /><item check="1" name="v13" /><item check="0" name="test" /></version><algorithm><item check="0" name="smooth" /><item check="1" name="merge" /></algorithm></screenshot><docx><case><item check="0" name="case1" /><item check="0" name="case2" /></case><version><item check="0" name="input" /><item check="0" name="v12" /><item check="0" name="v11" /><item check="0" name="v13" /><item check="0" name="test" /></version><algorithm><item check="1" name="smooth" /><item check="1" name="merge" /></algorithm><doc_name name="test_doc" /><current_name name="" /></docx></project>
+<project>
+  <input path="c:/data/test_framework/management/project1/input/" />
+  <output path="c:/data/test_framework/management/project1/output/" />
+  <exe_demo path="C:/dev/py_scripts/tmp.py" />
+  <exe_pv path="C:/ParaView/bin/pvpython.exe" />
+  <all>
+    <case>
+      <item check="1" name="case1" />
+      <item check="1" name="case2" />
+    </case>
+    <version>
+      <item check="1" name="input" />
+      <item check="1" name="v12" />
+      <item check="1" name="v11" />
+      <item check="1" name="v13" />
+      <item check="1" name="test" />
+    </version>
+    <algorithm>
+      <item check="1" name="smooth" />
+      <item check="1" name="merge" />
+    </algorithm>
+  </all>
+  <exe>
+    <case>
+      <item check="1" name="case1" />
+      <item check="1" name="case2" />
+    </case>
+    <version str="test" />
+    <param str="1 2" />
+  </exe>
+  <screenshot>
+    <case>
+      <item check="0" name="case1" />
+      <item check="0" name="case2" />
+    </case>
+    <version>
+      <item check="0" name="input" />
+      <item check="0" name="v12" />
+      <item check="0" name="v11" />
+      <item check="1" name="v13" />
+      <item check="0" name="test" />
+    </version>
+    <algorithm>
+      <item check="0" name="smooth" />
+      <item check="1" name="merge" />
+    </algorithm>
+  </screenshot>
+  <docx>
+    <case>
+      <item check="0" name="case1" />
+      <item check="0" name="case2" />
+    </case>
+    <version>
+      <item check="0" name="input" />
+      <item check="0" name="v12" />
+      <item check="0" name="v11" />
+      <item check="0" name="v13" />
+      <item check="0" name="test" />
+    </version>
+    <algorithm>
+      <item check="1" name="smooth" />
+      <item check="1" name="merge" />
+    </algorithm>
+    <doc_name name="test_doc" />
+    <current_name name="" />
+  </docx>
+</project>

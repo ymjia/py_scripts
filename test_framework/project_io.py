@@ -6,6 +6,8 @@
 import os.path
 import xml.etree.ElementTree as ET
 
+from test_framework import utils
+
 
 class Project:
     def __init__(self):
@@ -169,6 +171,7 @@ class Project:
         if file_save == "":
             return
         self._tree = self.collect_xml()
+        utils.indent_xml(self._tree.getroot())
         self._tree.write(file_save)
 
     def load_case_from_fs(self):
