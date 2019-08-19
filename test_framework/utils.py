@@ -208,6 +208,8 @@ class ProcessMonitor:
         self.execution_state = False
         self._fLog = f_log
         self.p = None
+        self._memSample = []
+        self._cpuSample = []
 
     def execute(self):
         self.max_vmem = 0
@@ -257,6 +259,8 @@ class ProcessMonitor:
                     pass
             self.max_vmem = max(self.max_vmem, vms_memory)
             self.max_pmem = max(self.max_pmem, rss_memory)
+            self._cpuSample.append(pp.cpu_percent())
+            self._memSample.append(rss_memory)
         except psutil.NoSuchProcess:
             return self.check_execution_state()
         return self.check_execution_state()
