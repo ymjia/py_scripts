@@ -8,6 +8,7 @@ import sys
 import datetime
 import subprocess
 import xml.etree.ElementTree as ET
+from openpyxl import Workbook
 
 from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox,
                              QInputDialog, QLineEdit, QPushButton,
@@ -114,7 +115,13 @@ def slot_generate_time_docx(ui):
     file_save = os.path.join(dir_doc, tdoc_name_final)
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
-    res = utils.get_compare_table(dir_o, l_case, l_ver, file_save, utils.get_time_table)
+    wb = Workbook()
+    ws = wb.active
+    res = utils.get_compare_table(dir_o, l_case, l_ver, ws, utils.get_time_table)
+    try:
+        wb.save(file_save)
+    except PermissionError:
+        res = 1
     if res == 0:
         QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
     else:
@@ -135,7 +142,18 @@ def slot_generate_proc_docx(ui):
     file_save = os.path.join(dir_doc, pdoc_name_final)
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
-    res = utils.get_compare_table(dir_o, l_case, l_ver, file_save, utils.get_sys_table)
+    wb = Workbook()
+    ws = wb.active
+    res = utils.get_compare_table(dir_o, l_case, l_ver, ws, utils.get_sys_table)
+    ws_chart = wb.create_sheet("chart", 0)
+    f_list = []
+    sp_list = []
+    utils.create_f_lists(dir_o, l_case, l_ver, f_list, sp_list)
+    utils.create_chart(f_list, sp_list, ws_chart)
+    try:
+        wb.save(file_save)
+    except PermissionError:
+        res = 1
     if res == 0:
         QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
     else:

@@ -94,9 +94,8 @@ def get_time_table(dir_o, case, ver):
 
 
 # generate xlsx table file
-def get_compare_table(dir_out, l_case, l_ver, file_out, table_func):
-    wb = Workbook()
-    ws = wb.active
+def get_compare_table(dir_out, l_case, l_ver, ws, table_func):
+    #ws = wb.active
     # | alg | case     |    case2   |
     # |     | v1  | v2 |  v1 |  v2  |
     # |alg1 | 0.1 | 0.2|  0.2| 0.3  |
@@ -156,10 +155,6 @@ def get_compare_table(dir_out, l_case, l_ver, file_out, table_func):
     # alg name column
     for item in d_alg.items():
         ws.cell(row=item[1] + 3, column=1).value = item[0]
-    try:
-        wb.save(file_out)
-    except PermissionError:
-        return 1
     return 0
 
 
@@ -310,10 +305,23 @@ def indent_xml(elem, level=0):
             elem.tail = i
 
 
+def create_f_lists(dir_o, l_case, l_ver, f_list, sp_list):
+    for case in l_case:
+        for ver in l_ver:
+            dir_log = os.path.join(dir_o, case, ver, "logs")
+            file_sys = get_latest_file(dir_log, "smp")
+            if not os.path.exists(file_sys):
+                continue
+            f_list.append(file_sys)
+            sp_list.append("{}_{}".format(case, ver))
+
+
 # read in list files, create chart on f_out
 # sp_list: column name
-def create_chart(in_list, f_out, sp_list):
+def create_chart(in_list, sp_list, ws):
     f_num = len(in_list)
+    if f_num < 1:
+        return 0
     # prepare data
     mem_smp = []
     cpu_smp = []
@@ -330,8 +338,6 @@ def create_chart(in_list, f_out, sp_list):
         mem_smp.append(cur_mem)
         cpu_smp.append(cur_cpu)
     # create xlsx data table
-    wb = Workbook()
-    ws = wb.active
     max_row = 0
     for f in range(0, f_num):
         cur_mem = mem_smp[f]
@@ -340,8 +346,13 @@ def create_chart(in_list, f_out, sp_list):
         r_num = len(cur_cpu)
         if r_num > max_row:  # assersion: len(cpu) equal to len(mem)
             max_row = r_num
-        ws.cell(row=1, column=f + 1).value = "cpu"
-        ws.cell(row=1, column=f + f_num + 1).value = "mem"
+        title_cpu = "cpu"
+        title_mem = "mem"
+        if len(sp_list) > f:
+            title_cpu = "{}_cpu".format(sp_list[f])
+            title_mem = "{}_mem".format(sp_list[f])
+        ws.cell(row=1, column=f + 1).value = title_cpu
+        ws.cell(row=1, column=f + f_num + 1).value = title_mem
         for r in range(0, r_num):
             ws.cell(row=r+2, column=c).value = float(cur_cpu[r])
         c = f + f_num + 1
@@ -356,8 +367,7 @@ def create_chart(in_list, f_out, sp_list):
     lc_cpu.style = 12
     lc_cpu.y_axis.title = "CPU"
     lc_cpu.x_axis.title = "Time"
-    lc_cpu.y_axis.crosses = "max"
-    
+    lc_cpu.y_axis.crosses = "max"  # for merge chart
     # Create a second chart
     lc_mem = LineChart()
     data_mem = Reference(ws, min_col=f_num + 1, min_row=1,
@@ -368,17 +378,12 @@ def create_chart(in_list, f_out, sp_list):
     lc_mem.y_axis.majorGridlines = None
     for se in lc_mem.series:
         se.graphicalProperties.line.dashStyle = "sysDot"
-        #se.marker.symbol = "triangle"
     lc_cpu += lc_mem
     ws.add_chart(lc_cpu, "{}1".format(chr(ord('A') + f_num * 2 + 2)))
-    try:
-        wb.save(f_out)
-    except PermissionError:
-        return 1
     return 0
 
 
 if __name__ == "__main__":
     in_list = ["c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095928.smp", "c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095204.smp"]
-    create_chart(in_list, "c:/tmp/res.xlsx", [])
+    create_chart(in_list, "c:/tmp/res.xlsx", ["case1", "case2"])
     os.startfile("c:/tmp/res.xlsx")
