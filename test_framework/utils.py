@@ -199,7 +199,7 @@ def get_sys_info():
 
 def background_monitor(pm):
     while pm.poll():
-        time.sleep(.5)
+        time.sleep(.3)
 
 
 class ProcessMonitor:
@@ -208,8 +208,8 @@ class ProcessMonitor:
         self.execution_state = False
         self._fLog = f_log
         self.p = None
-        self._memSample = []
         self._cpuSample = []
+        self._memSample = []
 
     def execute(self):
         self.max_vmem = 0
@@ -239,6 +239,7 @@ class ProcessMonitor:
         self.t1 = time.time()
         try:
             pp = psutil.Process(self.p.pid)
+            #time.sleep(0.1)
             # obtain a list of the subprocess and all its descendants
             descendants = list(pp.children(recursive=True))
             descendants = descendants + [pp]
@@ -259,8 +260,11 @@ class ProcessMonitor:
                     pass
             self.max_vmem = max(self.max_vmem, vms_memory)
             self.max_pmem = max(self.max_pmem, rss_memory)
-            self._cpuSample.append(pp.cpu_percent())
             self._memSample.append(rss_memory)
+            #self._cpuSample.append(pp.cpu_percent(interval=1))
+            pp.cpu_percent(interval=0.0)
+            time.sleep(0.2)
+            self._cpuSample.append(pp.cpu_percent(interval=0.0))
         except psutil.NoSuchProcess:
             return self.check_execution_state()
         return self.check_execution_state()
