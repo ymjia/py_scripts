@@ -12,6 +12,8 @@ import threading
 import socket
 import glob
 from openpyxl import Workbook
+from openpyxl.chart import LineChart, Reference
+from openpyxl.chart.axis import DateAxis
 if sys.platform == "win32":
     import winreg as wr
 
@@ -260,11 +262,8 @@ class ProcessMonitor:
                     pass
             self.max_vmem = max(self.max_vmem, vms_memory)
             self.max_pmem = max(self.max_pmem, rss_memory)
-            self._memSample.append(rss_memory)
-            #self._cpuSample.append(pp.cpu_percent(interval=1))
-            pp.cpu_percent(interval=0.0)
-            time.sleep(0.2)
-            self._cpuSample.append(pp.cpu_percent(interval=0.0))
+            self._memSample.append(rss_memory / 1e6)
+            self._cpuSample.append(pp.cpu_percent(interval=1) / psutil.cpu_count())
         except psutil.NoSuchProcess:
             return self.check_execution_state()
         return self.check_execution_state()
@@ -311,6 +310,75 @@ def indent_xml(elem, level=0):
             elem.tail = i
 
 
+# read in list files, create chart on f_out
+# sp_list: column name
+def create_chart(in_list, f_out, sp_list):
+    f_num = len(in_list)
+    # prepare data
+    mem_smp = []
+    cpu_smp = []
+    for f_in in in_list:
+        with open(f_in) as f:
+            content = f.readlines()
+        cur_mem = []
+        cur_cpu = []
+        str_list = [l.strip() for l in content if len(l) > 4]
+        for line in str_list:
+            cpu, mem = line.split(" ", 1)
+            cur_mem.append(mem)
+            cur_cpu.append(cpu)
+        mem_smp.append(cur_mem)
+        cpu_smp.append(cur_cpu)
+    # create xlsx data table
+    wb = Workbook()
+    ws = wb.active
+    max_row = 0
+    for f in range(0, f_num):
+        cur_mem = mem_smp[f]
+        cur_cpu = cpu_smp[f]
+        c = f + 1
+        r_num = len(cur_cpu)
+        if r_num > max_row:  # assersion: len(cpu) equal to len(mem)
+            max_row = r_num
+        ws.cell(row=1, column=f + 1).value = "cpu"
+        ws.cell(row=1, column=f + f_num + 1).value = "mem"
+        for r in range(0, r_num):
+            ws.cell(row=r+2, column=c).value = float(cur_cpu[r])
+        c = f + f_num + 1
+        for r in range(0, len(cur_mem)):
+            ws.cell(row=r+2, column=c).value = float(cur_mem[r])
+    # create chart
+    lc_cpu = LineChart()
+    data_cpu = Reference(ws, min_col=1, min_row=1,
+                         max_col=f_num, max_row=max_row + 1)
+    lc_cpu.add_data(data_cpu, titles_from_data=True)
+    lc_cpu.title = "CPU/Mem Usage Line"
+    lc_cpu.style = 12
+    lc_cpu.y_axis.title = "CPU"
+    lc_cpu.x_axis.title = "Time"
+    lc_cpu.y_axis.crosses = "max"
+    
+    # Create a second chart
+    lc_mem = LineChart()
+    data_mem = Reference(ws, min_col=f_num + 1, min_row=1,
+                         max_col=f_num * 2, max_row=max_row + 1)
+    lc_mem.add_data(data_mem, titles_from_data=True)
+    lc_mem.y_axis.axId = 200
+    lc_mem.y_axis.title = "MEM"
+    lc_mem.y_axis.majorGridlines = None
+    for se in lc_mem.series:
+        se.graphicalProperties.line.dashStyle = "sysDot"
+        #se.marker.symbol = "triangle"
+    lc_cpu += lc_mem
+    ws.add_chart(lc_cpu, "{}1".format(chr(ord('A') + f_num * 2 + 2)))
+    try:
+        wb.save(f_out)
+    except PermissionError:
+        return 1
+    return 0
+
+
 if __name__ == "__main__":
-    exe_py = get_py_interpretor()
-    print(exe_py)
+    in_list = ["c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095928.smp", "c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095204.smp"]
+    create_chart(in_list, "c:/tmp/res.xlsx", [])
+    os.startfile("c:/tmp/res.xlsx")
