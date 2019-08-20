@@ -96,7 +96,10 @@ class ExeRunThread(QThread):
                 self._fSts.write('Max_v_mem {0:.2f}MB\n'.format(self._demoProc.max_vmem / 1e6))
             if self._fSmp is not None:
                 for li in range(0, len(self._demoProc._cpuSample)):
-                    self._fSmp.write("{0:.2f} {0:.2f}\n".format(self._demoProc._cpuSample[li], self._demoProc._memSample[li]))
+                    res_str = "{0:.2f} {1:.2f}\n".format(
+                        self._demoProc._cpuSample[li],
+                        self._demoProc._memSample[li])
+                    self._fSmp.write(res_str)
             self.release_files()
         self._sigProgress.emit(99)
         ver = p_obj._eVer
