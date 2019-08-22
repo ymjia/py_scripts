@@ -291,14 +291,20 @@ def generate_exe_param(p_obj, case):
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
     ver = p_obj._eVer
-    p_i = os.path.join(dir_i, case) + "/"
-    # use file name if only one file in case dir
-    i_list = utils.get_file_list(p_i)
-    if len(i_list) == 1:
-        p_i = i_list[0]
-    # get output param
-    p_o = os.path.join(dir_o, case, ver) + "/"
-    param = p_obj._exeParam.replace("{i}", p_i).replace("{o}", p_o)
+    org_param = p_obj._exeParam
+    p_i = ""
+    if "{i}" in org_param:
+        p_i = os.path.join(dir_i, case) + "/"
+        # use file name if only one file in case dir
+        i_list = utils.get_file_list(p_i)
+        if len(i_list) == 1:
+            p_i = i_list[0]
+    p_o = ""
+    if "{o}" in org_param:
+        # get output param
+        p_o = os.path.join(dir_o, case, ver) + "/"
+    # replace
+    param = org_param.replace("{i}", p_i).replace("{o}", p_o)
     if sys.platform == "win32":
         return param.replace("/", "\\").replace("\\\\", "\\")
     else:
@@ -314,7 +320,7 @@ def slot_exe_run(ui):
         QMessageBox.about(ui, "Error", "Demo {} does not exist!".format(exe))
         return
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
-    if len(list_case) < 1:
+    if len(list_case) < 1 and "{i}" in param_text:
         QMessageBox.about(ui, "Error", "No Case Checked!!")
         return
     ui._cmdDialog.add_cmd(exe, param_text)

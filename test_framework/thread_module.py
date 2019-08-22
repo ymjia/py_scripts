@@ -43,7 +43,8 @@ class ExeRunThread(QThread):
         cur_ver = p_obj._eVer
         list_case = ui_logic.get_checked_items(p_obj._case, p_obj._eCaseCheck)
         if len(list_case) < 1:
-            return
+            #return
+            list_case.append("plain_run")
         pg = 95 / len(list_case)
         cur_pg = 5
         sys_info = utils.get_sys_info()
