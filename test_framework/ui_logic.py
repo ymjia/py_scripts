@@ -260,6 +260,15 @@ def slot_get_path(qle):
         qle.setText(path)
 
 
+# open path in qle.text
+def slot_open_path(qle):
+    p = qle.text()
+    if not os.path.exists(p):
+        QMessageBox.about(None, "Error", "{} does not exist!".format(p))
+        return
+    explore(p)
+
+
 def slot_get_file(qle, f_type):
     path = ""
     d = get_default_path(qle.text())

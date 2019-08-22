@@ -156,10 +156,13 @@ class TFWindow(QWidget):
         self.get_f_bsw(self._qle_conf_file, grid, 0, "Configuration File", "xml")
         qpb_set_dir_in = QPushButton("Browse..")
         qpb_set_dir_in.setStyleSheet("background-color:#9a9a9a")
+        qpb_open_dir_in = QPushButton("Open") 
         grid.addWidget(QLabel("Input Directory"), 1, 0)
         grid.addWidget(self._qle_dir_in, 1, 1)
         grid.addWidget(qpb_set_dir_in, 1, 2)
+        grid.addWidget(qpb_open_dir_in, 1, 3)
         qpb_set_dir_in.clicked.connect(lambda: ui_logic.slot_open_input_path(self))
+        qpb_open_dir_in.clicked.connect(lambda: ui_logic.slot_open_path(self._qle_dir_in))
         self.get_f_bsw(self._qle_dir_out, grid, 2, "Output Directory")
         self.get_f_bsw(self._qle_exe_pv, grid, 3, "PVPython Interpreter", "exe")
         self.get_f_bsw(self._qle_exe_demo, grid, 4, "Demo Executable", "exe")
@@ -236,9 +239,12 @@ class TFWindow(QWidget):
     # create a file browser
     def get_f_bsw(self, qle, grid, grid_line, label, f_type=""):
         qpb = QPushButton("Browse..", self)
+        qpb_open = QPushButton("Open", self)
+        qpb_open.clicked.connect(lambda: ui_logic.slot_open_path(qle))
         grid.addWidget(QLabel(label), grid_line, 0)
         grid.addWidget(qle, grid_line, 1)
         grid.addWidget(qpb, grid_line, 2)
+        grid.addWidget(qpb_open, grid_line, 3)
         if f_type == "":
             qpb.clicked.connect(lambda: ui_logic.slot_get_path(qle))
         else:
