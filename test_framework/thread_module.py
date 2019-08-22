@@ -42,8 +42,9 @@ class ExeRunThread(QThread):
         dir_o = p_obj._dirOutput
         cur_ver = p_obj._eVer
         list_case = ui_logic.get_checked_items(p_obj._case, p_obj._eCaseCheck)
+        plain_run = False
         if len(list_case) < 1:
-            #return
+            plain_run = True
             list_case.append("plain_run")
         pg = 95 / len(list_case)
         cur_pg = 5
@@ -103,9 +104,16 @@ class ExeRunThread(QThread):
                     self._fSmp.write(res_str)
             self.release_files()
         self._sigProgress.emit(99)
+        need_update = False
+        case = p_obj._case
+        if plain_run and "plain_run" not in case:
+            case.append("plain_run")
+            need_update = True
         ver = p_obj._eVer
         if ver != "" and ver not in p_obj._ver:
             p_obj._ver.append(ver)
+            need_update = True
+        if need_update:
             self._mainWindow.fill_ui_info(p_obj)
 
     def release_files(self):
