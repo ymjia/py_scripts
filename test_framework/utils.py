@@ -49,8 +49,8 @@ def get_py_interpretor():
 
 
 def parse_time(time_str):
-    tuple = time_str.split(" ")
-    return tuple[0], float(tuple[1])
+    t = time_str.split(" ")
+    return t[0], t[1]
 
 
 def get_latest_file(folder, ext):
@@ -89,7 +89,12 @@ def get_time_table(dir_o, case, ver):
     str_list = [l.strip() for l in content if len(l) > 4]
     for line in str_list:
         name, t = parse_time(line)
-        times[name] = t
+        t_flt = 0
+        try:
+            t_flt = float(t)
+        except ValueError:
+            continue
+        times[name] = t_flt
     return times
 
 
