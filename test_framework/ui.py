@@ -110,7 +110,8 @@ class TFWindow(QWidget):
         self.fill_check_list(self._qlv_doc_alg, cur_obj._alg, cur_obj._dAlgCheck)
 
     def collect_ui_info(self):
-        out_obj = project_io.Project()
+        #out_obj = project_io.Project()
+        out_obj = self._p
         out_obj._configFile = self._qle_conf_file.text()
         out_obj._dirInput = self._qle_dir_in.text()
         out_obj._dirOutput = self._qle_dir_out.text()
@@ -185,9 +186,12 @@ class TFWindow(QWidget):
         qpb_add_case.clicked.connect(lambda: ui_logic.slot_add_case(self))
         qpb_add_ver.clicked.connect(lambda: ui_logic.slot_add_ver(self))
         qpb_add_alg.clicked.connect(lambda: ui_logic.slot_add_alg(self))
-        qpb_del_case.clicked.connect(lambda: ui_logic.slot_del_case(self))
-        qpb_del_ver.clicked.connect(lambda: ui_logic.slot_del_ver(self))
-        qpb_del_alg.clicked.connect(lambda: ui_logic.slot_del_alg(self))
+        qpb_del_case.clicked.connect(
+            lambda: ui_logic.slot_del_list(self, self._qlv_ss_case, self._p._case))
+        qpb_del_ver.clicked.connect(
+            lambda: ui_logic.slot_del_list(self, self._qlv_ss_ver, self._p._ver))
+        qpb_del_alg.clicked.connect(
+            lambda: ui_logic.slot_del_list(self, self._qlv_ss_alg, self._p._alg))
         l_hb.addWidget(qpb_scan_input, 0, 0)
         l_hb.addWidget(qpb_add_case, 0, 1)
         l_hb.addWidget(qpb_add_ver, 0, 2)

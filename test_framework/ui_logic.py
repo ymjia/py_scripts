@@ -493,7 +493,7 @@ def slot_add_alg(ui):
 def del_list_item(ui, qlv, item_list):
     sl = qlv.selectedIndexes()
     if len(sl) < 1:
-        #QMessageBox.about(None, "Error", "No Selection to Delete!")
+        QMessageBox.about(None, "Error", "No Selection to Delete!")
         return
     for s in sl:
         item_name = s.data()
@@ -501,6 +501,13 @@ def del_list_item(ui, qlv, item_list):
             if item_list[i] == item_name:
                 item_list.pop(i)
                 break
+
+
+def slot_del_list(ui, qlv, obj_list):
+    ui._p = ui.collect_ui_info()
+    del_list_item(ui, qlv, obj_list)
+    ui.fill_ui_info(ui._p)
+    return
 
 
 def slot_del_case(ui):
