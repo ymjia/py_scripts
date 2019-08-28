@@ -183,9 +183,12 @@ class TFWindow(QWidget):
         qpb_del_alg = QPushButton("Del FillName Item")
         qpb_scan_input.clicked.connect(lambda: ui_logic.slot_scan_input(self))
         qpb_build_output.clicked.connect(lambda: ui_logic.slot_build_output(self))
-        qpb_add_case.clicked.connect(lambda: ui_logic.slot_add_case(self))
-        qpb_add_ver.clicked.connect(lambda: ui_logic.slot_add_ver(self))
-        qpb_add_alg.clicked.connect(lambda: ui_logic.slot_add_alg(self))
+        qpb_add_case.clicked.connect(
+            lambda: ui_logic.slot_add_list(self, self._p._case, "Case"))
+        qpb_add_ver.clicked.connect(
+            lambda: ui_logic.slot_add_list(self, self._p._ver, "Version"))
+        qpb_add_alg.clicked.connect(
+            lambda: ui_logic.slot_add_list(self, self._p._alg, "Algorithm"))
         qpb_del_case.clicked.connect(
             lambda: ui_logic.slot_del_list(self, self._qlv_ss_case, self._p._case))
         qpb_del_ver.clicked.connect(

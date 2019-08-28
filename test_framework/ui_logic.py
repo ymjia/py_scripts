@@ -469,23 +469,9 @@ def append_input_to_list(l, label):
     return 1
 
 
-def slot_add_case(ui):
+def slot_add_list(ui, obj_list, type_str):
     ui._p = ui.collect_ui_info()
-    if append_input_to_list(ui._p._case, "Case") == 0:
-        ui.fill_ui_info(ui._p)
-    return
-
-
-def slot_add_ver(ui):
-    ui._p = ui.collect_ui_info()
-    if append_input_to_list(ui._p._ver, "Version") == 0:
-        ui.fill_ui_info(ui._p)
-    return
-
-
-def slot_add_alg(ui):
-    ui._p = ui.collect_ui_info()
-    if append_input_to_list(ui._p._alg, "Algorithm") == 0:
+    if append_input_to_list(obj_list, type_str) == 0:
         ui.fill_ui_info(ui._p)
     return
 
@@ -506,27 +492,6 @@ def del_list_item(ui, qlv, item_list):
 def slot_del_list(ui, qlv, obj_list):
     ui._p = ui.collect_ui_info()
     del_list_item(ui, qlv, obj_list)
-    ui.fill_ui_info(ui._p)
-    return
-
-
-def slot_del_case(ui):
-    ui._p = ui.collect_ui_info()
-    del_list_item(ui, ui._qlv_ss_case, ui._p._case)
-    ui.fill_ui_info(ui._p)
-    return
-
-
-def slot_del_ver(ui):
-    ui._p = ui.collect_ui_info()
-    del_list_item(ui, ui._qlv_ss_ver, ui._p._ver)
-    ui.fill_ui_info(ui._p)
-    return
-
-
-def slot_del_alg(ui):
-    ui._p = ui.collect_ui_info()
-    del_list_item(ui, ui._qlv_ss_alg, ui._p._alg)
     ui.fill_ui_info(ui._p)
     return
 
