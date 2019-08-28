@@ -46,6 +46,7 @@ class TFWindow(QWidget):
         self._qpt_exe_param = QPlainTextEdit()
         # listview
         self._qlv_all_proj = create_QListView(self)
+        self._qlv_all_proj.clicked.disconnect()
         self._qlv_all_proj.clicked.connect(lambda: ui_logic.slot_switch_proj(self))
         self._qlv_all_proj.doubleClicked.connect(lambda: ui_logic.slot_open_proj_path(self))
         self._qlv_exe_case = create_QListView(self, self._qle_dir_in)
