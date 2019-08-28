@@ -703,7 +703,18 @@ def create_QListView(ui, qle=None):
     ql.setDefaultDropAction(Qt.TargetMoveAction)
     ql.setDragDropMode(QAbstractItemView.InternalMove);
     ql.setMinimumHeight(80)
-
+    #ql.check
+    ql.clicked.connect(lambda: slot_qlv_check_list(ui, ql, Qt.Checked))
     if qle is not None:
         ql.doubleClicked.connect(lambda: slot_qlv_double_click(ui, ql, qle))
     return ql
+
+
+def slot_qlv_check_list(ui, qlv, check):
+    sl = qlv.selectedIndexes()
+    if len(sl) < 1:
+        return
+    model = qlv.model()
+    for idx in sl:
+        item = model.item(idx.row())
+        item.setCheckState(check)
