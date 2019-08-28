@@ -168,6 +168,8 @@ support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
 
 def get_file_list(folder):
     res = []
+    if not os.path.exists(folder):
+        return res
     for name in os.listdir(folder):
         if os.path.isdir(os.path.join(folder, name)):
             continue
