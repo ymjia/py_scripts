@@ -313,17 +313,6 @@ def write_item_to_file(filename, out_list):
     wb.save(filename)
 
 
-def write_item_to_sup(filename, sup_list):
-    wb = Workbook()
-    ws = wb.active
-    ws.append(["sup_name", "ver_amount", "ap_amount", "ver_count", "ap_count"])
-    for vi in sup_list:
-        if math.isclose(vi.ap_am, vi.ver_am, abs_tol=1e-5):
-            continue
-        ws.append([vi.sup, vi.ver_am, vi.ap_am, vi.ver_count, vi.ap_count])
-    wb.save(filename)
-
-
 ################ supplier relevant
 def get_remain_ver_item(ver_list, rm_ver_list):
     for vi in ver_list:
@@ -352,6 +341,17 @@ def collect_supplier_sum(item_list, list_sum, sup_map):
         list_sum.append(sum_am)
 
 
+# write supplier with different number
+def write_item_to_sup(filename, sup_list):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["sup_name", "ver_amount", "ap_amount", "ver_count", "ap_count"])
+    for vi in sup_list:
+        if math.isclose(vi.ap_am, vi.ver_am, abs_tol=1e-5):
+            continue
+        ws.append([vi.sup, vi.ver_am, vi.ap_am, vi.ver_count, vi.ap_count])
+    wb.save(filename)
+
 
 ########### update output################
 # 0: not equal
@@ -364,7 +364,6 @@ def sup_status(sup_name):
             return 1
         return 2
     return 0
-
 
 
 # amount same, mark id
@@ -434,46 +433,44 @@ def update_ap_table():
             mark_same_id(item, ws, 1, "VENDOR", color=True)
 
 
+def calculate_sup_sum():
+    for item in rm_ver_list:
+        sup = item.sup
+        if sup not in sup_map:
+            next_number = len(sup_list)
+            sup_map[sup] = next_number
+            sup_list.append(SupItem(sup))
+            sup_list[next_number].ver_am = item.amount
+            sup_list[next_number].ver_count += 1
+        else:
+            sup_list[sup_map[sup]].ver_am += item.amount
+            sup_list[sup_map[sup]].ver_count += 1
+
+    for item in am_err_list:
+        sup = item.sup
+        if sup not in sup_map:
+            next_number = len(sup_list)
+            sup_map[sup] = next_number
+            sup_list.append(SupItem(sup))
+            sup_list[next_number].ap_am = item.amount
+            sup_list[next_number].ap_count += 1
+        else:
+            sup_list[sup_map[sup]].ap_am += item.amount
+            sup_list[sup_map[sup]].ap_count += 1
+    
+
 ############## start process ########################
 
 # read input and make basic compare
 load_verify_item(table_ver_input, ver_list)
 load_ap_input(table_ap_input, ap_input_list)
 filter_ap_item()
-
-
 # get remain items and compare by supplier
 get_remain_ver_item(ver_list, rm_ver_list)
-
-for item in rm_ver_list:
-    sup = item.sup
-    if sup not in sup_map:
-        next_number = len(sup_list)
-        sup_map[sup] = next_number
-        sup_list.append(SupItem(sup))
-        sup_list[next_number].ver_am = item.amount
-        sup_list[next_number].ver_count += 1
-    else:
-        sup_list[sup_map[sup]].ver_am += item.amount
-        sup_list[sup_map[sup]].ver_count += 1
-
-for item in am_err_list:
-    sup = item.sup
-    if sup not in sup_map:
-        next_number = len(sup_list)
-        sup_map[sup] = next_number
-        sup_list.append(SupItem(sup))
-        sup_list[next_number].ap_am = item.amount
-        sup_list[next_number].ap_count += 1
-    else:
-        sup_list[sup_map[sup]].ap_am += item.amount
-        sup_list[sup_map[sup]].ap_count += 1
-
-
+calculate_sup_sum()
 ############ debug ################
 #write_item_to_file(os.path.join(dir_output, "ap_dup.xlsx"), ap_input_list)
 # write results
-
 update_ver_table()
 update_ap_table()
 table_ap_input.save(os.path.join(dir_output, "ap_output.xlsx"))
