@@ -2,6 +2,7 @@
 ## @file check_check.py
 ## @brief create diff from given check list file
 ## @author jiayanming
+import pdb
 import os.path
 import re
 import math
@@ -11,6 +12,7 @@ from bisect import bisect_left
 
 dir_input = "c:/data/xls/1908/"
 dir_output = "c:/data/xls/output_1908/"
+
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
@@ -19,7 +21,6 @@ ver_map = {}
 ap_map = {}
 table_ver_input = load_workbook(os.path.join(dir_input, "verify.xlsx"))
 table_ap_input = load_workbook(os.path.join(dir_input, "ap.xlsx"))
-
 
 # global variable
 ver_list = []
@@ -216,10 +217,11 @@ def load_verify_item(ver_table, ver_list):
 
 # fetch check id from string
 def regex_cid(in_str):
-    m = re.search('.*([0-9]{8}).*', in_str)
+    m = re.search('.*([\d]{8}[\d\+/\-]*).*', in_str)
     if m:
         return m.group(1)
     return ""
+
 
 # load ap item and remove duplicated
 def load_ap_input(ap_table, ap_input_list):
@@ -227,16 +229,18 @@ def load_ap_input(ap_table, ap_input_list):
     rid = 1
     for r in ws.iter_rows(min_row=2, max_col=16, values_only=True):
         rid += 1
-        cid = r[5].replace(" ", "")
-        # find in column 15
-        if len(cid) == 10 and (cid[8] == "-"):
-            cid = cid[0:8]
-        elif len(cid) != 8 or not (cid.isdigit()):
-            text_str = r[15]
-            if len(text_str) >= 8:
-                regex_res = regex_cid(text_str)
-                if len(regex_res) != 0:
-                    cid = regex_res
+        cid = ""
+        # find in column 15 text
+        text_str = r[15]
+        if len(text_str) >= 8:
+            regex_res = regex_cid(text_str)
+            if len(regex_res) != 0:
+                cid = regex_res
+        # find in reference
+        if len(cid) < 8:
+            cid = r[5].replace(" ", "")
+            if len(cid) == 10 and (cid[8] == "-"):
+                cid = cid[0:8]
         am = float(r[12])
         if cid not in ap_map:
             ap_map[cid] = len(ap_input_list)
@@ -258,7 +262,7 @@ def load_ap_input(ap_table, ap_input_list):
 ## no_id_list  check_item cannot found in ver_list
 ## invalid_list check_item with invalid check_id
 ## @note need ver_list filled first
-def filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, invalid_list, am_round_list):
+def filter_ap_item():
     for cur_item in ap_input_list:
         am = cur_item.amount
         # net
@@ -362,6 +366,18 @@ def sup_status(sup_name):
     return 0
 
 
+
+# amount same, mark id
+def mark_same_id(cur_item, ws, col, value, color=False):
+    if cur_item.amount == 1:
+        return
+    for ri in cur_item.dup_list:
+        ws.cell(row=ri, column=col).value = value
+        if color:
+            ws.cell(row=ri, column=col).fill = around_color
+
+
+# write res to ver table
 def update_ver_table():
     ws = table_ver_input.active
     ws.insert_cols(1)
@@ -378,14 +394,7 @@ def update_ver_table():
             ws.cell(row=item.rid, column=1).fill = around_color
 
 
-def mark_same_id(cur_item, ws, col, value, color=False):
-    if cur_item.amount == 1:
-        return
-    for ri in cur_item.dup_list:
-        ws.cell(row=ri, column=col).value = value
-        if color:
-            ws.cell(row=ri, column=col).fill = around_color
-
+# write results to ap table 
 def update_ap_table():
     ws = table_ap_input.active
     ws.insert_cols(1)
@@ -403,12 +412,14 @@ def update_ap_table():
             continue
         ws.cell(row=item.rid, column=1).value = res
         mark_same_id(item, ws, 1, res)
+    # around same
     for item in am_round_list:
         ws.cell(row=item.rid, column=1).value = item.map_id
         mark_same_id(item, ws, 1, item.map_id)
         ws.cell(row=item.rid, column=1).fill = around_color
         ws.cell(row=item.rid, column=2).value = item.sup
         mark_same_id(item, ws, 2, item.sup)
+    # amount incorrect
     for item in am_err_list:
         ws.cell(row=item.rid, column=2).value = item.sup
         mark_same_id(item, ws, 2, item.sup)
@@ -428,11 +439,12 @@ def update_ap_table():
 # read input and make basic compare
 load_verify_item(table_ver_input, ver_list)
 load_ap_input(table_ap_input, ap_input_list)
-filter_ap_item(ver_list, ap_input_list, ap_list, am_err_list, no_id_list, invalid_list, am_round_list)
+filter_ap_item()
 
 
 # get remain items and compare by supplier
 get_remain_ver_item(ver_list, rm_ver_list)
+
 for item in rm_ver_list:
     sup = item.sup
     if sup not in sup_map:

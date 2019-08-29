@@ -1,3 +1,4 @@
+import pdb
 import re
 import os
 import sys
@@ -34,9 +35,41 @@ def read_compare_config(file_config):
     return case_list, ver_list, alg_list
 
 
+def regex_cid(in_str):
+    m = re.search('.*([\d]{8}[\d\+/\-]*).*', in_str)
+    if m:
+        return m.group(1)
+    return ""
 
-print(str(sys.argv[1]))
-print(str(sys.argv[2]))
-print(sys.executable)
-print(os.path.join(os.__file__.split("lib")[0],"bin","python3"))
-print(os.__file__)
+
+print(regex_cid("33281812/2/12/3"))
+print(regex_cid("12382918/2+12/3aad"))
+
+print(regex_cid("25255357SH Florentia  VAT"))
+print(regex_cid("03679595TJOL VAT"))
+print(regex_cid("12579697HZ XiashaVAT"))
+print(regex_cid("12579337HZ XiashaVAT"))
+print(regex_cid("26059211YYC VAT"))
+print(regex_cid("02916156CSOL  VAT"))
+print(regex_cid("01875882TJ Yansha  VAT"))
+print(regex_cid("12929664SH Qingpu  VAT"))
+print(regex_cid("12929204SH Qingpu  VAT"))
+print(regex_cid("23261207+23261631BJOL VAT"))
+print(regex_cid("26843745BJOL VAT"))
+print(regex_cid("69771462BJOL VAT"))
+print(regex_cid("23261632BJOL VAT"))
+print(regex_cid("02695779BJOL VAT"))
+print(regex_cid("11826456JN Bailian VAT"))
+print(regex_cid("11826605JN Bailian VAT"))
+print(regex_cid("01202775SYOL  VAT"))
+print(regex_cid("09825544HF Sesseur VAT"))
+print(regex_cid("00827421+20Harbin VAT"))
+print(regex_cid("49802471-72WXOL VAT"))
+print(regex_cid("49803212-13WXOL VAT"))
+print(regex_cid("32500205NJ Tangshan  VAT"))
+print(regex_cid("32500507NJ Tangshan  VAT"))
+print(regex_cid("01066968+938+7114GZ Yuexiu VAT"))
+print(regex_cid("01066966-97GZ Yuexiu VAT"))
+print(regex_cid("35181881+01071106-05GZ Yuexiu VAT"))
+print(regex_cid("35997827Foshan  VAT"))
+print(regex_cid("35998007Foshan  VAT"))
