@@ -213,7 +213,7 @@ def load_verify_item(ver_table, ver_list):
         cid = r[2]
         #cid = r[2]
         ver_map[cid] = len(ver_list)
-        ver_list.append(CheckItem(cid, float(r[7]), r[4], rid))
+        ver_list.append(CheckItem(cid, float(r[7]), r[5], rid))
         #ver_list.append(CheckItem(cid, float(r[7]), r[4], rid))
         rid += 1
 
@@ -230,24 +230,28 @@ def regex_cid(in_str):
 def load_ap_input(ap_table, ap_input_list):
     ws = ap_table.active
     rid = 1
-    for r in ws.iter_rows(min_row=2, max_col=16, values_only=True):
+    pdb.set_trace()
+    for r in ws.iter_rows(min_row=2, max_col=20, values_only=True):
         rid += 1
         cid = ""
         # find in column 15 text
-        text_str = r[15]
+        #text_str = r[15]
+        text_str = r[19]
+        if text_str is None:
+            print(r)
         if len(text_str) >= 8:
             regex_res = regex_cid(text_str)
             if len(regex_res) != 0:
                 cid = regex_res
         # find in reference
         if len(cid) < 8:
-            cid = r[5].replace(" ", "")
+            cid = r[0].replace(" ", "")
             if len(cid) == 10 and (cid[8] == "-"):
                 cid = cid[0:8]
-        am = float(r[12])
+        am = float(r[11])
         if cid not in ap_map:
             ap_map[cid] = len(ap_input_list)
-            ap_input_list.append(CheckItem(cid, am, "", rid))
+            ap_input_list.append(CheckItem(cid, am, r[2], rid))
         else:
             old_pos = ap_map[cid]
             old_item = ap_input_list[old_pos]
