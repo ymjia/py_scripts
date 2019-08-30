@@ -122,8 +122,8 @@ def parse_check_id(ap_item, out_list=[]):
         return 2 # cannot find next number
     prev_number = prefix[8 - len_next:]
     if input_id[8] == "-":
-        start = int(prev_number)
-        end = int(next_number)
+        start = min(int(prev_number), int(next_number))
+        end = max(int(prev_number), int(next_number))
         for i in range(start, end + 1):
             out_list.append(merge_str(prefix, str(i)))
     else:
@@ -149,7 +149,7 @@ def amount_equal(ver_list, ap_item, cid_list):
     sup = ["JYM"]
     for i in cid_list:
         if i not in ver_map:
-            return False
+            continue  # skip item
         tmp_find = ver_map[i]
         ver_ids.append(tmp_find)
         ver_item = ver_list[tmp_find]
@@ -161,10 +161,13 @@ def amount_equal(ver_list, ap_item, cid_list):
             print("ERROR! sup in ap table:{}".format(ap_rid))
         sup[0] = ver_item.sup
     ap_item.sup = sup[0]
-    if not math.isclose(ap_am, ver_am, abs_tol=1e-5):
+    if not math.isclose(ap_am, ver_am, abs_tol=0.995):
         return False
     # record map information
-    ap_item.map_id = 0
+    if math.isclose(ap_am, ver_am, abs_tol=1e-5):
+        ap_item.map_id = 0
+    else:
+        ap_item.map_id = -2
     if len(ver_ids) == 1:
         ap_item.map_id = ver_list[ver_ids[0]].rid
     for i in ver_ids:
@@ -459,11 +462,20 @@ def calculate_sup_sum():
             sup_list[sup_map[sup]].ap_count += 1
     
 
+##############debug##########################
+def get_am_sum(l):
+    sum = 0
+    for item in l:
+        sum += item.amount
+    return sum
+
 ############## start process ########################
 
 # read input and make basic compare
 load_verify_item(table_ver_input, ver_list)
+#print("ver sum: {}".format(get_am_sum(ver_list)))
 load_ap_input(table_ap_input, ap_input_list)
+#print("ap sum: {}".format(get_am_sum(ap_input_list)))
 filter_ap_item()
 # get remain items and compare by supplier
 get_remain_ver_item(ver_list, rm_ver_list)
