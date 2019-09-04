@@ -10,8 +10,8 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "c:/data/xls/1908/"
-dir_output = "c:/data/xls/output_1908/"
+dir_input = "c:/data/xls/1909/input/"
+dir_output = "c:/data/xls/1909/output/"
 
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
@@ -19,7 +19,7 @@ around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 # global variables
 ver_map = {}
 ap_map = {}
-table_ver_input = load_workbook(os.path.join(dir_input, "verify.xlsx"))
+table_ver_input = load_workbook(os.path.join(dir_input, "ver.xlsx"))
 table_ap_input = load_workbook(os.path.join(dir_input, "ap.xlsx"))
 
 # global variable
@@ -210,10 +210,10 @@ def load_verify_item(ver_table, ver_list):
     ws = ver_table.active
     rid = 2
     for r in ws.iter_rows(min_row=2, max_col=8, values_only=True):
-        cid = r[2]
+        cid = r[1]
         #cid = r[2]
         ver_map[cid] = len(ver_list)
-        ver_list.append(CheckItem(cid, float(r[7]), r[5], rid))
+        ver_list.append(CheckItem(cid, float(r[4]), r[7], rid))
         #ver_list.append(CheckItem(cid, float(r[7]), r[4], rid))
         rid += 1
 
@@ -230,13 +230,13 @@ def regex_cid(in_str):
 def load_ap_input(ap_table, ap_input_list):
     ws = ap_table.active
     rid = 1
-    pdb.set_trace()
-    for r in ws.iter_rows(min_row=2, max_col=20, values_only=True):
+    #pdb.set_trace()
+    for r in ws.iter_rows(min_row=2, max_col=11, values_only=True):
         rid += 1
         cid = ""
         # find in column 15 text
-        #text_str = r[15]
-        text_str = r[19]
+        text_str = r[5]
+        #text_str = r[19]
         if text_str is None:
             print(r)
         if len(text_str) >= 8:
@@ -245,13 +245,13 @@ def load_ap_input(ap_table, ap_input_list):
                 cid = regex_res
         # find in reference
         if len(cid) < 8:
-            cid = r[0].replace(" ", "")
+            cid = r[4].replace(" ", "")
             if len(cid) == 10 and (cid[8] == "-"):
                 cid = cid[0:8]
-        am = float(r[11])
+        am = float(r[10])
         if cid not in ap_map:
             ap_map[cid] = len(ap_input_list)
-            ap_input_list.append(CheckItem(cid, am, r[2], rid))
+            ap_input_list.append(CheckItem(cid, am, "", rid))
         else:
             old_pos = ap_map[cid]
             old_item = ap_input_list[old_pos]
