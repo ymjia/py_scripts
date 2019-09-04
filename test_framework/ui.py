@@ -284,7 +284,7 @@ class TFWindow(QWidget):
         grid = QGridLayout()
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
-        grid.addWidget(QLabel("Parameter Line\n{i} for input\n{o} for output"), 1, 0)
+        grid.addWidget(QLabel("Parameter Line\n{i} for input\n{o} for output\n{case} for case"), 1, 0)
         grid.addWidget(qpb_cmd_his, 2, 0)
         grid.addWidget(self._qpt_exe_param, 1, 1, 2, 1)
         grid.addWidget(QLabel('Use Version Name'), 3, 0)

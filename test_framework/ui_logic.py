@@ -313,7 +313,7 @@ def generate_exe_param(p_obj, case):
         # get output param
         p_o = os.path.join(dir_o, case, ver) + "/"
     # replace
-    param = org_param.replace("{i}", p_i).replace("{o}", p_o)
+    param = org_param.replace("{i}", p_i).replace("{o}", p_o).replace("{case}", case)
     if sys.platform == "win32":
         return param.replace("/", "\\").replace("\\\\", "\\")
     else:
