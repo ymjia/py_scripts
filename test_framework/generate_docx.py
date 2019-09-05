@@ -96,6 +96,9 @@ class DocxGenerator:
 
     def add_case_table(self, case, cam_num):
         col_num = len(self._listVer)
+        if col_num < 1:
+            print("Error: No Version Checked!")
+            return 1
         for alg in self._listAlg:
             table = self._doc.add_table(rows=1, cols=col_num)
             table.style = 'Table Grid'
