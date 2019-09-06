@@ -8,6 +8,7 @@ import sys
 import math
 import time
 import datetime
+from shutil import move
 from paraview.simple import *
 from paraview.simple import _active_objects
 dir_py_module = os.path.join(os.getcwd(), "..", "Sn3D_plugins", "scripts", "pv_module")
@@ -42,7 +43,12 @@ class ScreenShotHelper:
         self.set_camera(view, cam)
         v_size = view.ViewSize
         view.Update()
-        SaveScreenshot(filename, view, ImageResolution=v_size, TransparentBackground=0)
+        # create temporary file to cope utf-8 char
+        if not os.path.exists("c:/tf_tmp"):
+            os.makedirs("c:/tf_tmp")
+        tmp_file = "c:/tf_tmp/ss.png"
+        SaveScreenshot(tmp_file, view, ImageResolution=v_size, TransparentBackground=0)
+        move(tmp_file, filename)
 
 
 # read file or file list and render in given view
@@ -51,6 +57,7 @@ def read_and_render(file_list, v):
     reader = read_files(file_list)
     reader_display = Show(reader, v)
     reader_display.ColorArrayName = [None, '']
+    reader_display.Specular = 0.75
     v.ResetCamera()
     # add anotation
     f = file_list[0]
@@ -60,7 +67,7 @@ def read_and_render(file_list, v):
     stem = trim_last_number(os.path.splitext(filename)[0])
     path, ver = os.path.split(path)
     path, case = os.path.split(path)
-    add_annotation(v, "{}_{}_{}".format(case, ver, stem), 28)
+    add_annotation(v, "{}\n{}\n{}".format(case, ver, stem), 28)
     add_time_annotation(v, f)
     v.Update()
     return reader
@@ -78,7 +85,7 @@ def create_shot(file_list, cam_list, out_dir, pattern):
     ss = ScreenShotHelper()
     for i in range(0, len(cam_list)):
         ss.take_shot(cur_view, cam_list[i],
-                     "{}/ss_{}_v{}.png".format(out_dir, pattern, i))
+                     "{}/ss_{}_v{}.png".format(out_dir, pattern, i).replace("\\", "/"))
     Delete(cur_source)
     del cur_source
 
@@ -95,7 +102,7 @@ def read_cam(case_file):
 
 # if data_file newer than ss_file, need update
 def ss_need_update(file_list, file_cam, out_dir, pattern):
-    file_pic = os.path.join("{}/ss_{}_v0.png".format(out_dir, pattern))
+    file_pic = os.path.join("{}/ss_{}_v0.png".format(out_dir, pattern)).replace("\\", "/")
     if not os.path.exists(file_pic):
         return True
     time_config = os.path.getmtime(file_cam)
