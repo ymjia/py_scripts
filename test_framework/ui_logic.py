@@ -296,6 +296,13 @@ def slot_open_input_path(ui):
     ui.fill_ui_info(p_obj)
 
 
+def replace_sep(in_str):
+    if sys.platform == "win32":
+        return in_str.replace("/", "\\").replace("\\\\", "\\")
+    else:
+        return in_str.replace("\\", "/").replace("//", "/")
+
+
 def generate_exe_param(p_obj, case):
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
@@ -308,16 +315,15 @@ def generate_exe_param(p_obj, case):
         i_list = utils.get_file_list(p_i)
         if len(i_list) == 1:
             p_i = i_list[0]
+        p_i = replace_sep(p_i)
     p_o = ""
     if "{o}" in org_param:
         # get output param
         p_o = os.path.join(dir_o, case, ver) + "/"
+        p_o = replace_sep(p_o)
     # replace
     param = org_param.replace("{i}", p_i).replace("{o}", p_o).replace("{case}", case)
-    if sys.platform == "win32":
-        return param.replace("/", "\\").replace("\\\\", "\\")
-    else:
-        return param.replace("\\", "/").replace("//", "/")
+    return param
 
 
 def slot_exe_run(ui):
