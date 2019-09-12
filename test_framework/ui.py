@@ -179,9 +179,12 @@ class TFWindow(QWidget):
         qpb_add_case = QPushButton("Add Case Item") 
         qpb_add_ver = QPushButton("Add Version Item")
         qpb_add_alg = QPushButton("Add FillName Item")
-        qpb_del_case = QPushButton("Del Case Item") 
+        qpb_del_case = QPushButton("Del Case Item")
         qpb_del_ver = QPushButton("Del Version Item")
         qpb_del_alg = QPushButton("Del FillName Item")
+        qpb_del_case.setStyleSheet("background-color:#ff9a9a")
+        qpb_del_ver.setStyleSheet("background-color:#ff9a9a")
+        qpb_del_alg.setStyleSheet("background-color:#ff9a9a")
         qpb_scan_input.clicked.connect(lambda: ui_logic.slot_scan_input(self))
         qpb_build_output.clicked.connect(lambda: ui_logic.slot_build_output(self))
         qpb_add_case.clicked.connect(
