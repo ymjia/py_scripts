@@ -50,7 +50,7 @@ class TFWindow(QWidget):
         self._qlv_all_proj.clicked.connect(lambda: ui_logic.slot_switch_proj(self))
         self._qlv_all_proj.doubleClicked.connect(lambda: ui_logic.slot_open_proj_path(self))
         self._qlv_exe_case = create_QListView(self, self._qle_dir_in)
-        self._qlv_ss_case = create_QListView(self, self._qle_dir_in)
+        self._qlv_ss_case = create_QListView(self, self._qle_dir_out)
         self._qlv_ss_alg = create_QListView(self)
         self._qlv_ss_ver = create_QListView(self)
         self._qlv_doc_case = create_QListView(self, self._qle_dir_out)
@@ -359,6 +359,7 @@ class TFWindow(QWidget):
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
 
+    # button status switch
     def new_run_button(self):
         self._qst_exe_button.setCurrentIndex(0)
         self._qst_exe_param.setCurrentIndex(0)
