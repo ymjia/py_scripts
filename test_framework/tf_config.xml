@@ -25,7 +25,7 @@
       <item check="1" name="case1" />
       <item check="1" name="case2" />
     </case>
-    <version str="test" />
+    <version str="input" />
     <param str="1 2" />
   </exe>
   <screenshot>
