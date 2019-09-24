@@ -9,7 +9,7 @@ import datetime
 
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
-                             QStackedWidget,
+                             QStackedWidget, QComboBox
                              QGroupBox, QListView, QHBoxLayout, QTreeView, QProgressBar,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
@@ -41,7 +41,8 @@ class TFWindow(QWidget):
         self._qle_dir_out = QLineEdit()
         self._qle_exe_pv = QLineEdit()
         self._qle_exe_demo = QLineEdit()
-        self._qle_cur_ver = QLineEdit()
+        #self._qle_cur_ver = QLineEdit()
+        self._qcb_cur_ver = QComboBox()
         self._qle_doc_name = QLineEdit()
         self._qpt_exe_param = QPlainTextEdit()
         # listview
@@ -100,7 +101,7 @@ class TFWindow(QWidget):
         self._qle_exe_pv.setText(cur_obj._exePV)
         self._qle_exe_demo.setText(cur_obj._exeDemo)
         self._qle_doc_name.setText(cur_obj._docName)
-        self._qle_cur_ver.setText(cur_obj._eVer)
+        self._qcb_cur_ver.setText(cur_obj._eVer)
         self._qpt_exe_param.setPlainText(cur_obj._exeParam)
         self.fill_check_list(self._qlv_exe_case, cur_obj._case, cur_obj._eCaseCheck)
         self.fill_check_list(self._qlv_ss_case, cur_obj._case, cur_obj._sCaseCheck)
@@ -291,7 +292,7 @@ class TFWindow(QWidget):
         grid.addWidget(qpb_cmd_his, 2, 0)
         grid.addWidget(self._qpt_exe_param, 1, 1, 2, 1)
         grid.addWidget(QLabel('Use Version Name'), 3, 0)
-        grid.addWidget(self._qle_cur_ver, 3, 1)
+        grid.addWidget(self._qcb_cur_ver, 3, 1)
         grid.addWidget(self._qst_exe_param, 4, 0)
         grid.addWidget(self._qst_exe_button, 4, 1)
         exe_region.setLayout(grid)
