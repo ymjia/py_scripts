@@ -180,8 +180,9 @@ def amount_equal(ver_list, ap_item, cid_list):
 ## @todo return map information
 ## return ver_ids specify verified item positions in ver_list
 def id_group_equal(ver_list, ap_item):
-    id_list = []
-    id_type = parse_check_id(ap_item, id_list)
+    org_id_list = []
+    id_type = parse_check_id(ap_item, org_id_list)
+    id_list = list(set(org_id_list)) # remove duplicated
     if id_type == 0:
         return amount_equal(ver_list, ap_item, id_list)
     if id_type == 1:
