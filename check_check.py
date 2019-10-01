@@ -10,8 +10,8 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "c:/data/xls/1909/input/"
-dir_output = "c:/data/xls/1909/output/"
+dir_input = "c:/data/xls/1910/input/"
+dir_output = "c:/data/xls/1910/output/"
 
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
@@ -211,10 +211,10 @@ def load_verify_item(ver_table, ver_list):
     rid = 2
     for r in ws.iter_rows(min_row=2, max_col=8, values_only=True):
         cid = r[1]
-        #cid = r[2]
+        cur_am = float(r[4])
+        cur_sup = r[7]
         ver_map[cid] = len(ver_list)
-        ver_list.append(CheckItem(cid, float(r[4]), r[7], rid))
-        #ver_list.append(CheckItem(cid, float(r[7]), r[4], rid))
+        ver_list.append(CheckItem(cid, cur_am, cur_sup, rid))
         rid += 1
 
 
@@ -235,8 +235,10 @@ def load_ap_input(ap_table, ap_input_list):
         rid += 1
         cid = ""
         # find in column 15 text
-        text_str = r[5]
-        #text_str = r[19]
+        text_str = str(r[5]).replace("~", "-")
+        cur_ref = str(r[4]).replace("~", "-")
+        am = float(r[10])
+
         if text_str is None:
             print(r)
         if len(text_str) >= 8:
@@ -245,10 +247,9 @@ def load_ap_input(ap_table, ap_input_list):
                 cid = regex_res
         # find in reference
         if len(cid) < 8:
-            cid = r[4].replace(" ", "")
+            cid = cur_ref.replace(" ", "")
             if len(cid) == 10 and (cid[8] == "-"):
                 cid = cid[0:8]
-        am = float(r[10])
         if cid not in ap_map:
             ap_map[cid] = len(ap_input_list)
             ap_input_list.append(CheckItem(cid, am, "", rid))
