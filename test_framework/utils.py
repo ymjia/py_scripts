@@ -165,19 +165,45 @@ def get_compare_table(dir_out, l_case, l_ver, ws, table_func):
 
 support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
 
+def get_sub_dir(folder):
+    res = []
+    if not os.path.exists(folder):
+        return res
+    for name in os.listdir(folder):
+        if os.path.isdir(os.path.join(folder, name)):
+            res.append(name)
+    return res
 
-def get_file_list(folder):
+
+def get_stem_list(folder):
     res = []
     if not os.path.exists(folder):
         return res
     for name in os.listdir(folder):
         if os.path.isdir(os.path.join(folder, name)):
             continue
-        ext = os.path.splitext(name)[1]
+        stem, ext = os.path.splitext(name)
         if not any(ext in e for e in support_ext):
             continue
-        res.append(os.path.join(folder, name))
+        res.append(stem)
     return res
+
+
+def get_file_list(folder):
+    stem_list = get_stem_list(folder)
+    res = []
+    for stem in stem_list:
+        res.append(os.path.join(folder, stem))
+    return res
+
+
+def get_selected_item(qlv):
+    res = []
+    sl = qlv.selectedIndexes()
+    if len(sl) < 1:
+        return res
+    for s in sl:
+        res.push(s.data())
 
 
 def get_sys_info():

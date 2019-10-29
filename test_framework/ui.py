@@ -9,7 +9,7 @@ import datetime
 
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
-                             QStackedWidget, QComboBox,
+                             QStackedWidget, QComboBox, QDialog,
                              QGroupBox, QListView, QHBoxLayout, QTreeView, QProgressBar,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
@@ -62,7 +62,9 @@ class TFWindow(QWidget):
         self._qlv_ss_alg.doubleClicked.connect(lambda: ui_logic.slot_open_ss_alg(self))
         self._qlv_doc_ver.doubleClicked.connect(lambda: ui_logic.slot_open_doc_ver(self))
         self._qlv_doc_alg.doubleClicked.connect(lambda: ui_logic.slot_open_doc_alg(self))
+        # other object
         self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
+        self._filenameSelector = None
         # layout
         grid = QGridLayout()
         grid.addWidget(self.create_project_manage(), 0, 0, 3, 1)
@@ -196,8 +198,9 @@ class TFWindow(QWidget):
             lambda: ui_logic.slot_add_list(self, self._p._case, "Case"))
         qpb_add_ver.clicked.connect(
             lambda: ui_logic.slot_add_list(self, self._p._ver, "Version"))
-        qpb_add_alg.clicked.connect(
-            lambda: ui_logic.slot_add_list(self, self._p._alg, "Algorithm"))
+        #qpb_add_alg.clicked.connect(
+        #    lambda: ui_logic.slot_add_list(self, self._p._alg, "Algorithm"))
+        qpb_add_alg.clicked.connect(self.slot_add_alg_list)
         qpb_del_case.clicked.connect(
             lambda: ui_logic.slot_del_list(self, self._qlv_ss_case, self._p._case))
         qpb_del_ver.clicked.connect(
@@ -364,6 +367,12 @@ class TFWindow(QWidget):
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
 
+    def slot_add_alg_list(self):
+        cand = ui_logic.get_all_filenames(self._p)
+        self._filenameSelector = FileNameSelector(self, cand)
+        self._filenameSelector.exec_()
+        self.fill_ui_info(self._p)
+
     # button status switch
     def new_run_button(self):
         self._qst_exe_button.setCurrentIndex(0)
@@ -381,6 +390,56 @@ class TFWindow(QWidget):
     def exe_finish(self):
         self.new_run_button()
         self._qlv_all_proj.setEnabled(True)
+
+
+class FileNameSelector(QDialog):
+    def __init__(self, parent, l_name):
+        QDialog.__init__(self)
+        self._mainWindow = parent
+        self._qlv_cand = create_QListView(self)
+        self._qle_add = QLineEdit()
+        self._qpb_add = QPushButton("Add")
+        self._qpb_cancel = QPushButton("Cancel")
+        self._qpb_add.clicked.connect(self.slot_add_to_list)
+        self._qpb_cancel.clicked.connect(self.close)
+        self.fill_cand_list(l_name)
+        grid = QGridLayout()
+        grid.addWidget(self._qlv_cand, 0, 0, 1, 2)
+        grid.addWidget(self._qle_add, 1, 0, 1, 2)
+        grid.addWidget(self._qpb_add, 2, 0)
+        grid.addWidget(self._qpb_cancel, 2, 1)
+        self.setLayout(grid)
+
+    def fill_cand_list(self, l_name):
+        model = QStandardItemModel()
+        flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
+        for i in l_name:
+            item = QStandardItem(i)
+            item.setFlags(flag)
+            item.setCheckState(Qt.Unchecked)
+            item.setCheckable(True)
+            model.appendRow(item)
+        self._qlv_cand.setModel(model)
+
+    def slot_add_to_list(self):
+        l_item = []
+        model = self._qlv_cand.model()
+        if model is None:
+            return
+        for index in range(model.rowCount()):
+            item = model.item(index)
+            l_item.append(item.text())
+        text = self._qle_add.text()
+        if text != "":
+            text_list = text.replace(" ", "").split(",")
+            for i in text_list:
+                if i not in l_item:
+                    l_item.append(i)
+        p_obj = self._mainWindow._p
+        for item in l_item:
+            if item not in p_obj._alg:
+                p_obj._alg.append(item)
+        self.close()
 
 if __name__ == "__main__":
     # create ui

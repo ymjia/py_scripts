@@ -186,6 +186,7 @@ def slot_open_docx_path(ui):
 
 
 def slot_create_screenshots(ui):
+    qm = QMessageBox
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     exe_pvpython = p_obj._exePV
@@ -203,6 +204,10 @@ def slot_create_screenshots(ui):
     if len(l_ver) < 1:
         QMessageBox.about(ui, "Error", "No Version checked")
         return
+    if len(l_alg) < 1:
+        ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
+        if ret == qm.Cancel:
+            return
     # write to file
     filename = os.path.join(dir_o, "ss_config.txt")
     line_case = "cas"
@@ -736,3 +741,26 @@ def slot_qlv_check_list(ui, qlv):
     for idx in sl:
         item = model.item(idx.row())
         item.setCheckState(check)
+
+
+def fill_dict(d, l_item):
+    for item in l_item:
+        if item in d:
+            continue
+        d[item] = 1
+
+
+# get all avaliable filenames in output dir
+def get_all_filenames(p_obj):
+    l_case = p_obj._case
+    l_ver = p_obj._ver
+    dir_out = p_obj._dirOutput
+    d_name = {}
+    for case in l_case:
+        for ver in l_ver:
+            cur_dir = os.path.join(dir_out, case, ver)
+            sub = utils.get_sub_dir(cur_dir)
+            stem = utils.get_stem_list(cur_dir)
+            fill_dict(d_name, sub)
+            fill_dict(d_name, stem)
+    return list(d_name.keys())
