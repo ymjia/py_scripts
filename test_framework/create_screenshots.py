@@ -122,7 +122,6 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
     for ci in list_case:
         for vi in list_ver:
             file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
-
     #create shot
     for item in file_dir:
         case_name = item[0]
@@ -136,6 +135,7 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
             i_list = get_file(dir_input, case_name)
             pic_out_dir = os.path.join(dir_output, case_name, "input")
             if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
+                print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
                 continue
             create_shot(i_list, cam_list, pic_out_dir, "input")
         else:
@@ -145,6 +145,7 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
                     continue
                 pic_out_dir = os.path.join(dir_output, case_name, ver_name)
                 if not ss_need_update(file_list, cam_file, pic_out_dir, alg):
+                    print("{}/{}/{} already up-to-date".format(case_name, ver_name, alg))
                     continue
                 print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
                 create_shot(file_list, cam_list, pic_out_dir , alg)
