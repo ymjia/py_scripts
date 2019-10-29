@@ -72,6 +72,13 @@ def set_project_selected(qlv, name):
     qlv.selectionModel().select(q_idx, QItemSelectionModel.Select)
 
 
+def get_selected_project_item(ui):
+    sl = ui._qlv_all_proj.selectedIndexes()
+    if len(sl) < 1:
+        return None
+    return find_ptree_item(ui._pTree, sl[0].data())
+
+
 def find_ptree_item(pt, name):
     root = pt.getroot()
     for item in root:
@@ -336,7 +343,7 @@ def slot_exe_run(ui):
         return
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
     if len(list_case) < 1 and "{i}" in param_text:
-        QMessageBox.about(ui, "Error", "No Case Checked!!")
+        QMessageBox.about(ui, "Error", "No Input Case Checked!!")
         return
     ui._cmdDialog.add_cmd(exe, param_text)
     ui._threadExe = thread_module.ExeRunThread(ui)
@@ -344,6 +351,7 @@ def slot_exe_run(ui):
     ui._threadExe._sigProgress.connect(ui.exe_progress)
     ui._threadExe.finished.connect(ui.exe_finish)
     ui.new_stop_button()
+    ui._qlv_all_proj.setDisabled(True)
     ui._threadExe.start()
 
 
@@ -587,6 +595,8 @@ def save_ptree_obj(ui):
 
 
 def slot_switch_proj(ui):
+    if not ui._qlv_all_proj.isEnabled():
+        return
     sl = ui._qlv_all_proj.selectedIndexes()
     if len(sl) < 1:
         return

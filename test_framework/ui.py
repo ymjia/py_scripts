@@ -380,6 +380,7 @@ class TFWindow(QWidget):
 
     def exe_finish(self):
         self.new_run_button()
+        self._qlv_all_proj.setEnabled(True)
 
 if __name__ == "__main__":
     # create ui
