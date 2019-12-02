@@ -10,13 +10,22 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "c:/data/xls/1910/input/"
-dir_output = "c:/data/xls/1910/output/"
+dir_input = "c:/data/xls/1912/input/"
+dir_output = "c:/data/xls/1912/output/"
 
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
 # global variables
+idx_ap_am = 12
+idx_ap_txt = 7
+idx_ap_ref = 6
+
+idx_ver_am = 8
+idx_ver_sup = 4
+idx_ver_id = 2
+
+
 ver_map = {}
 ap_map = {}
 table_ver_input = load_workbook(os.path.join(dir_input, "ver.xlsx"))
@@ -210,10 +219,11 @@ def load_verify_item(ver_table, ver_list):
     ver_map.clear()
     ws = ver_table.active
     rid = 2
-    for r in ws.iter_rows(min_row=2, max_col=8, values_only=True):
-        cid = r[1]
-        cur_am = float(r[4])
-        cur_sup = r[7]
+    max_ver_col = max(max(idx_ver_id, idx_ver_sup), idx_ver_am) + 1
+    for r in ws.iter_rows(min_row=2, max_col=max_ver_col, values_only=True):
+        cid = r[idx_ver_id]
+        cur_am = float(r[idx_ver_am])
+        cur_sup = r[idx_ver_sup]
         ver_map[cid] = len(ver_list)
         ver_list.append(CheckItem(cid, cur_am, cur_sup, rid))
         rid += 1
@@ -232,13 +242,14 @@ def load_ap_input(ap_table, ap_input_list):
     ws = ap_table.active
     rid = 1
     #pdb.set_trace()
-    for r in ws.iter_rows(min_row=2, max_col=11, values_only=True):
+    max_ap_col = max(max(idx_ap_txt, idx_ap_ref), idx_ap_am) + 1
+    for r in ws.iter_rows(min_row=2, max_col=max_ap_col, values_only=True):
         rid += 1
         cid = ""
         # find in column 15 text
-        text_str = str(r[5]).replace("~", "-")
-        cur_ref = str(r[4]).replace("~", "-")
-        am = float(r[10])
+        text_str = str(r[idx_ap_txt]).replace("~", "-")
+        cur_ref = str(r[idx_ap_ref]).replace("~", "-")
+        am = float(r[idx_ap_am])
 
         if text_str is None:
             print(r)
