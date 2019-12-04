@@ -428,7 +428,8 @@ class FileNameSelector(QDialog):
             return
         for index in range(model.rowCount()):
             item = model.item(index)
-            l_item.append(item.text())
+            if item.checkState == Qt.Checked:
+                l_item.append(item.text())
         text = self._qle_add.text()
         if text != "":
             text_list = text.replace(" ", "").split(",")
