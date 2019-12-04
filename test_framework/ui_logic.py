@@ -321,12 +321,26 @@ def generate_exe_param(p_obj, case):
     ver = p_obj._eVer
     org_param = p_obj._exeParam
     p_i = ""
-    if "{i}" in org_param:
-        p_i = os.path.join(dir_i, case) + "/"
+    # find input place holder
+    ph_i = "{i}" # place holder for input
+    i_pos = int(org_param.find(ph_i))
+    p_len = len(org_param)
+    if i_pos != -1:
+        # find string follows {i} until meet 'space'
+        i_end = i_pos + 3
+        while i_end < p_len and org_param[i_end] != ' ':
+            i_end += 1
+        i_suffix = org_param[i_pos + 3: i_end]
+        ph_i = ph_i + i_suffix
+        p_i = os.path.join(dir_i, case) + i_suffix
+        if not os.path.exists(p_i):
+            QMessageBox.about(ui, "Error", "Error! input {} does not Exist!".format(p_i))
+            return ""
         # use file name if only one file in case dir
-        i_list = utils.get_file_list(p_i)
-        if len(i_list) == 1:
-            p_i = i_list[0]
+        if not os.path.isfile(p_i):
+            i_list = utils.get_file_list(p_i)
+            if len(i_list) == 1:
+                p_i = i_list[0]
         p_i = replace_sep(p_i)
     p_o = ""
     if "{o}" in org_param:
@@ -334,7 +348,7 @@ def generate_exe_param(p_obj, case):
         p_o = os.path.join(dir_o, case, ver) + "/"
         p_o = replace_sep(p_o)
     # replace
-    param = org_param.replace("{i}", p_i).replace("{o}", p_o).replace("{case}", case)
+    param = org_param.replace(ph_i, p_i).replace("{o}", p_o).replace("{case}", case)
     return param
 
 

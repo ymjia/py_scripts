@@ -188,13 +188,25 @@ def get_stem_list(folder):
         res.append(stem)
     return res
 
-
 def get_file_list(folder):
-    stem_list = get_stem_list(folder)
     res = []
-    for stem in stem_list:
-        res.append(os.path.join(folder, stem))
+    if not os.path.exists(folder):
+        return res
+    for name in os.listdir(folder):
+        if os.path.isdir(os.path.join(folder, name)):
+            continue
+        stem, ext = os.path.splitext(name)
+        if not any(ext in e for e in support_ext):
+            continue
+        res.append(os.path.join(folder, name))
     return res
+
+# def get_file_list(folder):
+#     stem_list = get_stem_list(folder)
+#     res = []
+#     for stem in stem_list:
+#         res.append(os.path.join(folder, stem))
+#     return res
 
 
 def get_selected_item(qlv):
