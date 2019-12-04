@@ -428,7 +428,7 @@ class FileNameSelector(QDialog):
             return
         for index in range(model.rowCount()):
             item = model.item(index)
-            if item.checkState == Qt.Checked:
+            if item.checkState() == Qt.Checked:
                 l_item.append(item.text())
         text = self._qle_add.text()
         if text != "":
