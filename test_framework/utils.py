@@ -94,7 +94,10 @@ def get_time_table(dir_o, case, ver):
             t_flt = float(t)
         except ValueError:
             continue
-        times[name] = t_flt
+        if name in times:
+            times[name] += t_flt
+        else:
+            times[name] = t_flt
     return times
 
 
