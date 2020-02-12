@@ -37,9 +37,9 @@ class TFWindow(QWidget):
         self._qpr_exe_progress.setRange(0, 100)
         # info widget for updating infomation
         # history statistics
-        self._ql_hist_exe = QLabel(utils.get_reg_item("exe"))
-        self._ql_hist_ss = QLabel(utils.get_reg_item("ss"))
-        self._ql_hist_doc = QLabel(utils.get_reg_item("doc"))
+        self._ql_hist_exe = QLabel(str(self.get_hist_item("exe")))
+        self._ql_hist_ss = QLabel(str(self.get_hist_item("ss")))
+        self._ql_hist_doc = QLabel(str(self.get_hist_item("doc")))
         # text
         self._qle_conf_file = QLineEdit()
         self._qle_dir_in = QLineEdit()
@@ -144,12 +144,12 @@ class TFWindow(QWidget):
         return out_obj
 
     def get_hist_item(self, hist_type):
-        return int(utils.get_reg_item(hist_type))
+        return int(float(utils.get_reg_item(hist_type)) + 0.1)
 
     def add_hist_item(self, hist_type, val):
-        cur_num = int(utils.get_reg_item(hist_type))
+        cur_num = self.get_hist_item(hist_type)
         new_num = str(cur_num + val)
-        util.set_reg_item(hist_type, new_num)
+        utils.set_reg_item(hist_type, new_num)
         if hist_type == "exe":
             self._ql_hist_exe.setText(new_num)
         elif hist_type == "ss":

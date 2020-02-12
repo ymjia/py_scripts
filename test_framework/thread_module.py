@@ -78,6 +78,7 @@ class ExeRunThread(QThread):
             in_param.insert(0, exe)
             if ext == ".py":
                 in_param.insert(0, exe_py)
+            self._mainWindow.add_hist_item("exe", 1)
             self._demoProc = utils.ProcessMonitor(in_param, self._fLog)
             try:
                 run_st = self._demoProc.execute()

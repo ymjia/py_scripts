@@ -88,6 +88,7 @@ def create_shot(file_list, cam_list, out_dir, pattern):
                      "{}/ss_{}_v{}.png".format(out_dir, pattern, i).replace("\\", "/"))
     Delete(cur_source)
     del cur_source
+    return len(cam_list)
 
 # read cam position from config file
 def read_cam(case_file):
@@ -117,6 +118,7 @@ def ss_need_update(file_list, file_cam, out_dir, pattern):
 
 # read configuration
 def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
+    total_num = 0
     # case/version/alg
     file_dir = []
     for ci in list_case:
@@ -137,7 +139,7 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
             if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
                 print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
                 continue
-            create_shot(i_list, cam_list, pic_out_dir, "input")
+            total_num += create_shot(i_list, cam_list, pic_out_dir, "input")
         else:
             for alg in list_alg:
                 file_list = get_file(case_files, alg)
@@ -148,14 +150,17 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
                     print("{}/{}/{} already up-to-date".format(case_name, ver_name, alg))
                     continue
                 print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
-                create_shot(file_list, cam_list, pic_out_dir , alg)
-
+                total_num += create_shot(file_list, cam_list, pic_out_dir , alg)
+    return total_num
 
 def create_screenshots_wrap(dir_input, dir_output, file_config):
     # data to be compared
     # get all concerned file names
     list_case, list_ver, list_alg = read_compare_config(file_config)
-    create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver)
+    total_num = create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver)
+    f_config = open(file_config, "w", encoding='utf-8')
+    f_config.write("{}\n".format(total_num))
+    f_config.close()
 
 
 if __name__ == "__main__":

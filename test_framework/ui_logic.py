@@ -105,6 +105,7 @@ def slot_generate_docx(ui):
     l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
     gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
     gd.generate_docx(file_save, p_obj._configFile)
+    ui.add_hist_item("doc", 1)
     QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
 
 
@@ -130,6 +131,7 @@ def slot_generate_time_docx(ui):
     except PermissionError:
         res = 1
     if res == 0:
+        ui.add_hist_item("doc", 1)
         QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
     else:
         QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
@@ -162,6 +164,7 @@ def slot_generate_proc_docx(ui):
     except PermissionError:
         res = 1
     if res == 0:
+        ui.add_hist_item("doc", 1)
         QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
     else:
         QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
@@ -231,7 +234,17 @@ def slot_create_screenshots(ui):
         [exe_pvpython, py_ss,
          dir_i, dir_o, filename], cwd=dir_pv_wd)
     proc_ss.wait()
-    QMessageBox.about(ui, "Message", "Create Screenshots Completed!")
+    # read statistics number
+    total_num = int(0)
+    if os.path.exists(filename):
+        with open(filename, encoding='utf-8') as f:
+            content = f.readlines()
+        str_list = [l.strip() for l in content]
+        if len(str_list) == 1:
+            total_num = int(str_list[0])
+    if total_num > 0:
+        ui.add_hist_item("ss", total_num)
+    QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
 
 
 def get_default_path(in_path):
