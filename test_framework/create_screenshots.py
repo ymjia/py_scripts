@@ -192,6 +192,9 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
         ver_name = item[1]
         case_files = item[2]
         cam_file = os.path.join(dir_input, case_name, "config.txt")
+        if not os.path.exists(cam_file):
+            print("Camera config file {} does not exist!".format(cam_file))
+            continue
         cam_list = read_cam(cam_file)
         if cam_list is None or len(cam_list) < 1:
             continue
