@@ -158,13 +158,13 @@ class TFWindow(QWidget):
             self._ql_hist_doc.setText(new_num)
 
     def create_history(self):
-        hist = QGroupBox("历史统计")
+        hist = QGroupBox("History Statistics")
         grid = QGridLayout()
-        grid.addWidget(QLabel("批处理总次数: "), 0, 0)
+        grid.addWidget(QLabel("Total Demo Run: "), 0, 0)
         grid.addWidget(self._ql_hist_exe, 0, 1)
-        grid.addWidget(QLabel("屏幕截图总数: "), 1, 0)
+        grid.addWidget(QLabel("Total ScreenShots: "), 1, 0)
         grid.addWidget(self._ql_hist_ss, 1, 1)
-        grid.addWidget(QLabel("生成文档总数: "), 2, 0)
+        grid.addWidget(QLabel("Total Docs: "), 2, 0)
         grid.addWidget(self._ql_hist_doc, 2, 1)
         hist.setLayout(grid)
         return hist
