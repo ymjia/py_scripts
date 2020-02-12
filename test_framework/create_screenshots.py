@@ -11,10 +11,71 @@ import datetime
 from shutil import move
 from paraview.simple import *
 from paraview.simple import _active_objects
+from paraview.simple import GetDisplayProperities
 dir_py_module = os.path.join(os.getcwd(), "..", "Sn3D_plugins", "scripts", "pv_module")
 sys.path.append(dir_py_module)
 from framework_util import *
 
+## ====================texture =================================
+pxm = servermanager.ProxyManager()
+
+def set_texture(display, name):
+    cur_t = display.Texture
+    if cur_t is not None:
+        return
+    if name == "":
+        return
+    # if loaded
+    is_loaded = False
+    group = pxm.GetProxiesInGroup('textures')
+    for key, t in group.items():
+        if key[0] == name:
+            is_loaded = True
+            cur_t = t
+            break
+    # load picture as texture
+    if not is_loaded:
+        np = pxm.NewProxy("textures", "ImageTexture")
+        fn = np.GetProperty('FileName')
+        fn.SetElement(0, name)
+        np.UpdateVTKObjects()
+        pxm.RegisterProxy("textures", name, np)
+        cur_t = np
+    if cur_t is not None:
+        display.Representation = 'Surface'
+        display.BackfaceRepresentation = 'Surface'
+        display.DiffuseColor = [1.0, 1.0, 1.0]
+        display.Texture = cur_t
+
+
+def show_texture(cur_source, cur_view):
+    # get mesh file name
+    name = ""
+    if hasattr(cur_source, 'FileNames') and cur_source.FileNames[0]:
+        name = cur_source.FileNames[0]
+    if hasattr(cur_source, 'FileName'):
+        name = cur_source.FileName
+
+    # set texture picture name
+    if name == "":
+        return
+    ext_list = [".jpg", ".png", ".bmp", ".ppm", ".tiff"]
+    stem = os.path.splitext(name)[0]
+    ext = ""
+    for ei in ext_list:
+        if os.path.exists(stem + ei):
+            ext = ei
+            break
+    if ext == "":
+        name = ""
+    else:
+        name = stem + ext
+
+    cur_display = GetDisplayProperties(cur_source, cur_view)
+    # set texture
+    set_texture(cur_display, name)
+
+## end=================texture =================================
 
 # class for screenshots
 class ScreenShotHelper:
@@ -58,6 +119,7 @@ def read_and_render(file_list, v):
     reader_display = Show(reader, v)
     reader_display.ColorArrayName = [None, '']
     reader_display.Specular = 0.75
+    show_texture(reader, v)
     v.ResetCamera()
     # add anotation
     f = file_list[0]
