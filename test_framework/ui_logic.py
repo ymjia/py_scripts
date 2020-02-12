@@ -347,7 +347,7 @@ def generate_exe_param(p_obj, case):
         ph_i = ph_i + i_suffix
         p_i = os.path.join(dir_i, case) + i_suffix
         if not os.path.exists(p_i):
-            QMessageBox.about(ui, "Error", "Error! input {} does not Exist!".format(p_i))
+            print("Error! input {} does not Exist!".format(p_i))
             return ""
         # use file name if only one file in case dir
         if not os.path.isfile(p_i):
