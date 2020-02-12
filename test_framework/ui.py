@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from test_framework import project_io
+from test_framework import utils
 from test_framework import ui_cmd_history
 from test_framework import ui_logic
 from test_framework.ui_logic import create_QListView
@@ -35,6 +36,10 @@ class TFWindow(QWidget):
         self._qpr_exe_progress = QProgressBar()
         self._qpr_exe_progress.setRange(0, 100)
         # info widget for updating infomation
+        # history statistics
+        self._ql_hist_exe = QLabel(utils.get_reg_item("exe"))
+        self._ql_hist_ss = QLabel(utils.get_reg_item("ss"))
+        self._ql_hist_doc = QLabel(utils.get_reg_item("doc"))
         # text
         self._qle_conf_file = QLineEdit()
         self._qle_dir_in = QLineEdit()
@@ -67,7 +72,8 @@ class TFWindow(QWidget):
         self._filenameSelector = None
         # layout
         grid = QGridLayout()
-        grid.addWidget(self.create_project_manage(), 0, 0, 3, 1)
+        grid.addWidget(self.create_history(), 0, 0)
+        grid.addWidget(self.create_project_manage(), 1, 0, 2, 1)
         grid.addWidget(self.create_project_info(), 0, 1)
         grid.addWidget(self.create_list_manage(), 1, 1)
         grid.addWidget(self.create_control_region(), 2, 1)
@@ -136,6 +142,33 @@ class TFWindow(QWidget):
         self.read_check_list(self._qlv_doc_ver, out_obj._ver, out_obj._dVerCheck)
         self.read_check_list(self._qlv_doc_alg, out_obj._alg, out_obj._dAlgCheck)
         return out_obj
+
+    def get_hist_item(self, hist_type):
+        return int(utils.get_reg_item(hist_type))
+
+    def add_hist_item(self, hist_type, val):
+        cur_num = int(utils.get_reg_item(hist_type))
+        new_num = str(cur_num + val)
+        util.set_reg_item(hist_type, new_num)
+        if hist_type == "exe":
+            self._ql_hist_exe.setText(new_num)
+        elif hist_type == "ss":
+            self._ql_hist_ss.setText(new_num)
+        elif hist_type == "doc":
+            self._ql_hist_doc.setText(new_num)
+
+    def create_history(self):
+        hist = QGroupBox("历史统计")
+        grid = QGridLayout()
+        grid.addWidget(QLabel("批处理总次数: "), 0, 0)
+        grid.addWidget(self._ql_hist_exe, 0, 1)
+        grid.addWidget(QLabel("屏幕截图总数: "), 1, 0)
+        grid.addWidget(self._ql_hist_ss, 1, 1)
+        grid.addWidget(QLabel("生成文档总数: "), 2, 0)
+        grid.addWidget(self._ql_hist_doc, 2, 1)
+        hist.setLayout(grid)
+        return hist
+
 
     def create_project_manage(self):
         manage = QGroupBox("Project Manage")

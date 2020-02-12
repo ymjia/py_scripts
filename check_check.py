@@ -10,18 +10,18 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "c:/data/xls/1912/input/"
-dir_output = "c:/data/xls/1912/output/"
+dir_input = "c:/data/xls/2001/input/"
+dir_output = "c:/data/xls/2001/output/"
 
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
 # global variables
-idx_ap_am = 12
-idx_ap_txt = 7
-idx_ap_ref = 6
+idx_ap_am = 10
+idx_ap_txt = 5
+idx_ap_ref = 4
 
-idx_ver_am = 8
+idx_ver_am = 7
 idx_ver_sup = 4
 idx_ver_id = 2
 

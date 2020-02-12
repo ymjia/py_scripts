@@ -36,6 +36,36 @@ def get_py_in_reg():
         except WindowsError:
             pass
 
+def set_reg_item(type_str, val):
+    reg = wr.ConnectRegistry(None, wr.HKEY_CURRENT_USER)
+    key = None
+    try:
+        key = wr.CreateKey(reg, r"Software\tf\sts")
+    except WindowsError:
+        print("cannot find keys in register")
+        return
+    if key is None:
+        return
+    wr.SetValueEx(key, type_str, 0, wr.REG_SZ, val)
+    wr.CloseKey(key)
+
+def get_reg_item(type_str):
+    reg = wr.ConnectRegistry(None, wr.HKEY_CURRENT_USER)
+    key = None
+    try:
+        key = wr.CreateKey(reg, r"Software\tf\sts")
+    except WindowsError:
+        print("cannot find keys in register")
+        return
+    if key is None:
+        return
+    ret = "0"
+    try:
+        ret = wr.QueryValueEx(key, type_str)[0]
+    except WindowsError:
+        wr.SetValueEx(key, type_str, 0, wr.REG_SZ, "0")
+    wr.CloseKey(key)
+    return ret
 
 def get_py_interpretor():
     exe_py = ""
@@ -432,6 +462,8 @@ def create_chart(in_list, sp_list, ws):
 
 
 if __name__ == "__main__":
-    in_list = ["c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095928.smp", "c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095204.smp"]
-    create_chart(in_list, "c:/tmp/res.xlsx", ["case1", "case2"])
-    os.startfile("c:/tmp/res.xlsx")
+    # in_list = ["c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095928.smp", "c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095204.smp"]
+    # create_chart(in_list, "c:/tmp/res.xlsx", ["case1", "case2"])
+    # os.startfile("c:/tmp/res.xlsx")
+    set_reg_item("exe", "5")
+    print(get_reg_item("ss"))
