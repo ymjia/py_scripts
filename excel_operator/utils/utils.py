@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
-## @file check_check.py
-## @brief create diff from given check list file
 ## @author jiayanming
 import pdb
+import shutil
 import os.path
 import sys
 import re
 import math
 from openpyxl import *
 
-filename = ""
-cwd = os.getcwd()
-dir_input = os.fsencode(os.path.join(cwd, "input"))
 
 
-#### load file
-table = load_workbook(filename)
-ws = table.active
 
 ## constant
 idx_avalible = 5
@@ -73,67 +66,75 @@ def my_decode(org):
 
 dep_map = {}
 dep_list = []
-#### read lines
-rows =  ws.iter_rows(min_row=2, max_col=20, values_only=True)
-rid = 0
-for r in rows:
-    rid += 1
-    tmp_dep = my_decode(r[idx_dep])
-    dep = ""
-    dep_pos = 1000
-    for dn in dep_name_list:
-        cur_pos = tmp_dep.find(dn)
-        if cur_pos == -1 or cur_pos > dep_pos:
-            continue
-        dep = dn
-        dep_pos = cur_pos
-    if dep == "":
-        print("warning! cannot find dep for line{}".format(rid))
-    nodata = my_decode(r[idx_avalible]) == my_decode("否")
-    hz_str = my_decode(r[idx_hz])
-    hz = hz_str  == my_decode("已返回")
-    health = my_decode(r[idx_health])
 
-    cur_dep = None
-    if dep in dep_map:
-        cur_dep = dep_list[dep_map[dep]]
-    else:
-        tmp_id = len(dep_list)
-        dep_map[dep] = tmp_id
-        dep_list.append(depart(dep))
-        cur_dep = dep_list[tmp_id]
-    cur_dep.total += 1
-    if nodata:
-        cur_dep.nodata += 1
-        continue
-    if hz:
-        cur_dep.hz += 1
-        if health == my_decode("绿色"):
-            cur_dep.hz_g += 1
-        elif health == my_decode("黄色"):
-            cur_dep.hz_y += 1
-        elif health == my_decode("红色"):
-            cur_dep.hz_r += 1
+def run_st(filename):
+    dep_map.clear()
+    dep_list.clear()
+    #### load file
+    table = load_workbook(filename)
+    ws = table.active
+    #### read lines
+    rows =  ws.iter_rows(min_row=2, max_col=20, values_only=True)
+    rid = 0
+    for r in rows:
+        rid += 1
+        tmp_dep = my_decode(r[idx_dep])
+        dep = ""
+        dep_pos = 1000
+        for dn in dep_name_list:
+            cur_pos = tmp_dep.find(dn)
+            if cur_pos == -1 or cur_pos > dep_pos:
+                continue
+            dep = dn
+            dep_pos = cur_pos
+        if dep == "":
+            print("warning! cannot find dep for line{}".format(rid))
+        nodata = my_decode(r[idx_avalible]) == my_decode("否")
+        hz_str = my_decode(r[idx_hz])
+        hz = hz_str  == my_decode("已返回")
+        health = my_decode(r[idx_health])
+
+        cur_dep = None
+        if dep in dep_map:
+            cur_dep = dep_list[dep_map[dep]]
         else:
-            cur_dep.hz_n += 1
-    else:
-        cur_dep.nhz += 1
-        if health == my_decode("绿色"):
-            cur_dep.nhz_g += 1
-        elif health == my_decode("黄色"):
-            cur_dep.nhz_y += 1
-        elif health == my_decode("红色"):
-            cur_dep.nhz_r += 1
+            tmp_id = len(dep_list)
+            dep_map[dep] = tmp_id
+            dep_list.append(depart(dep))
+            cur_dep = dep_list[tmp_id]
+        cur_dep.total += 1
+        if nodata:
+            cur_dep.nodata += 1
+            continue
+        if hz:
+            cur_dep.hz += 1
+            if health == my_decode("绿色"):
+                cur_dep.hz_g += 1
+            elif health == my_decode("黄色"):
+                cur_dep.hz_y += 1
+            elif health == my_decode("红色"):
+                cur_dep.hz_r += 1
+            else:
+                cur_dep.hz_n += 1
         else:
-            cur_dep.nhz_n += 1
+            cur_dep.nhz += 1
+            if health == my_decode("绿色"):
+                cur_dep.nhz_g += 1
+            elif health == my_decode("黄色"):
+                cur_dep.nhz_y += 1
+            elif health == my_decode("红色"):
+                cur_dep.nhz_r += 1
+            else:
+                cur_dep.nhz_n += 1
+
 ### read all tables
 
-
-wb = Workbook()
-ws = wb.active
-ws.append(["部门", "总数A", "未填写", "在杭B", "在杭绿码C", "在杭黄码D", "在杭红码E", "未申请码X", "未回杭F", "未回杭绿码G", "回杭黄码H", "未回杭红码I", "未回未申请码Y"])
-for dep in dep_list:
-    ws.append([
+def write_table(out_file):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["部门", "总数A", "未填写", "在杭B", "在杭绿码C", "在杭黄码D", "在杭红码E", "未申请码X", "未回杭F", "未回杭绿码G", "回杭黄码H", "未回杭红码I", "未回未申请码Y"])
+    for dep in dep_list:
+        ws.append([
         dep.dep_name,
         dep.total,
         dep.nodata,
@@ -148,4 +149,26 @@ for dep in dep_list:
         dep.nhz_r,
         dep.nhz_n
         ])
-wb.save("c:/tmp/output.xlsx")
+    wb.save(out_file)
+
+
+filename = "c:/data/xls/shining/tmp.xlsx"
+cwd = os.getcwd()
+str_input = os.path.join(cwd, "input")
+str_output = os.path.join(cwd, "output")
+dir_input = os.fsencode(str_input)
+for file in os.listdir(dir_input):
+    if not os.path.isfile(os.path.join(dir_input, file)):
+        continue
+    filename = os.fsdecode(file)
+    stem, ext = os.path.splitext(filename)
+    if ext != ".xlsx":
+        continue
+    full_filename = os.path.join(str_input, filename)
+    tmp_filename = os.path.join(str_input, "tmp.xlsx")
+    shutil.move(full_filename, tmp_filename)
+    run_st(tmp_filename)
+    shutil.move(tmp_filename, full_filename)
+    
+    write_table(tmp_filename)
+    shutil.move(tmp_filename, os.path.join(str_output, stem + "_out.xlsx"))
