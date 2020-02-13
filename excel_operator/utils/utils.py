@@ -11,7 +11,10 @@ from openpyxl import *
 
 
 
-## constant
+## constants
+my_color = styles.colors.Color(rgb="ffff00")
+around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
+
 idx_avalible = 5
 idx_hz = 11
 idx_health = 18
@@ -210,7 +213,9 @@ def write_denger_table(filename):
     wb = Workbook()
     ws = wb.active
     ws.append(["姓名", "部门", "健康码", "生病", "疫区接触"])
+    rid = 1
     for p in list_denger:
+        rid += 1
         sick = "否"
         if p.sick or p.rel_sick:
             sick = "是"
@@ -221,9 +226,15 @@ def write_denger_table(filename):
                    p.health,
                    sick, contact
         ])
+        if p.health != "绿色":
+            ws.cell(row=rid, column=3).fill = around_color
+        if sick == "是":
+            ws.cell(row=rid, column=4).fill = around_color
+        if contact == "是":
+            ws.cell(row=rid, column=5).fill = around_color
+
     wb.save(filename)    
 
-filename = "c:/data/xls/shining/tmp.xlsx"
 cwd = os.getcwd()
 str_input = os.path.join(cwd, "input")
 str_output = os.path.join(cwd, "output")
