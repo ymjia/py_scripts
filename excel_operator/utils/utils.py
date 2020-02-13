@@ -8,9 +8,6 @@ import re
 import math
 from openpyxl import *
 
-
-
-
 ## constants
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
@@ -26,22 +23,6 @@ idx_sick = 6
 idx_rel_sick = 7
 idx_region_return = 10
 idx_region_pass = 9
-
-
-class colleage:
-    def __init__(self, name):
-        self.name = name
-        self.dep = ""
-        self.nodata = False
-        self.health = ""
-        self.sick = False
-        self.rel_sick = False
-        self.region_return = False
-        self.region_pass = False
-
-    def is_denger(self):
-        return self.sick or self.rel_sick or self.region_return or self.region_pass or self.health != my_decode("绿色")
-
 
 dep_name_list = [
     "董事会办公室",
@@ -69,6 +50,23 @@ dep_name_list = [
 "3D鞋数字化产品部", 
 "审计部", 
 "数字系统"]
+
+# class
+class colleage:
+    def __init__(self, name):
+        self.name = name
+        self.dep = ""
+        self.nodata = False
+        self.health = ""
+        self.sick = False
+        self.rel_sick = False
+        self.region_return = False
+        self.region_pass = False
+
+    def is_danger(self):
+        return self.sick or self.rel_sick or self.region_return or self.region_pass or self.health != my_decode("绿色")
+
+
 class depart:
     def __init__(self, name):
         self.dep_name = name
@@ -85,22 +83,24 @@ class depart:
         self.nhz_n = 0
         self.nodata = 0
 
+# global variables
+dep_map = {}
+dep_list = []
+
+list_nodata = []
+list_danger = []
+
 def my_decode(org):
     #return bytes(org, 'utf-8-sig').decode("gbk","ignore")
     #return org.encode('gbk').decode("utf-8", 'ignore')
     return org
 
-dep_map = {}
-dep_list = []
-
-list_nodata = []
-list_denger = []
-
+# process one file
 def run_st(filename):
     dep_map.clear()
     dep_list.clear()
     list_nodata.clear()
-    list_denger.clear()
+    list_danger.clear()
     #### load file
     table = load_workbook(filename)
     ws = table.active
@@ -109,7 +109,7 @@ def run_st(filename):
     rid = 0
     for r in rows:
         rid += 1
-        # 部门
+        # 部门, 有多个部门时，取最前
         tmp_dep = my_decode(r[idx_dep])
         dep = ""
         dep_pos = 1000
@@ -137,8 +137,8 @@ def run_st(filename):
         cur_person.region_pass = my_decode(r[idx_region_pass]) == my_decode("是")
         if nodata:
             list_nodata.append(cur_person)
-        elif cur_person.is_denger():
-            list_denger.append(cur_person)
+        elif cur_person.is_danger():
+            list_danger.append(cur_person)
 
         ## info
         cur_dep = None
@@ -174,8 +174,8 @@ def run_st(filename):
             else:
                 cur_dep.nhz_n += 1
 
-### read all tables
 
+# write st results
 def write_table(out_file):
     wb = Workbook()
     ws = wb.active
@@ -206,15 +206,13 @@ def write_nodata_table(filename):
     for p in list_nodata:
         ws.append([p.name, p.dep])
     wb.save(filename)
-    
 
-
-def write_denger_table(filename):
+def write_danger_table(filename):
     wb = Workbook()
     ws = wb.active
     ws.append(["姓名", "部门", "健康码", "生病", "疫区接触"])
     rid = 1
-    for p in list_denger:
+    for p in list_danger:
         rid += 1
         sick = "否"
         if p.sick or p.rel_sick:
@@ -235,6 +233,8 @@ def write_denger_table(filename):
 
     wb.save(filename)    
 
+
+# main: process all xlsx file in current dir
 cwd = os.getcwd()
 str_input = os.path.join(cwd, "input")
 str_output = os.path.join(cwd, "output")
@@ -257,5 +257,5 @@ for file in os.listdir(dir_input):
 
     write_nodata_table(tmp_filename)
     shutil.move(tmp_filename, os.path.join(str_output, stem + "_no_data.xlsx"))
-    write_denger_table(tmp_filename)
-    shutil.move(tmp_filename, os.path.join(str_output, stem + "_denger.xlsx"))
+    write_danger_table(tmp_filename)
+    shutil.move(tmp_filename, os.path.join(str_output, stem + "_danger.xlsx"))
