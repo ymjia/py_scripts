@@ -17,6 +17,29 @@ idx_hz = 11
 idx_health = 18
 idx_dep = 4
 
+## unhealth
+idx_name = 0
+idx_sick = 6
+idx_rel_sick = 7
+idx_region_return = 10
+idx_region_pass = 9
+
+
+class colleage:
+    def __init__(self, name):
+        self.name = name
+        self.dep = ""
+        self.nodata = False
+        self.health = ""
+        self.sick = False
+        self.rel_sick = False
+        self.region_return = False
+        self.region_pass = False
+
+    def is_denger(self):
+        return self.sick or self.rel_sick or self.region_return or self.region_pass or self.health != my_decode("绿色")
+
+
 dep_name_list = [
     "董事会办公室",
     "财务部","国际事业部",
@@ -67,9 +90,14 @@ def my_decode(org):
 dep_map = {}
 dep_list = []
 
+list_nodata = []
+list_denger = []
+
 def run_st(filename):
     dep_map.clear()
     dep_list.clear()
+    list_nodata.clear()
+    list_denger.clear()
     #### load file
     table = load_workbook(filename)
     ws = table.active
@@ -78,6 +106,7 @@ def run_st(filename):
     rid = 0
     for r in rows:
         rid += 1
+        # 部门
         tmp_dep = my_decode(r[idx_dep])
         dep = ""
         dep_pos = 1000
@@ -89,11 +118,26 @@ def run_st(filename):
             dep_pos = cur_pos
         if dep == "":
             print("warning! cannot find dep for line{}".format(rid))
+        # 其它信息
         nodata = my_decode(r[idx_avalible]) == my_decode("否")
         hz_str = my_decode(r[idx_hz])
         hz = hz_str  == my_decode("已返回")
         health = my_decode(r[idx_health])
+        name = my_decode(r[idx_name])
+        cur_person = colleage(name)
+        cur_person.dep = dep
+        cur_person.nodata = nodata
+        cur_person.health = health
+        cur_person.sick = my_decode(r[idx_sick]) == my_decode("有")
+        cur_person.rel_sick = my_decode(r[idx_rel_sick]) == my_decode("有")
+        cur_person.region_return = my_decode(r[idx_region_return]) == my_decode("是")
+        cur_person.region_pass = my_decode(r[idx_region_pass]) == my_decode("是")
+        if nodata:
+            list_nodata.append(cur_person)
+        elif cur_person.is_denger():
+            list_denger.append(cur_person)
 
+        ## info
         cur_dep = None
         if dep in dep_map:
             cur_dep = dep_list[dep_map[dep]]
@@ -152,6 +196,33 @@ def write_table(out_file):
     wb.save(out_file)
 
 
+def write_nodata_table(filename):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["姓名", "部门"])
+    for p in list_nodata:
+        ws.append([p.name, p.dep])
+    wb.save(filename)
+    
+
+
+def write_denger_table(filename):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["姓名", "部门", "健康码", "生病", "疫区接触"])
+    for p in list_denger:
+        sick = "否"
+        if p.sick or p.rel_sick:
+            sick = "是"
+        contact = "否"
+        if p.region_return or p.region_pass:
+            contact = "是"
+        ws.append([p.name, p.dep,
+                   p.health,
+                   sick, contact
+        ])
+    wb.save(filename)    
+
 filename = "c:/data/xls/shining/tmp.xlsx"
 cwd = os.getcwd()
 str_input = os.path.join(cwd, "input")
@@ -172,3 +243,8 @@ for file in os.listdir(dir_input):
     
     write_table(tmp_filename)
     shutil.move(tmp_filename, os.path.join(str_output, stem + "_out.xlsx"))
+
+    write_nodata_table(tmp_filename)
+    shutil.move(tmp_filename, os.path.join(str_output, stem + "_no_data.xlsx"))
+    write_denger_table(tmp_filename)
+    shutil.move(tmp_filename, os.path.join(str_output, stem + "_denger.xlsx"))
