@@ -4,6 +4,9 @@ import os
 import sys
 
 
+
+
+
 def read_config_list(config_str, pattern):
     lc = len(config_str)
     lp = len(pattern)
