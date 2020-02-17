@@ -69,7 +69,8 @@ def table_ocr(name):
     # get cell boxes
     joints = cv2.bitwise_and(horizontal, vertical)
     Image.fromarray(joints).save(os.path.join(tmp_dir, "joints.png"))
-    
+    cnts = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    print(len(cnts))
     return
 
 
