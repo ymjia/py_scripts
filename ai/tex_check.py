@@ -11,6 +11,7 @@ import math
 import PIL
 from PIL import Image
 import openpyxl
+import docx
 from pdf2image import convert_from_path
 import tesserocr
 from tesserocr import PyTessBaseAPI
@@ -207,14 +208,47 @@ def write_item_to_xls(filename, out_list):
     wb.save(filename)
 
 
-def write_item_to_doc(self, case, cam_num):
-    table = self._doc.add_table(rows=1, cols=col_num)
+def doc_add_cell_pic(cell, pic):
+    img_name = os.path.join(tmp_dir, "img_{}.png".format(5))
+    pic.save(img_name)
+    if os.path.exists(img_name):
+        pg = cell.paragraphs[0]
+        run = pg.add_run()
+        run.add_picture(img_name, cell.width)
+
+
+def write_item_to_doc(filename, out_list):
+    doc = docx.Document()
+    i_num = len(out_list)
+    table = doc.add_table(rows=1, cols=6)
     table.style = 'Table Grid'
     row1 = table.rows[0]
-    for cam in range(0, cam_num):
-        row_cells = table.add_row().cells
+    row1.cells[0].text = "日期"
+    row1.cells[1].text = "报关单号"
+    row1.cells[2].text = "税单序号"
+    row1.cells[3].text = "税种"
+    row1.cells[4].text = "申报口岸"
+    row1.cells[5].text = "税款金额"
+    for idx, item in enumerate(out_list):
+        txt_cells = table.add_row().cells
+        txt_cells[0].text = item.date
+        txt_cells[1].text = item.no
+        txt_cells[2].text = item.idx
+        txt_cells[3].text = item.tex_type
+        txt_cells[4].text = item.port
+        txt_cells[5].text = str(item.amount)
+        pic_cells = table.add_row().cells
+        doc_add_cell_pic(pic_cells[0], item.img_date)
+        doc_add_cell_pic(pic_cells[1], item.img_no)
+        doc_add_cell_pic(pic_cells[2], item.img_idx)
+        doc_add_cell_pic(pic_cells[3], item.img_tex_type)
+        doc_add_cell_pic(pic_cells[4], item.img_port)
+        doc_add_cell_pic(pic_cells[5], item.img_amount)
+    doc.save(filename)
+
 
 
 item_list = []
 get_info_from_pdf(pdf, item_list)
-write_item_to_file(os.path.join(tmp_dir, "res.xlsx"), item_list)
+write_item_to_xls(os.path.join(tmp_dir, "res.xlsx"), item_list)
+write_item_to_doc(os.path.join(tmp_dir, "res.docx"), item_list)
