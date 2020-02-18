@@ -14,7 +14,19 @@ import openpyxl
 from pdf2image import convert_from_path
 import tesserocr
 from tesserocr import PyTessBaseAPI
-pdf = "d:/data/ai/ocr/chaque/SSHGMFP0620011610540.pdf"
+from operator import itemgetter
+
+
+#constants
+
+tmp_dir = "c:/tmp/img_out/"
+in_dir = "c:/data/xls/check/"
+pdf = os.path.join(in_dir, "SSHGMFP0620011610540.pdf")
+
+table_num = [1, 2]
+
+# variables
+item_list = []
 
 
 class tex_item:
@@ -26,17 +38,23 @@ class tex_item:
         self.port = ""
         self.amount = 0
 
-area_no = (330, 185, 580, 230)
-area_idx = (1010, 185, 1070, 230)
-area_no = (330, 185, 580, 230)
-area_no = (330, 185, 580, 230)
-area_no = (330, 185, 580, 230)
 
-item_list = []
+def tuple_mean(tu4):
+    return [int(tu4[0] + tu4[2] / 2), int(tu4[1] + tu4[3] / 2)]
 
-tmp_dir = "d:/tmp/img_out/"
+def generate_table():
+    c_dots = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    c_h_lines = cv2.findContours(horizontal, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    c_v_lines = cv2.findContours(vertical, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    d_num = len(c_dots)
+    h_num = len(c_h_lines)
+    v_num = len(c_v_lines)
+    all_dots = []
+    for d in c_dots:
+        all_dots.append(tuple_mean(cv2.boundingRect(d)))
 
-def table_ocr(name):
+
+def all_table_ocr(name):
     # load image
     src = cv2.imread(name)
     # size
@@ -51,7 +69,7 @@ def table_ocr(name):
     # extract horizontal
     horizontal = bw
     vertical = bw
-    scale = 15 # play with this variable in order to increase/decrease the amount of lines to be detected
+    scale = 15 # min length to be detected threshold
     h, w = horizontal.shape[:2]
     # Specify size
     horizontalsize = int(w / scale)
@@ -66,11 +84,33 @@ def table_ocr(name):
     vertical = cv2.dilate(vertical, v_pattern)
     Image.fromarray(horizontal).save(os.path.join(tmp_dir, "horizon.png"))
     Image.fromarray(vertical).save(os.path.join(tmp_dir, "vertical.png"))
-    # get cell boxes
     joints = cv2.bitwise_and(horizontal, vertical)
     Image.fromarray(joints).save(os.path.join(tmp_dir, "joints.png"))
-    cnts = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
-    print(len(cnts))
+
+    # divide table 
+    tables = cv2.bitwise_or(horizontal, vertical)
+    c_tables = cv2.findContours(tables, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    
+    all_tables = []
+    for ct in c_tables:
+        all_tables.append(cv2.boundingRect(ct))
+    all_tables.sort(key=itemgetter(0,1))
+
+    list_table = []
+    for tb in all_tables:
+        x = tb[0]
+        y = tb[1]
+        w = tb[2]
+        h = tb[3]
+        sub_h = horizontal[y:y+h, x:x+w]
+        sub_v = vertical[y:y+h, x:x+w]
+        sub_j = joints[y:y+h, x:x+w]
+        list_table.append(generate_table(sub_h, sub_v, sub_j))
+
+
+    print(all_tables)
+    print("{} {} {}".format(d_num, h_num, v_num))
+    print(all_dots)
     return
 
 
@@ -98,8 +138,8 @@ def build_tex_item(img):
     # centroids = output[3]
     img_part1 = img.crop(area_idx)
     text = tesserocr.image_to_text(img_part1, lang="chi_sim+eng")
-    img_part1.save("d:/tmp/img_out/area1.png")
-    f = open("d:/tmp/img_out/area1.txt", "w", encoding='utf-8')
+    img_part1.save(os.path.join(tmp_dir, "area1.png"))
+    f = open(os.path.join(tmp_dir, "area1.txt"), "w", encoding='utf-8')
     f.writelines(text)  # print ocr text from image
     return res
 
@@ -114,9 +154,9 @@ def image_preprocess(img):
 def get_info_from_pdf(pdf):
     images = convert_from_path(pdf)
     idx = 0
-    img_name2 = "d:/data/ai/ocr/chaque/img_2.png"
+    img_name2 = os.path.join(tmp_dir, "img_2.png")
     images[0].save(img_name2)
-    table_ocr(img_name2)
+    all_table_ocr(img_name2)
     #build_tex_item(img_name2)
     
     #build_tex_item(images[1])
@@ -125,7 +165,7 @@ def get_info_from_pdf(pdf):
         # get info
         #build_tex_item
         img_p = image_preprocess(img)
-        img_name = "c:/data/xls/check/img_{}.png".format(idx)
+        img_name = os.path.join(in_dir, "img_{}.png".format(idx))
         #img_p.save(img_name)
         build_tex_item(img_name)
         idx += 1
