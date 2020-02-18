@@ -22,18 +22,22 @@ tmp_dir = "c:/tmp/img_out/"
 in_dir = "c:/data/xls/check/"
 pdf = os.path.join(in_dir, "SSHGMFP0620011610540.pdf")
 
-# variables
-item_list = []
-
 
 class tex_item:
-    def __init__():
+    def __init__(self):
         self.date = ""
         self.no = ""
         self.idx = ""
         self.tex_type = ""
         self.port = ""
         self.amount = 0
+        self.img_date = None
+        self.img_no = None
+        self.img_idx = None
+        self.img_tex_type = None
+        self.img_port = None
+        self.img_amount = None
+
 
 
 class ocr_table:
@@ -94,7 +98,8 @@ def all_table_ocr(name):
     #Image.fromarray(rsz).save(os.path.join(tmp_dir, "rsz.png"))
     # grey
     grey = cv2.cvtColor(rsz, cv2.COLOR_BGR2GRAY)
-    bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 25, -2)
+    bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255,
+                               cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 25, -2)
     #Image.fromarray(bw).save(os.path.join(tmp_dir, "grey.png"))
     # extract horizontal
     horizontal = bw
@@ -151,32 +156,26 @@ def rect_shrink(rect, step):
 
 
 def build_tex_item(org, tables):
-    res = tex_item
+    res = tex_item()
     img = image_preprocess(org)
     to = tables[0]._origin
     date_rect = (to[0]-240, to[1] - 105, to[0] + 20, to[1] - 60)
-    part_date = img.crop(date_rect)
-    part_no = img.crop(rect_shrink(tables[0].rect(0, 0), 3))
-    part_idx = img.crop(rect_shrink(tables[1].rect(0, 0), 3))
-    part_tex_type = img.crop(rect_shrink(tables[0].rect(1, 0), 3))
-    part_port = img.crop(rect_shrink(tables[0].rect(2, 0), 3))
-    part_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 3))
-    part_date.save(os.path.join(tmp_dir, "date.png"))
-    part_no.save(os.path.join(tmp_dir, "no.png"))
-    part_idx.save(os.path.join(tmp_dir, "idx.png"))
-    part_tex_type.save(os.path.join(tmp_dir, "tex_type.png"))
-    part_port.save(os.path.join(tmp_dir, "port.png"))
-    part_amount.save(os.path.join(tmp_dir, "amount.png"))
+    res.img_date = img.crop(date_rect)
+    res.img_no = img.crop(rect_shrink(tables[0].rect(0, 0), 3))
+    res.img_idx = img.crop(rect_shrink(tables[1].rect(0, 0), 3))
+    res.img_tex_type = img.crop(rect_shrink(tables[0].rect(1, 0), 3))
+    res.img_port = img.crop(rect_shrink(tables[0].rect(2, 0), 3))
+    res.img_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 3))
     
-    tex_item.date = tesserocr.image_to_text(part_date, lang="chi_sim+eng")
-    tex_item.no = tesserocr.image_to_text(part_no, lang="chi_sim+eng")
-    tex_item.idx = tesserocr.image_to_text(part_idx, lang="chi_sim+eng")
-    tex_item.tex_type = tesserocr.image_to_text(part_tex_type, lang="chi_sim+eng")
-    tex_item.port = tesserocr.image_to_text(part_port, lang="chi_sim+eng")
+    res.date = tesserocr.image_to_text(res.img_date, lang="chi_sim+eng")
+    res.no = tesserocr.image_to_text(res.img_no, lang="chi_sim+eng")
+    res.idx = tesserocr.image_to_text(res.img_idx, lang="chi_sim+eng")
+    res.tex_type = tesserocr.image_to_text(res.img_tex_type, lang="chi_sim+eng")
+    res.port = tesserocr.image_to_text(res.img_port, lang="chi_sim+eng")
     try:
-        tex_item.amount = float(tesserocr.image_to_text(part_amount, lang="chi_sim+eng"))
+        res.amount = float(tesserocr.image_to_text(res.img_amount, lang="chi_sim+eng"))
     except:
-        tex_item.amount = 0
+        res.amount = 0
     return res
 
 
@@ -186,7 +185,8 @@ def image_preprocess(img):
     return blackwhite
 
 
-def get_info_from_pdf(pdf):
+def get_info_from_pdf(pdf, info_list):
+    item_list.clear()
     images = convert_from_path(pdf)
     for idx, img in enumerate(images):
         img_name = os.path.join(tmp_dir, "img_{}.png".format(idx))
@@ -198,7 +198,7 @@ def get_info_from_pdf(pdf):
         item_list.append(build_tex_item(img, tables))
 
 
-def write_item_to_file(filename, out_list):
+def write_item_to_xls(filename, out_list):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.append(["日期", "报关单号", "税单序号", "税种", "申报口岸", "税款金额"])
@@ -207,5 +207,14 @@ def write_item_to_file(filename, out_list):
     wb.save(filename)
 
 
-get_info_from_pdf(pdf)
+def write_item_to_doc(self, case, cam_num):
+    table = self._doc.add_table(rows=1, cols=col_num)
+    table.style = 'Table Grid'
+    row1 = table.rows[0]
+    for cam in range(0, cam_num):
+        row_cells = table.add_row().cells
+
+
+item_list = []
+get_info_from_pdf(pdf, item_list)
 write_item_to_file(os.path.join(tmp_dir, "res.xlsx"), item_list)
