@@ -17,11 +17,10 @@ import tesserocr
 from tesserocr import PyTessBaseAPI
 from operator import itemgetter
 
-
-#constants
-tmp_dir = "c:/tmp/img_out/"
-in_dir = "c:/data/xls/check/"
-pdf = os.path.join(in_dir, "SSHGMFP0620011610540.pdf")
+# main: process all xlsx file in current dir
+cwd = os.getcwd()
+str_input = os.path.join(cwd, "input")
+str_output = os.path.join(cwd, "output")
 
 ## @brief tex info item from pdf
 class tex_item:
@@ -109,12 +108,10 @@ def ocr_detect_table(name):
     x = 0
     y = 0
     rsz = src[y:y+1000, x:x+1600]
-    #Image.fromarray(rsz).save(os.path.join(tmp_dir, "rsz.png"))
     # grey
     grey = cv2.cvtColor(rsz, cv2.COLOR_BGR2GRAY)
     bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255,
                                cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 25, -2)
-    #Image.fromarray(bw).save(os.path.join(tmp_dir, "grey.png"))
     # extract horizontal
     horizontal = bw
     vertical = bw
@@ -131,10 +128,9 @@ def ocr_detect_table(name):
     horizontal = cv2.dilate(horizontal, h_pattern, iterations = 1)
     vertical = cv2.erode(vertical, v_pattern)
     vertical = cv2.dilate(vertical, v_pattern)
-    #Image.fromarray(horizontal).save(os.path.join(tmp_dir, "horizon.png"))
-    #Image.fromarray(vertical).save(os.path.join(tmp_dir, "vertical.png"))
+    #Image.fromarray(horizontal).save(os.path.join(str_output, "horizon.png"))
+    #Image.fromarray(vertical).save(os.path.join(str_output, "vertical.png"))
     joints = cv2.bitwise_and(horizontal, vertical)
-    #Image.fromarray(joints).save(os.path.join(tmp_dir, "joints.png"))
 
     # divide and sort tables
     tables = cv2.bitwise_or(horizontal, vertical)
@@ -163,10 +159,22 @@ def my_decode(str_in):
     return str_in.encode('utf-8').decode("gbk", 'ignore')
 
 
+def build_date_str(in_str):
+    m = re.search('(20[\d]{2})年([\d]{2})月([\d]{2}).*', in_str)
+    if m:
+        return "{}/{}/{}".format(m.group(2), m.group(3), m.group(1))
+    return ""
+
+
 def rect_shrink(rect, step):
     res = (rect[0] + step, rect[1] + step,
            rect[2] - step, rect[3] - step)
     return res
+
+
+def detect_text(img):
+    return tesserocr.image_to_text(img, lang="chi_sim+eng").rstrip()
+
 
 ## @brief recognize text from regions defined by ocr_table
 def build_tex_item(org, tables):
@@ -181,13 +189,13 @@ def build_tex_item(org, tables):
     res.img_port = img.crop(rect_shrink(tables[0].rect(2, 0), 3))
     res.img_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 3))
     
-    res.date = tesserocr.image_to_text(res.img_date, lang="chi_sim+eng")
-    res.no = tesserocr.image_to_text(res.img_no, lang="chi_sim+eng")
-    res.idx = tesserocr.image_to_text(res.img_idx, lang="chi_sim+eng")
-    res.tex_type = tesserocr.image_to_text(res.img_tex_type, lang="chi_sim+eng")
-    res.port = tesserocr.image_to_text(res.img_port, lang="chi_sim+eng")
+    res.date = build_date_str(detect_text(res.img_date))
+    res.no = detect_text(res.img_no)
+    res.idx = detect_text(res.img_idx)
+    res.tex_type = detect_text(res.img_tex_type)
+    res.port = detect_text(res.img_port)
     try:
-        res.amount = float(tesserocr.image_to_text(res.img_amount, lang="chi_sim+eng"))
+        res.amount = float(detect_text(res.img_amount))
     except:
         res.amount = 0
     return res
@@ -200,10 +208,9 @@ def image_preprocess(img):
 
 
 def get_info_from_pdf(pdf, info_list):
-    item_list.clear()
     images = convert_from_path(pdf)
     for idx, img in enumerate(images):
-        img_name = os.path.join(tmp_dir, "img_{}.png".format(idx))
+        img_name = os.path.join(str_output, "img_{}.png".format(idx))
         img.save(img_name)
         tables = ocr_detect_table(img_name)
         if len(tables) != 2:
@@ -222,7 +229,7 @@ def write_item_to_xls(filename, out_list):
 
 
 def doc_add_cell_pic(cell, pic):
-    img_name = os.path.join(tmp_dir, "img_{}.png".format(5))
+    img_name = os.path.join(str_output, "img_{}.png".format(5))
     pic.save(img_name)
     if os.path.exists(img_name):
         pg = cell.paragraphs[0]
@@ -261,6 +268,15 @@ def write_item_to_doc(filename, out_list):
 
 
 item_list = []
-get_info_from_pdf(pdf, item_list)
-write_item_to_xls(os.path.join(tmp_dir, "res.xlsx"), item_list)
-write_item_to_doc(os.path.join(tmp_dir, "res.docx"), item_list)
+dir_input = os.fsencode(str_input)
+for file in os.listdir(dir_input):
+    if not os.path.isfile(os.path.join(dir_input, file)):
+        continue
+    filename = os.fsdecode(file)
+    stem, ext = os.path.splitext(filename)
+    if ext != ".pdf":
+        continue
+    get_info_from_pdf(os.path.join(str_input, filename), item_list)
+    
+write_item_to_xls(os.path.join(str_output, "res.xlsx"), item_list)
+write_item_to_doc(os.path.join(str_output, "res.docx"), item_list)
