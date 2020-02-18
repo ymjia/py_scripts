@@ -40,19 +40,51 @@ class tex_item:
 
 
 def tuple_mean(tu4):
-    return [int(tu4[0] + tu4[2] / 2), int(tu4[1] + tu4[3] / 2)]
+    return (int(tu4[0] + tu4[2] / 2), int(tu4[1] + tu4[3] / 2))
 
-def generate_table():
+
+class ocr_table:
+    def __init__(self, w, h):
+        self._h = h
+        self._w = w
+        self._origin = (0, 0)
+        self._pos = []
+    
+    def r(self, rid):
+        start = rid * self._w
+        return _pos[start:start + self._h]
+
+    def rect(self, rid, cid):
+        rn = rid + 1
+        cn = rid + 1
+        if rn >= self._h or cn >= self._w:
+            return (0, 0, 0, 0)
+        top_right = _pos[rid * self._w + cid]
+        low_left = _pos[rn * self._w + cn]
+        return (top_right[0] + origin[0], top_right[1] + origin[1],
+                low_left[0] + origin[0], low_left[1] + origin[1])
+
+def generate_table(origin, horizontal, vertical, joints):
     c_dots = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
     c_h_lines = cv2.findContours(horizontal, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
     c_v_lines = cv2.findContours(vertical, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
     d_num = len(c_dots)
     h_num = len(c_h_lines)
     v_num = len(c_v_lines)
+    t = ocr_table(v_num, h_num)
+    t._origin = origin
     all_dots = []
     for d in c_dots:
-        all_dots.append(tuple_mean(cv2.boundingRect(d)))
-
+        t._pos.append(tuple_mean(cv2.boundingRect(d)))
+    # sort by row then col
+    # ALTERNATIVE: calulate by v/h line coord 
+    t._pos.sort(key = itemgetter(1))
+    for li in range(0, h_num):
+        start = li * v_num
+        end = start + v_num
+        sub_line = t._pos[start:end]
+        t._pos[start:end] = sorted(sub_line, key = itemgetter(0))
+    return t
 
 def all_table_ocr(name):
     # load image
@@ -87,7 +119,7 @@ def all_table_ocr(name):
     joints = cv2.bitwise_and(horizontal, vertical)
     Image.fromarray(joints).save(os.path.join(tmp_dir, "joints.png"))
 
-    # divide table 
+    # divide and sort tables
     tables = cv2.bitwise_or(horizontal, vertical)
     c_tables = cv2.findContours(tables, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
     
@@ -105,13 +137,9 @@ def all_table_ocr(name):
         sub_h = horizontal[y:y+h, x:x+w]
         sub_v = vertical[y:y+h, x:x+w]
         sub_j = joints[y:y+h, x:x+w]
-        list_table.append(generate_table(sub_h, sub_v, sub_j))
+        list_table.append(generate_table((x, y), sub_h, sub_v, sub_j))
 
-
-    print(all_tables)
-    print("{} {} {}".format(d_num, h_num, v_num))
-    print(all_dots)
-    return
+    return list_table
 
 
 def my_decode(str_in):

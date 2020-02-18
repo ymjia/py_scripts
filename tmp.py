@@ -52,7 +52,8 @@ t_list.append((4, 3, 8))
 t_list.append((1, 4, 9))
 t_list.append((2, 1, 10))
 t_list.sort(key=itemgetter(0,1))
-print(t_list)
+print(t_list[0:2])
+
 
 
 # print(regex_cid("33281812/2/12/3"))
