@@ -18,12 +18,9 @@ from operator import itemgetter
 
 
 #constants
-
 tmp_dir = "c:/tmp/img_out/"
 in_dir = "c:/data/xls/check/"
 pdf = os.path.join(in_dir, "SSHGMFP0620011610540.pdf")
-
-table_num = [1, 2]
 
 # variables
 item_list = []
@@ -37,10 +34,6 @@ class tex_item:
         self.tex_type = ""
         self.port = ""
         self.amount = 0
-
-
-def tuple_mean(tu4):
-    return (int(tu4[0] + tu4[2] / 2), int(tu4[1] + tu4[3] / 2))
 
 
 class ocr_table:
@@ -63,6 +56,11 @@ class ocr_table:
         low_left = self._pos[rn * self._w + cn]
         return (top_right[0] + self._origin[0], top_right[1] + self._origin[1],
                 low_left[0] + self._origin[0], low_left[1] + self._origin[1])
+
+
+def tuple_mean(tu4):
+    return (int(tu4[0] + tu4[2] / 2), int(tu4[1] + tu4[3] / 2))
+
 
 def generate_table(origin, horizontal, vertical, joints):
     c_dots = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -170,9 +168,15 @@ def build_tex_item(org, tables):
     part_port.save(os.path.join(tmp_dir, "port.png"))
     part_amount.save(os.path.join(tmp_dir, "amount.png"))
     
-    # text = tesserocr.image_to_text(img_part1, lang="chi_sim+eng")
-    # f = open(os.path.join(tmp_dir, "area1.txt"), "w", encoding='utf-8')
-    # f.writelines(text)  # print ocr text from image
+    tex_item.date = tesserocr.image_to_text(part_date, lang="chi_sim+eng")
+    tex_item.no = tesserocr.image_to_text(part_no, lang="chi_sim+eng")
+    tex_item.idx = tesserocr.image_to_text(part_idx, lang="chi_sim+eng")
+    tex_item.tex_type = tesserocr.image_to_text(part_tex_type, lang="chi_sim+eng")
+    tex_item.port = tesserocr.image_to_text(part_port, lang="chi_sim+eng")
+    try:
+        tex_item.amount = float(tesserocr.image_to_text(part_amount, lang="chi_sim+eng"))
+    except:
+        tex_item.amount = 0
     return res
 
 
@@ -180,38 +184,22 @@ def image_preprocess(img):
     gray = img.convert('L')
     blackwhite = gray.point(lambda x: 0 if x < 180 else 255, '1')
     return blackwhite
-    #return img
 
 
 def get_info_from_pdf(pdf):
     images = convert_from_path(pdf)
-    idx = 0
-    img_name2 = os.path.join(tmp_dir, "img_2.png")
-    images[1].save(img_name2)
-    tables = all_table_ocr(img_name2)
-    if len(tables) != 2:
-        print("Error! Fail to detect table from pdf {}".format(img_name2))
-        return
-    build_tex_item(images[1], tables)
-
-    
-    #build_tex_item(img_name2)
-    
-    #build_tex_item(images[1])
-    return
-    for img in images:
-        # get info
-        #build_tex_item
-        img_p = image_preprocess(img)
-        img_name = os.path.join(in_dir, "img_{}.png".format(idx))
-        #img_p.save(img_name)
-        build_tex_item(img_name)
-        idx += 1
-        break
+    for idx, img in enumerate(images):
+        img_name = os.path.join(tmp_dir, "img_{}.png".format(idx))
+        img.save(img_name)
+        tables = all_table_ocr(img_name)
+        if len(tables) != 2:
+            print("Error! Fail to detect table from pdf {}".format(img_name))
+            continue
+        item_list.append(build_tex_item(img, tables))
 
 
 def write_item_to_file(filename, out_list):
-    wb = Workbook()
+    wb = openpyxl.Workbook()
     ws = wb.active
     ws.append(["日期", "报关单号", "税单序号", "税种", "申报口岸", "税款金额"])
     for vi in out_list:
@@ -220,3 +208,4 @@ def write_item_to_file(filename, out_list):
 
 
 get_info_from_pdf(pdf)
+write_item_to_file(os.path.join(tmp_dir, "res.xlsx"), item_list)
