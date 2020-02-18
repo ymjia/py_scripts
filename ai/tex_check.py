@@ -93,11 +93,11 @@ def all_table_ocr(name):
     x = 0
     y = 0
     rsz = src[y:y+1000, x:x+1600]
-    Image.fromarray(rsz).save(os.path.join(tmp_dir, "rsz.png"))
+    #Image.fromarray(rsz).save(os.path.join(tmp_dir, "rsz.png"))
     # grey
     grey = cv2.cvtColor(rsz, cv2.COLOR_BGR2GRAY)
     bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 25, -2)
-    Image.fromarray(bw).save(os.path.join(tmp_dir, "grey.png"))
+    #Image.fromarray(bw).save(os.path.join(tmp_dir, "grey.png"))
     # extract horizontal
     horizontal = bw
     vertical = bw
@@ -114,10 +114,10 @@ def all_table_ocr(name):
     horizontal = cv2.dilate(horizontal, h_pattern, iterations = 1)
     vertical = cv2.erode(vertical, v_pattern)
     vertical = cv2.dilate(vertical, v_pattern)
-    Image.fromarray(horizontal).save(os.path.join(tmp_dir, "horizon.png"))
-    Image.fromarray(vertical).save(os.path.join(tmp_dir, "vertical.png"))
+    #Image.fromarray(horizontal).save(os.path.join(tmp_dir, "horizon.png"))
+    #Image.fromarray(vertical).save(os.path.join(tmp_dir, "vertical.png"))
     joints = cv2.bitwise_and(horizontal, vertical)
-    Image.fromarray(joints).save(os.path.join(tmp_dir, "joints.png"))
+    #Image.fromarray(joints).save(os.path.join(tmp_dir, "joints.png"))
 
     # divide and sort tables
     tables = cv2.bitwise_or(horizontal, vertical)
@@ -145,21 +145,25 @@ def all_table_ocr(name):
 def my_decode(str_in):
     return str_in.encode('utf-8').decode("gbk", 'ignore')
 
+
+def rect_shrink(rect, step):
+    res = (rect[0] + step, rect[1] + step,
+           rect[2] - step, rect[3] - step)
+    return res
+
+
 def build_tex_item(org, tables):
     res = tex_item
     img = image_preprocess(org)
-    table0 = tables[0]
-    print(tables[0].rect(0, 0))
-    print(tables[1].rect(0, 0))
-    print(tables[0].rect(1, 0))
-    print(tables[0].rect(2, 0))
-    print(tables[0].rect(9, 0))
-    return res
-    part_no = img.crop(tables[0].rect(0, 0))
-    part_idx = img.crop(tables[1].rect(0, 0))
-    part_tex_type = img.crop(tables[0].rect(1, 0))
-    part_port = img.crop(tables[0].rect(2, 0))
-    part_amount = img.crop(tables[0].rect(9, 0))
+    to = tables[0]._origin
+    date_rect = (to[0]-240, to[1] - 105, to[0] + 20, to[1] - 60)
+    part_date = img.crop(date_rect)
+    part_no = img.crop(rect_shrink(tables[0].rect(0, 0), 3))
+    part_idx = img.crop(rect_shrink(tables[1].rect(0, 0), 3))
+    part_tex_type = img.crop(rect_shrink(tables[0].rect(1, 0), 3))
+    part_port = img.crop(rect_shrink(tables[0].rect(2, 0), 3))
+    part_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 3))
+    part_date.save(os.path.join(tmp_dir, "date.png"))
     part_no.save(os.path.join(tmp_dir, "no.png"))
     part_idx.save(os.path.join(tmp_dir, "idx.png"))
     part_tex_type.save(os.path.join(tmp_dir, "tex_type.png"))
