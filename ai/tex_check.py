@@ -52,17 +52,17 @@ class ocr_table:
     
     def r(self, rid):
         start = rid * self._w
-        return _pos[start:start + self._h]
+        return self._pos[start:start + self._h]
 
     def rect(self, rid, cid):
         rn = rid + 1
-        cn = rid + 1
+        cn = cid + 1
         if rn >= self._h or cn >= self._w:
             return (0, 0, 0, 0)
-        top_right = _pos[rid * self._w + cid]
-        low_left = _pos[rn * self._w + cn]
-        return (top_right[0] + origin[0], top_right[1] + origin[1],
-                low_left[0] + origin[0], low_left[1] + origin[1])
+        top_right = self._pos[rid * self._w + cid]
+        low_left = self._pos[rn * self._w + cn]
+        return (top_right[0] + self._origin[0], top_right[1] + self._origin[1],
+                low_left[0] + self._origin[0], low_left[1] + self._origin[1])
 
 def generate_table(origin, horizontal, vertical, joints):
     c_dots = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -145,30 +145,30 @@ def all_table_ocr(name):
 def my_decode(str_in):
     return str_in.encode('utf-8').decode("gbk", 'ignore')
 
-def build_tex_item(img):
+def build_tex_item(org, tables):
     res = tex_item
-    #cv_img = cv2.imread(img_name)
-
-    # ret, thresh = cv2.threshold(cv_img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    # # choose 4 or 8 for connectivity type
-    # connectivity = 4  
-    # # Perform the operation
-    # output = cv2.connectedComponentsWithStats(thresh, connectivity, cv2.CV_32S)
-    # # Get the results
-    # # The first cell is the number of labels
-    # num_labels = output[0]
-    # # The second cell is the label matrix
-    # labels = output[1]
-    # cv2.imshow('Original Image', labels)
-    # # The third cell is the stat matrix
-    # stats = output[2]
-    # # The fourth cell is the centroid matrix
-    # centroids = output[3]
-    img_part1 = img.crop(area_idx)
-    text = tesserocr.image_to_text(img_part1, lang="chi_sim+eng")
-    img_part1.save(os.path.join(tmp_dir, "area1.png"))
-    f = open(os.path.join(tmp_dir, "area1.txt"), "w", encoding='utf-8')
-    f.writelines(text)  # print ocr text from image
+    img = image_preprocess(org)
+    table0 = tables[0]
+    print(tables[0].rect(0, 0))
+    print(tables[1].rect(0, 0))
+    print(tables[0].rect(1, 0))
+    print(tables[0].rect(2, 0))
+    print(tables[0].rect(9, 0))
+    return res
+    part_no = img.crop(tables[0].rect(0, 0))
+    part_idx = img.crop(tables[1].rect(0, 0))
+    part_tex_type = img.crop(tables[0].rect(1, 0))
+    part_port = img.crop(tables[0].rect(2, 0))
+    part_amount = img.crop(tables[0].rect(9, 0))
+    part_no.save(os.path.join(tmp_dir, "no.png"))
+    part_idx.save(os.path.join(tmp_dir, "idx.png"))
+    part_tex_type.save(os.path.join(tmp_dir, "tex_type.png"))
+    part_port.save(os.path.join(tmp_dir, "port.png"))
+    part_amount.save(os.path.join(tmp_dir, "amount.png"))
+    
+    # text = tesserocr.image_to_text(img_part1, lang="chi_sim+eng")
+    # f = open(os.path.join(tmp_dir, "area1.txt"), "w", encoding='utf-8')
+    # f.writelines(text)  # print ocr text from image
     return res
 
 
@@ -183,8 +183,14 @@ def get_info_from_pdf(pdf):
     images = convert_from_path(pdf)
     idx = 0
     img_name2 = os.path.join(tmp_dir, "img_2.png")
-    images[0].save(img_name2)
-    all_table_ocr(img_name2)
+    images[1].save(img_name2)
+    tables = all_table_ocr(img_name2)
+    if len(tables) != 2:
+        print("Error! Fail to detect table from pdf {}".format(img_name2))
+        return
+    build_tex_item(images[1], tables)
+
+    
     #build_tex_item(img_name2)
     
     #build_tex_item(images[1])
