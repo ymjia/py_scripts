@@ -23,7 +23,7 @@ tmp_dir = "c:/tmp/img_out/"
 in_dir = "c:/data/xls/check/"
 pdf = os.path.join(in_dir, "SSHGMFP0620011610540.pdf")
 
-
+## @brief tex info item from pdf
 class tex_item:
     def __init__(self):
         self.date = ""
@@ -40,13 +40,13 @@ class tex_item:
         self.img_amount = None
 
 
-
+## @brief ocr table info (cell pixel positions) from image
 class ocr_table:
     def __init__(self, w, h):
-        self._h = h
-        self._w = w
-        self._origin = (0, 0)
-        self._pos = []
+        self._h = h # height
+        self._w = w # width
+        self._origin = (0, 0) # table l-t-coner in image
+        self._pos = [] # l-t-coner of each cell
     
     def r(self, rid):
         start = rid * self._w
@@ -62,11 +62,22 @@ class ocr_table:
         return (top_right[0] + self._origin[0], top_right[1] + self._origin[1],
                 low_left[0] + self._origin[0], low_left[1] + self._origin[1])
 
+    def lrect(self, rid, cid):
+        rn = rid + 1
+        cn = cid + 1
+        if rn >= self._h or cn >= self._w:
+            return (0, 0, 0, 0)
+        top_right = self._pos[rid * self._w + cid]
+        low_left = self._pos[rn * self._w + cn]
+        return (top_right[0], top_right[1], low_left[0], low_left[1])
 
+
+## @brief get mean poisition from cv coutour boundingRect
 def tuple_mean(tu4):
     return (int(tu4[0] + tu4[2] / 2), int(tu4[1] + tu4[3] / 2))
 
 
+## @brief generate table information from ocr region
 def generate_table(origin, horizontal, vertical, joints):
     c_dots = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
     c_h_lines = cv2.findContours(horizontal, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -89,7 +100,9 @@ def generate_table(origin, horizontal, vertical, joints):
         t._pos[start:end] = sorted(sub_line, key = itemgetter(0))
     return t
 
-def all_table_ocr(name):
+
+## @brief detect tables from image file
+def ocr_detect_table(name):
     # load image
     src = cv2.imread(name)
     # size
@@ -155,7 +168,7 @@ def rect_shrink(rect, step):
            rect[2] - step, rect[3] - step)
     return res
 
-
+## @brief recognize text from regions defined by ocr_table
 def build_tex_item(org, tables):
     res = tex_item()
     img = image_preprocess(org)
@@ -192,7 +205,7 @@ def get_info_from_pdf(pdf, info_list):
     for idx, img in enumerate(images):
         img_name = os.path.join(tmp_dir, "img_{}.png".format(idx))
         img.save(img_name)
-        tables = all_table_ocr(img_name)
+        tables = ocr_detect_table(img_name)
         if len(tables) != 2:
             print("Error! Fail to detect table from pdf {}".format(img_name))
             continue
@@ -245,7 +258,6 @@ def write_item_to_doc(filename, out_list):
         doc_add_cell_pic(pic_cells[4], item.img_port)
         doc_add_cell_pic(pic_cells[5], item.img_amount)
     doc.save(filename)
-
 
 
 item_list = []
