@@ -182,7 +182,7 @@ def build_tex_item(org, tables):
 
 def image_preprocess(img):
     gray = img.convert('L')
-    blackwhite = gray.point(lambda x: 0 if x < 180 else 255, '1')
+    blackwhite = gray.point(lambda x: 0 if x < 200 else 255, '1')
     return blackwhite
 
 
