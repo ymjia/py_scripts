@@ -16,11 +16,20 @@ from pdf2image import convert_from_path
 import tesserocr
 from tesserocr import PyTessBaseAPI
 from operator import itemgetter
+from docx.shared import Mm
+# docx cell color
+from docx.oxml.ns import nsdecls
+from docx.oxml import parse_xml
+
 
 # main: process all xlsx file in current dir
 cwd = os.getcwd()
 str_input = os.path.join(cwd, "input")
 str_output = os.path.join(cwd, "output")
+
+#constant
+port_list = {}
+
 
 ## @brief tex info item from pdf
 class tex_item:
@@ -159,10 +168,38 @@ def my_decode(str_in):
     return str_in.encode('utf-8').decode("gbk", 'ignore')
 
 
-def build_date_str(in_str):
+def regulate_date_str(in_str):
     m = re.search('(20[\d]{2})年([\d]{2})月([\d]{2}).*', in_str)
     if m:
         return "{}/{}/{}".format(m.group(2), m.group(3), m.group(1))
+    return ""
+
+
+def regulate_type_str(in_str):
+    if len(in_str) >= 1:
+        m = in_str[0]
+        if m == "L" or m == "A":
+            return m
+    return ""
+
+
+def read_port_list(filename, port_list):
+    port_file = filename
+    table_port = openpyxl.load_workbook(port_file)
+    ws = table_port.active
+    for r in ws.iter_rows(min_row=2, max_col=3, values_only=True):
+        pid = r[0]
+        pname = r[1]
+        port_list[pid] = pname
+    return
+
+
+def regulate_port_str(in_str, port_list):
+    if len(in_str) < 4:
+        return ""
+    port_id = in_str[:4]
+    if port_id in port_list:
+        return "{}({})".format(port_id, port_list[port_id])
     return ""
 
 
@@ -189,11 +226,11 @@ def build_tex_item(org, tables):
     res.img_port = img.crop(rect_shrink(tables[0].rect(2, 0), 3))
     res.img_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 3))
     
-    res.date = build_date_str(detect_text(res.img_date))
+    res.date = regulate_date_str(detect_text(res.img_date))
     res.no = detect_text(res.img_no)
     res.idx = detect_text(res.img_idx)
-    res.tex_type = detect_text(res.img_tex_type)
-    res.port = detect_text(res.img_port)
+    res.tex_type = regulate_type_str(detect_text(res.img_tex_type))
+    res.port = regulate_port_str(detect_text(res.img_port), port_list)
     try:
         res.amount = float(detect_text(res.img_amount))
     except:
@@ -229,12 +266,22 @@ def write_item_to_xls(filename, out_list):
 
 
 def doc_add_cell_pic(cell, pic):
-    img_name = os.path.join(str_output, "img_{}.png".format(5))
-    pic.save(img_name)
+    img_name = os.path.join(str_output, "img_{}.png".format(3))
+    arr = np.bitwise_not(np.asarray(pic))
+    ind = np.nonzero(arr.any(axis=0))[0] # indices of non empty columns 
+    width = int((ind[-1] - ind[0] + 1) * 1.2)
+    rect = (0, 0, width, pic.height - 1)
+    pic.crop(rect).save(img_name)
     if os.path.exists(img_name):
         pg = cell.paragraphs[0]
         run = pg.add_run()
-        run.add_picture(img_name, cell.width)
+        run.add_picture(img_name, height=Mm(5))
+
+
+def set_cell_text(cell, text):
+    cell.text = text
+    if text == "":
+        cell._tc.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="AA0000"/>'.format(nsdecls('w'))))
 
 
 def write_item_to_doc(filename, out_list):
@@ -251,12 +298,12 @@ def write_item_to_doc(filename, out_list):
     row1.cells[5].text = "税款金额"
     for idx, item in enumerate(out_list):
         txt_cells = table.add_row().cells
-        txt_cells[0].text = item.date
-        txt_cells[1].text = item.no
-        txt_cells[2].text = item.idx
-        txt_cells[3].text = item.tex_type
-        txt_cells[4].text = item.port
-        txt_cells[5].text = str(item.amount)
+        set_cell_text(txt_cells[0], item.date)
+        set_cell_text(txt_cells[1], item.no)
+        set_cell_text(txt_cells[2], item.idx)
+        set_cell_text(txt_cells[3], item.tex_type)
+        set_cell_text(txt_cells[4], item.port)
+        set_cell_text(txt_cells[5], str(item.amount))
         pic_cells = table.add_row().cells
         doc_add_cell_pic(pic_cells[0], item.img_date)
         doc_add_cell_pic(pic_cells[1], item.img_no)
@@ -268,6 +315,10 @@ def write_item_to_doc(filename, out_list):
 
 
 item_list = []
+
+
+read_port_list(os.path.join(str_input, "duty.xlsx"), port_list)
+
 dir_input = os.fsencode(str_input)
 for file in os.listdir(dir_input):
     if not os.path.isfile(os.path.join(dir_input, file)):

@@ -2,6 +2,8 @@ import pdb
 import re
 import os
 import sys
+import cv2
+from PIL import Image
 from operator import itemgetter
 
 
@@ -44,17 +46,26 @@ def regex_cid(in_str):
         return m.group(1)
     return ""
 
-t_list = [(1, 0, 2)]
-t_list.append((1, 3, 4))
-t_list.append((2, 3, 6))
-t_list.append((3, 1, 6))
-t_list.append((4, 3, 8))
-t_list.append((1, 4, 9))
-t_list.append((2, 1, 10))
-t_list.sort(key=itemgetter(0,1))
-print(t_list[0:2])
+
+# sort and itemgetter
+# t_list = [(1, 0, 2)]
+# t_list.append((1, 3, 4))
+# t_list.append((2, 3, 6))
+# t_list.append((3, 1, 6))
+# t_list.append((4, 3, 8))
+# t_list.append((1, 4, 9))
+# t_list.append((2, 1, 10))
+# t_list.sort(key=itemgetter(0,1))
+# print(t_list[0:2])
 
 
+#image
+img_pil = Image.open("c:/data/xls/check/img_2.png")
+print(img_pil)
+gray = img_pil.convert('L')
+print(gray)
+blackwhite = gray.point(lambda x: 0 if x < 200 else 255, '1')
+print(blackwhite)
 
 # print(regex_cid("33281812/2/12/3"))
 # print(regex_cid("12382918/2+12/3aad"))
