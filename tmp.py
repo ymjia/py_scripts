@@ -4,6 +4,7 @@ import os
 import sys
 import cv2
 import math
+import numpy as np
 from PIL import Image
 from operator import itemgetter
 
@@ -62,7 +63,7 @@ def regex_cid(in_str):
 
 #image
 #img_pil = Image.open("c:/data/xls/check/img_2.png")
-img_name = "d:/dev/py_scripts/ai/input/tmp/error_img.png"
+img_name = "d:/dev/py_scripts/ai/input/tmp/shadow.png"
 
 def get_line_length(l):
     w = abs(l[0][2] - l[0][0]) 
@@ -99,10 +100,23 @@ def rotate_horizontal(img, l):
     res = cv2.warpAffine(img, mat, (r, c))
     return res
 
+
+def denoise_image(img):
+    img_bw = 255*(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) > 5).astype('uint8')
+
+    se1 = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    se2 = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+    mask = cv2.morphologyEx(img_bw, cv2.MORPH_CLOSE, se1)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, se2)
+    mask = np.dstack([mask, mask, mask]) / 255
+    out = img * mask
+    return out
+
+
 img = cv2.imread(img_name)
-l = find_max_line(img_name)
-rot = rotate_horizontal(img, l)
-Image.fromarray(rot).save("d:/dev/py_scripts/ai/input/tmp/error_img_rot.png")
+#res = denoise_image(img)
+res = cv2.medianBlur(img, 3)
+cv2.imwrite("d:/tmp/denoise.png", res)
 
 # print(regex_cid("33281812/2/12/3"))
 # print(regex_cid("12382918/2+12/3aad"))

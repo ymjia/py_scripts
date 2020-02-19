@@ -52,7 +52,8 @@ class tex_item:
         self.img_tex_type = None
         self.img_port = None
         self.img_amount = None
-
+        self.pdf = ""
+        self.pdf_idx = ""
 
 ## @brief ocr table info (cell pixel positions) from image
 class ocr_table:
@@ -94,7 +95,7 @@ def tuple_mean(tu4):
 
 
 ## @brief generate table information from ocr region
-def generate_table(origin, horizontal, vertical, joints, h_pattern, v_pattern):
+def generate_table(origin, horizontal, vertical, h_pattern, v_pattern):
     horizontal = cv2.dilate(horizontal, h_pattern, iterations = 4)
     vertical = cv2.dilate(vertical, v_pattern, iterations = 4)
     joints = cv2.bitwise_and(horizontal, vertical)
@@ -153,10 +154,13 @@ def ocr_detect_table(iname):
     vertical = cv2.dilate(vertical, v_pattern)
     vertical = cv2.dilate(vertical, v_pattern, iterations = 2)
     joints = cv2.bitwise_and(horizontal, vertical)
-    #Image.fromarray(horizontal).save(os.path.join(str_output, "horizon.png"))
-    #Image.fromarray(vertical).save(os.path.join(str_output, "vertical.png"))
 
     tmp_table = cv2.bitwise_or(horizontal, vertical)
+
+    Image.fromarray(joints).save(os.path.join(str_output, "{}_{}_joints.png".format(iname.pdf, iname.idx)))
+    Image.fromarray(tmp_table).save(os.path.join(str_output, "{}_{}_table.png".format(iname.pdf, iname.idx)))
+
+
     # divide and sort tables
     tables = cv2.bitwise_or(horizontal, vertical)
     c_tables = cv2.findContours(tables, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -166,9 +170,6 @@ def ocr_detect_table(iname):
         all_tables.append(cv2.boundingRect(ct))
     all_tables.sort(key=itemgetter(0,1))
 
-    # prolong lines to eliminates scan noise
-    Image.fromarray(joints).save(os.path.join(str_output, "{}_{}_joints.png".format(iname.pdf, iname.idx)))
-    Image.fromarray(tmp_table).save(os.path.join(str_output, "{}_{}_table.png".format(iname.pdf, iname.idx)))
 
     list_table = []
     for tb in all_tables:
@@ -178,8 +179,7 @@ def ocr_detect_table(iname):
         h = tb[3]
         sub_h = horizontal[y:y+h, x:x+w]
         sub_v = vertical[y:y+h, x:x+w]
-        sub_j = joints[y:y+h, x:x+w]
-        list_table.append(generate_table((x, y), sub_h, sub_v, sub_j, h_pattern, v_pattern))
+        list_table.append(generate_table((x, y), sub_h, sub_v, h_pattern, v_pattern))
 
     return list_table
 
@@ -243,6 +243,8 @@ def build_tex_item(org, iname, tables):
         return None
     file_str = "{}_{}_".format(iname.pdf, iname.idx)
     res = tex_item()
+    res.pdf = iname.pdf
+    res.pdf_idx = iname.idx
     img = image_preprocess(org)
     img.save(os.path.join(str_output, file_str + "pre.png"))
     to = tables[0]._origin
@@ -250,6 +252,7 @@ def build_tex_item(org, iname, tables):
     anchor = (to[0] + coner[0], to[1] + coner[1])
     date_rect = (anchor[0]-240, anchor[1] - 105, anchor[0] + 20, anchor[1] - 60)
     res.img_date = img.crop(date_rect)
+    
     res.img_no = img.crop(rect_shrink(tables[0].rect(0, 0), 6, 3))
     res.img_idx = img.crop(rect_shrink(tables[1].rect(0, 0), 6, 3))
     res.img_tex_type = img.crop(rect_shrink(tables[0].rect(1, 0), 6, 3))
@@ -347,9 +350,9 @@ def get_info_from_pdf(pdf, info_list):
 def write_item_to_xls(filename, out_list):
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.append(["日期", "报关单号", "税单序号", "税种", "申报口岸", "税款金额"])
+    ws.append(["日期", "报关单号", "税单序号", "税种", "申报口岸", "税款金额", "文件位置"])
     for vi in out_list:
-        ws.append([vi.date, vi.no, vi.idx, vi.tex_type, vi.port, vi.amount])
+        ws.append([vi.date, vi.no, vi.idx, vi.tex_type, vi.port, vi.amount, "{}/{}".format(vi.pdf, vi.pdf_idx)])
     wb.save(filename)
 
 
@@ -377,7 +380,7 @@ def set_cell_text(cell, text):
 def write_item_to_doc(filename, out_list):
     doc = docx.Document()
     i_num = len(out_list)
-    table = doc.add_table(rows=1, cols=6)
+    table = doc.add_table(rows=1, cols=7)
     table.style = 'Table Grid'
     row1 = table.rows[0]
     row1.cells[0].text = "日期"
@@ -386,6 +389,7 @@ def write_item_to_doc(filename, out_list):
     row1.cells[3].text = "税种"
     row1.cells[4].text = "申报口岸"
     row1.cells[5].text = "税款金额"
+    row1.cells[6].text = "文件位置"
     for idx, item in enumerate(out_list):
         txt_cells = table.add_row().cells
         set_cell_text(txt_cells[0], item.date)
@@ -400,6 +404,7 @@ def write_item_to_doc(filename, out_list):
         if str_am == "0" or str_am == "0.0" or str_am[-2:] == ".0":
             str_am = ""
         set_cell_text(txt_cells[5], str_am)
+        set_cell_text(txt_cells[6], "{}/{}".format(item.pdf, item.pdf_idx))
         pic_cells = table.add_row().cells
         doc_add_cell_pic(pic_cells[0], item.img_date)
         doc_add_cell_pic(pic_cells[1], item.img_no)
