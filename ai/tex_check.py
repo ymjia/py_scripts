@@ -239,7 +239,9 @@ def build_tex_item(org, iname, tables):
     img = image_preprocess(org)
     img.save(os.path.join(str_output, file_str + "pre.png"))
     to = tables[0]._origin
-    date_rect = (to[0]-240, to[1] - 105, to[0] + 20, to[1] - 60)
+    coner = tables[0]._pos[0]
+    anchor = (to[0] + coner[0], to[1] + coner[1])
+    date_rect = (anchor[0]-240, anchor[1] - 105, anchor[0] + 20, anchor[1] - 60)
     res.img_date = img.crop(date_rect)
     res.img_no = img.crop(rect_shrink(tables[0].rect(0, 0), 6, 3))
     res.img_idx = img.crop(rect_shrink(tables[1].rect(0, 0), 6, 3))
