@@ -64,9 +64,11 @@ class ocr_table:
         rn = rid + 1
         cn = cid + 1
         if rn >= self._h or cn >= self._w:
-            return (0, 0, 0, 0)
+            return (0, 0, 3, 3)
         top_right = self._pos[rid * self._w + cid]
         low_left = self._pos[rn * self._w + cn]
+        if low_left[0] - top_right[0] <= 0 or low_left[1] - top_right[1] <= 0:
+            return (0, 0, 3, 3)
         return (top_right[0] + self._origin[0], top_right[1] + self._origin[1],
                 low_left[0] + self._origin[0], low_left[1] + self._origin[1])
 
@@ -135,12 +137,16 @@ def ocr_detect_table(name):
     # Apply morphology operations
     horizontal = cv2.erode(horizontal, h_pattern, iterations = 1)
     horizontal = cv2.dilate(horizontal, h_pattern, iterations = 1)
+    horizontal = cv2.dilate(horizontal, h_pattern, iterations = 2)
     vertical = cv2.erode(vertical, v_pattern)
     vertical = cv2.dilate(vertical, v_pattern)
+    vertical = cv2.dilate(vertical, v_pattern, iterations = 2)
     #Image.fromarray(horizontal).save(os.path.join(str_output, "horizon.png"))
     #Image.fromarray(vertical).save(os.path.join(str_output, "vertical.png"))
     joints = cv2.bitwise_and(horizontal, vertical)
-
+    tmp_table = cv2.bitwise_or(horizontal, vertical)
+    Image.fromarray(joints).save(os.path.join(str_output, "joints.png"))
+    Image.fromarray(tmp_table).save(os.path.join(str_output, "table.png"))
     # divide and sort tables
     tables = cv2.bitwise_or(horizontal, vertical)
     c_tables = cv2.findContours(tables, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -214,7 +220,9 @@ def detect_text(img):
 
 
 ## @brief recognize text from regions defined by ocr_table
-def build_tex_item(org, tables):
+def build_tex_item(org, image_name, tables):
+    if len(tables[0]._pos) != 34 or len(tables[1]._pos) != 34:
+        return None
     res = tex_item()
     img = image_preprocess(org)
     to = tables[0]._origin
@@ -225,16 +233,25 @@ def build_tex_item(org, tables):
     res.img_tex_type = img.crop(rect_shrink(tables[0].rect(1, 0), 3))
     res.img_port = img.crop(rect_shrink(tables[0].rect(2, 0), 3))
     res.img_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 3))
-    
-    res.date = regulate_date_str(detect_text(res.img_date))
-    res.no = detect_text(res.img_no)
-    res.idx = detect_text(res.img_idx)
-    res.tex_type = regulate_type_str(detect_text(res.img_tex_type))
-    res.port = regulate_port_str(detect_text(res.img_port), port_list)
-    try:
-        res.amount = float(detect_text(res.img_amount))
+
+    try:    
+        res.date = regulate_date_str(detect_text(res.img_date))
+        res.no = detect_text(res.img_no)
+        res.idx = detect_text(res.img_idx)
+        res.tex_type = regulate_type_str(detect_text(res.img_tex_type))
+        res.port = regulate_port_str(detect_text(res.img_port), port_list)
+        res.amount = float(detect_text(res.img_amount).replace(',', '.').replace('，', "."))
     except:
-        res.amount = 0
+        stem = os.path.splitext(os.path.basename(image_name))[0]
+        debug_dir = os.path.join(str_output, stem)
+        if not os.path.exists(debug_dir):
+            os.makedirs(debug_dir)
+        res.img_date.save(os.path.join(debug_dir, "img_date.png"))
+        res.img_no.save(os.path.join(debug_dir, "img_no.png"))
+        res.img_idx.save(os.path.join(debug_dir, "img_idx.png"))
+        res.img_tex_type.save(os.path.join(debug_dir, "img_tex_type.png"))
+        res.img_port.save(os.path.join(debug_dir, "img_port.png"))
+        res.img_amount.save(os.path.join(debug_dir, "img_amount.png"))
     return res
 
 
@@ -243,18 +260,36 @@ def image_preprocess(img):
     blackwhite = gray.point(lambda x: 0 if x < 200 else 255, '1')
     return blackwhite
 
+error_idx = [0]
+
+def get_info_from_pic(img_name, info_list):
+    tables = ocr_detect_table(img_name)
+    img = Image.open(img_name)
+    if len(tables) != 2:
+        error_idx[0] += 1
+        error_name = os.path.join(str_output, "error_img_{}.png".format(error_idx[0]))
+        img.save(error_name)
+        print("Error! Fail to detect table from pdf {}".format(error_name))
+        return
+    item_res = build_tex_item(img, img_name, tables)
+    if item_res is not None:
+        info_list.append(item_res)
+    else:
+        error_idx[0] += 1
+        error_name = os.path.join(str_output, "error_img_{}.png".format(error_idx[0]))
+        img.save(error_name)
+        print("Error! Fail to detect table from pdf {}".format(error_name))
+        return
 
 def get_info_from_pdf(pdf, info_list):
     images = convert_from_path(pdf)
+    stem , _ = os.path.splitext(os.path.basename(pdf))
     for idx, img in enumerate(images):
-        img_name = os.path.join(str_output, "img_{}.png".format(idx))
-        img.save(img_name)
-        tables = ocr_detect_table(img_name)
-        if len(tables) != 2:
-            print("Error! Fail to detect table from pdf {}".format(img_name))
+        if idx == 0:
             continue
-        item_list.append(build_tex_item(img, tables))
-
+        img_name = os.path.join(str_output, "img_{}_{}.png".format(stem, idx))
+        img.save(img_name)
+        get_info_from_pic(img_name, info_list)
 
 def write_item_to_xls(filename, out_list):
     wb = openpyxl.Workbook()
@@ -325,9 +360,10 @@ for file in os.listdir(dir_input):
         continue
     filename = os.fsdecode(file)
     stem, ext = os.path.splitext(filename)
-    if ext != ".pdf":
-        continue
-    get_info_from_pdf(os.path.join(str_input, filename), item_list)
+    if ext == ".pdf":
+        get_info_from_pdf(os.path.join(str_input, filename), item_list)
+    elif ext == ".jpg" or ext == ".png":
+        get_info_from_pic(os.path.join(str_input, filename), item_list)
     
 write_item_to_xls(os.path.join(str_output, "res.xlsx"), item_list)
 write_item_to_doc(os.path.join(str_output, "res.docx"), item_list)
