@@ -240,7 +240,7 @@ def build_tex_item(org, image_name, tables):
         res.idx = detect_text(res.img_idx)
         res.tex_type = regulate_type_str(detect_text(res.img_tex_type))
         res.port = regulate_port_str(detect_text(res.img_port), port_list)
-        res.amount = float(detect_text(res.img_amount).replace(',', '.').replace('，', "."))
+        res.amount = float(detect_text(res.img_amount).replace(',', '.').replace('，', '.'))
     except:
         stem = os.path.splitext(os.path.basename(image_name))[0]
         debug_dir = os.path.join(str_output, stem)
@@ -258,7 +258,27 @@ def build_tex_item(org, image_name, tables):
 def image_preprocess(img):
     gray = img.convert('L')
     blackwhite = gray.point(lambda x: 0 if x < 200 else 255, '1')
-    return blackwhite
+    return img#blackwhite
+
+
+def find_max_line(img_name):
+    img_cv = cv2.imread(img_name)
+    dst = cv2.Canny(img_cv, 50, 200, 3);
+    cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
+    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 180, 300, 400, 80)
+    if len(lines) < 1:
+        return None
+    max_l = lines[0]
+    max_len = 0
+    for l in lines:
+        len = get_line_length(l)
+        if len > max_len:
+            max_l = l
+            max_len = len
+    cv2.line(cdst, (max_l[0][0], max_l[0][1]), (max_l[0][2], max_l[0][3]), (255, 255, 0), 3, 2)
+    #Image.fromarray(cdst).save("c:/dev/py_scripts/ai/input/tmp/error_img_9_line.png")
+    return max_l
+
 
 error_idx = [0]
 
@@ -303,8 +323,10 @@ def write_item_to_xls(filename, out_list):
 def doc_add_cell_pic(cell, pic):
     img_name = os.path.join(str_output, "img_{}.png".format(3))
     arr = np.bitwise_not(np.asarray(pic))
-    ind = np.nonzero(arr.any(axis=0))[0] # indices of non empty columns 
-    width = int((ind[-1] - ind[0] + 1) * 1.2)
+    ind = np.nonzero(arr.any(axis=0))[0] # indices of non empty columns
+    width = pic.width - 1
+    if len(ind) > 0:
+        width = int((ind[-1] - ind[0] + 1) * 1.2)
     rect = (0, 0, width, pic.height - 1)
     pic.crop(rect).save(img_name)
     if os.path.exists(img_name):

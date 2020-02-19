@@ -61,11 +61,16 @@ def regex_cid(in_str):
 
 #image
 img_pil = Image.open("c:/data/xls/check/img_2.png")
-print(img_pil)
-gray = img_pil.convert('L')
-print(gray)
-blackwhite = gray.point(lambda x: 0 if x < 200 else 255, '1')
-print(blackwhite)
+img_name = "c:/dev/py_scripts/ai/input/tmp/error_img_9.png"
+
+def get_line_length(l):
+    w = abs(l[0][2] - l[0][0]) 
+    h = abs(l[0][1] - l[0][3])
+    return w * w + h * h
+
+
+
+find_max_line(img_name)
 
 # print(regex_cid("33281812/2/12/3"))
 # print(regex_cid("12382918/2+12/3aad"))
