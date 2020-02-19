@@ -94,7 +94,11 @@ def tuple_mean(tu4):
 
 
 ## @brief generate table information from ocr region
-def generate_table(origin, horizontal, vertical, joints):
+def generate_table(origin, horizontal, vertical, joints, h_pattern, v_pattern):
+    horizontal = cv2.dilate(horizontal, h_pattern, iterations = 4)
+    vertical = cv2.dilate(vertical, v_pattern, iterations = 4)
+    joints = cv2.bitwise_and(horizontal, vertical)
+
     c_dots = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
     c_h_lines = cv2.findContours(horizontal, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
     c_v_lines = cv2.findContours(vertical, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -148,12 +152,11 @@ def ocr_detect_table(iname):
     vertical = cv2.erode(vertical, v_pattern)
     vertical = cv2.dilate(vertical, v_pattern)
     vertical = cv2.dilate(vertical, v_pattern, iterations = 2)
+    joints = cv2.bitwise_and(horizontal, vertical)
     #Image.fromarray(horizontal).save(os.path.join(str_output, "horizon.png"))
     #Image.fromarray(vertical).save(os.path.join(str_output, "vertical.png"))
-    joints = cv2.bitwise_and(horizontal, vertical)
+
     tmp_table = cv2.bitwise_or(horizontal, vertical)
-    Image.fromarray(joints).save(os.path.join(str_output, "{}_{}_joints.png".format(iname.pdf, iname.idx)))
-    Image.fromarray(tmp_table).save(os.path.join(str_output, "{}_{}_table.png".format(iname.pdf, iname.idx)))
     # divide and sort tables
     tables = cv2.bitwise_or(horizontal, vertical)
     c_tables = cv2.findContours(tables, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -162,6 +165,10 @@ def ocr_detect_table(iname):
     for ct in c_tables:
         all_tables.append(cv2.boundingRect(ct))
     all_tables.sort(key=itemgetter(0,1))
+
+    # prolong lines to eliminates scan noise
+    Image.fromarray(joints).save(os.path.join(str_output, "{}_{}_joints.png".format(iname.pdf, iname.idx)))
+    Image.fromarray(tmp_table).save(os.path.join(str_output, "{}_{}_table.png".format(iname.pdf, iname.idx)))
 
     list_table = []
     for tb in all_tables:
@@ -172,7 +179,7 @@ def ocr_detect_table(iname):
         sub_h = horizontal[y:y+h, x:x+w]
         sub_v = vertical[y:y+h, x:x+w]
         sub_j = joints[y:y+h, x:x+w]
-        list_table.append(generate_table((x, y), sub_h, sub_v, sub_j))
+        list_table.append(generate_table((x, y), sub_h, sub_v, sub_j, h_pattern, v_pattern))
 
     return list_table
 
