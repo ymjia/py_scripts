@@ -251,7 +251,14 @@ def build_tex_item(org, iname, tables):
     coner = tables[0]._pos[0]
     anchor = (to[0] + coner[0], to[1] + coner[1])
     date_rect = (anchor[0]-240, anchor[1] - 105, anchor[0] + 20, anchor[1] - 60)
-    res.img_date = img.crop(date_rect)
+    tmp_img = img.crop(date_rect)
+    tmp_name = os.path.join(str_output, "tmp.png")
+    tmp_img.save(tmp_name)
+    tmp_cv = cv2.imread(tmp_name)
+    tmp_cv = cv2.medianBlur(tmp_cv, 3)
+    cv2.imwrite(tmp_name, tmp_cv)
+    res.img_date = Image.open(tmp_name)
+    #res.img_date = img.crop(date_rect)
     
     res.img_no = img.crop(rect_shrink(tables[0].rect(0, 0), 6, 3))
     res.img_idx = img.crop(rect_shrink(tables[1].rect(0, 0), 6, 3))
