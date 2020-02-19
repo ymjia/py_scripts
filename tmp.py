@@ -3,6 +3,7 @@ import re
 import os
 import sys
 import cv2
+import math
 from PIL import Image
 from operator import itemgetter
 
@@ -60,8 +61,8 @@ def regex_cid(in_str):
 
 
 #image
-img_pil = Image.open("c:/data/xls/check/img_2.png")
-img_name = "c:/dev/py_scripts/ai/input/tmp/error_img_9.png"
+#img_pil = Image.open("c:/data/xls/check/img_2.png")
+img_name = "d:/dev/py_scripts/ai/input/tmp/error_img.png"
 
 def get_line_length(l):
     w = abs(l[0][2] - l[0][0]) 
@@ -69,8 +70,39 @@ def get_line_length(l):
     return w * w + h * h
 
 
+def find_max_line(img_name):
+    img_cv = cv2.imread(img_name)
+    dst = cv2.Canny(img_cv, 50, 200, 3);
+    cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
+    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 180, 300, 400, 80)
+    if len(lines) < 1:
+        return None
+    max_l = lines[0]
+    max_len = 0
+    for l in lines:
+        cur_len = get_line_length(l)
+        if cur_len > max_len:
+            max_l = l
+            max_len = cur_len
+    cv2.line(cdst, (max_l[0][0], max_l[0][1]), (max_l[0][2], max_l[0][3]), (255, 255, 0), 3, 2)
+    Image.fromarray(cdst).save("d:/dev/py_scripts/ai/input/tmp/error_img_line.png")
+    return max_l
 
-find_max_line(img_name)
+
+def rotate_horizontal(img, l):
+    r, c = img.shape[:2]
+    print(l)
+    angle = math.atan((l[0][3] - l[0][1]) / (l[0][2] - l[0][0]))
+    angle_d = angle / math.pi * 180
+    print(angle_d)
+    mat = cv2.getRotationMatrix2D((0, 0), angle_d, 1)
+    res = cv2.warpAffine(img, mat, (r, c))
+    return res
+
+img = cv2.imread(img_name)
+l = find_max_line(img_name)
+rot = rotate_horizontal(img, l)
+Image.fromarray(rot).save("d:/dev/py_scripts/ai/input/tmp/error_img_rot.png")
 
 # print(regex_cid("33281812/2/12/3"))
 # print(regex_cid("12382918/2+12/3aad"))
