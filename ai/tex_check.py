@@ -127,12 +127,14 @@ def ocr_detect_table(iname):
     # load image
     img_path = iname.path
     src = cv2.imread(img_path)
+    if src is None:
+        print("Error! cannot load image file {}".format(img_path))
     # size
     x = 0
     y = 0
-    rsz = src[y:y+1000, x:x+1600]
+    #rsz = src[y:y+1000, x:x+1600]
     # grey
-    grey = cv2.cvtColor(rsz, cv2.COLOR_BGR2GRAY)
+    grey = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255,
                                cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 25, -2)
     # extract horizontal
