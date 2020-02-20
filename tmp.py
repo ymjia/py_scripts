@@ -63,7 +63,7 @@ def regex_cid(in_str):
 
 #image
 #img_pil = Image.open("c:/data/xls/check/img_2.png")
-img_name = "d:/dev/py_scripts/ai/input/tmp/shadow.png"
+img_name = "c:/dev/py_scripts/ai/input/tmp/noise.png"
 
 def get_line_length(l):
     w = abs(l[0][2] - l[0][0]) 
@@ -114,9 +114,25 @@ def denoise_image(img):
 
 
 img = cv2.imread(img_name)
+
 #res = denoise_image(img)
-res = cv2.medianBlur(img, 3)
-cv2.imwrite("d:/tmp/denoise.png", res)
+#res = cv2.medianBlur(img, 3)
+def denoise_by_components(in_img, min_size):
+    img = in_img
+    grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255,
+                               cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 25, -2)
+    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(bw, connectivity=4)
+    sizes = stats[1:, -1]
+    nb_components = nb_components - 1
+    #for every component in the image, you keep it only if it's above min_size
+    for i in range(0, nb_components):
+        if sizes[i] <= min_size:
+            img[output == i + 1] = 255
+    return img
+
+img = denoise_by_components(img, 30)
+cv2.imwrite("c:/tmp/denoise.png", img)
 
 # print(regex_cid("33281812/2/12/3"))
 # print(regex_cid("12382918/2+12/3aad"))

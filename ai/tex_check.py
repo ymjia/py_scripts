@@ -239,9 +239,26 @@ def detect_chi_text(img):
     return to.image_to_text(img, lang="chi_sim+eng", psm=to.PSM.SINGLE_LINE).rstrip()
 
 
+def denoise_by_components(in_img, min_size):
+    img = in_img
+    grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255,
+                               cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 25, -2)
+    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(bw, connectivity=4)
+    sizes = stats[1:, -1]
+    nb_components = nb_components - 1
+    #for every component in the image, you keep it only if it's above min_size
+    for i in range(0, nb_components):
+        if sizes[i] <= min_size:
+            img[output == i + 1] = 255
+    return img
+
+
 ## @brief recognize text from regions defined by ocr_table
 def build_tex_item(org, iname, tables):
-    if len(tables[0]._pos) != 34 or len(tables[1]._pos) != 34:
+    t0 = tables[0]
+    t1 = tables[1]
+    if t0._h != 17 or t0._w != 2 or t1._h != 17 or t1._w != 2:
         return None
     file_str = "{}_{}_".format(iname.pdf, iname.idx)
     res = tex_item()
@@ -257,7 +274,7 @@ def build_tex_item(org, iname, tables):
     tmp_name = os.path.join(str_output, "tmp.png")
     tmp_img.save(tmp_name)
     tmp_cv = cv2.imread(tmp_name)
-    tmp_cv = cv2.medianBlur(tmp_cv, 3)
+    tmp_cv = denoise_by_components(tmp_cv, 30)
     cv2.imwrite(tmp_name, tmp_cv)
     res.img_date = Image.open(tmp_name)
     #res.img_date = img.crop(date_rect)
