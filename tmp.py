@@ -4,6 +4,7 @@ import os
 import sys
 import cv2
 import math
+import openpyxl
 import numpy as np
 from PIL import Image
 from operator import itemgetter
@@ -113,7 +114,7 @@ def denoise_image(img):
     return out
 
 
-img = cv2.imread(img_name)
+#img = cv2.imread(img_name)
 
 #res = denoise_image(img)
 #res = cv2.medianBlur(img, 3)
@@ -131,37 +132,41 @@ def denoise_by_components(in_img, min_size):
             img[output == i + 1] = 255
     return img
 
-img = denoise_by_components(img, 30)
-cv2.imwrite("c:/tmp/denoise.png", img)
+#img = denoise_by_components(img, 30)
+#cv2.imwrite("c:/tmp/denoise.png", img)
 
-# print(regex_cid("33281812/2/12/3"))
-# print(regex_cid("12382918/2+12/3aad"))
+def copy_sheet(path_from, path_to, sheet_name):
+    wb_from = openpyxl.load_workbook(path_from) 
+    sheet_list = wb_from.sheetnames
+    if sheet_name not in sheet_list:
+        print("Error! no sheet {} in file {}".format(sheet_name, excel_from))
+        return
+    ws_from = wb_from[sheet_name]
 
-# print(regex_cid("25255357SH Florentia  VAT"))
-# print(regex_cid("03679595TJOL VAT"))
-# print(regex_cid("12579697HZ XiashaVAT"))
-# print(regex_cid("12579337HZ XiashaVAT"))
-# print(regex_cid("26059211YYC VAT"))
-# print(regex_cid("02916156CSOL  VAT"))
-# print(regex_cid("01875882TJ Yansha  VAT"))
-# print(regex_cid("12929664SH Qingpu  VAT"))
-# print(regex_cid("12929204SH Qingpu  VAT"))
-# print(regex_cid("23261207+23261631BJOL VAT"))
-# print(regex_cid("26843745BJOL VAT"))
-# print(regex_cid("69771462BJOL VAT"))
-# print(regex_cid("23261632BJOL VAT"))
-# print(regex_cid("02695779BJOL VAT"))
-# print(regex_cid("11826456JN Bailian VAT"))
-# print(regex_cid("11826605JN Bailian VAT"))
-# print(regex_cid("01202775SYOL  VAT"))
-# print(regex_cid("09825544HF Sesseur VAT"))
-# print(regex_cid("00827421+20Harbin VAT"))
-# print(regex_cid("49802471-72WXOL VAT"))
-# print(regex_cid("49803212-13WXOL VAT"))
-# print(regex_cid("32500205NJ Tangshan  VAT"))
-# print(regex_cid("32500507NJ Tangshan  VAT"))
-# print(regex_cid("01066968+938+7114GZ Yuexiu VAT"))
-# print(regex_cid("01066966-97GZ Yuexiu VAT"))
-# print(regex_cid("35181881+01071106-05GZ Yuexiu VAT"))
-# print(regex_cid("35997827Foshan  VAT"))
-# print(regex_cid("35998007Foshan  VAT"))
+    wb = openpyxl.load_workbook(path_to)
+    try:
+        ws = wb[sheet_name]
+        wb.remove(ws)
+    except KeyError:
+        pass
+    sheet = wb.create_sheet(title=sheet_name,index=13)
+
+    for rid, r in enumerate(ws_from.iter_rows(values_only=True)):
+        for cid, cell_v in enumerate(r):
+            sheet.cell(row=rid+1, column=cid+1).data_type = "s"
+            sheet.cell(row=rid+1, column=cid+1).value = cell_v
+    wb.save(path_to)
+    print("{} copyed from {} to {}".format(sheet_name, path_from, path_to))
+
+
+
+
+copy_sheet("d:/tmp/广州第一分公司202001.xlsx", "d:/tmp/tmp_out.xlsx", "TB 202001")
+# t_in = openpyxl.load_workbook("d:/tmp/tmp.xlsx")
+# t_out = openpyxl.Workbook()
+# ws_in = t_in.active
+# txt = ws_in.cell(row=1, column = 1).value
+# ws_out = t_out.active
+# ws_out.cell(row=1, column = 1).data_type = "s"
+# ws_out.cell(row=1, column = 1).value = txt
+# t_out.save("d:/tmp/tmp_out.xlsx")
