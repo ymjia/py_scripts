@@ -98,8 +98,8 @@ def tuple_mean(tu4):
 
 ## @brief generate table information from ocr region
 def generate_table(origin, horizontal, vertical, h_pattern, v_pattern):
-    horizontal = cv2.dilate(horizontal, h_pattern, iterations = 4)
-    vertical = cv2.dilate(vertical, v_pattern, iterations = 4)
+    horizontal = cv2.dilate(horizontal, h_pattern, iterations = 5)
+    vertical = cv2.dilate(vertical, v_pattern, iterations = 5)
     joints = cv2.bitwise_and(horizontal, vertical)
 
     c_dots = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -153,10 +153,8 @@ def ocr_detect_table(iname):
     # Apply morphology operations
     horizontal = cv2.erode(horizontal, h_pattern, iterations = 1)
     horizontal = cv2.dilate(horizontal, h_pattern, iterations = 1)
-    horizontal = cv2.dilate(horizontal, h_pattern, iterations = 2)
     vertical = cv2.erode(vertical, v_pattern)
     vertical = cv2.dilate(vertical, v_pattern)
-    vertical = cv2.dilate(vertical, v_pattern, iterations = 2)
     joints = cv2.bitwise_and(horizontal, vertical)
 
     tmp_table = cv2.bitwise_or(horizontal, vertical)
@@ -216,6 +214,21 @@ def read_port_list(filename, port_list):
         pname = r[1]
         port_list[pid] = pname
     return
+
+
+con_dict_in = {}
+con_cid = 5
+am_cid = 10
+def read_contract_info(filename, con_dict_in):
+    wb = openpyxl.load_workbook(filename)
+    ws = wb.active
+    for r in ws.iter_rows(min_row=2, max_col=12, values_only=True):
+        con_id = str(r[con_cid])[0:-3]
+        con_am = float(r[am_cid])
+        if con_id not in con_dict_in:
+            con_dict_in[con_id] = con_am
+        else:
+            con_dict_in[con_id] += con_am
 
 
 def regulate_port_str(in_str, port_list):
@@ -355,6 +368,13 @@ def rotate_horizontal(img, l):
     res = cv2.wrapAffine(img, mat, (r, c))
 
 
+
+def get_total_from_pic(iname, con_id_list, am_list):
+    con_id_list.clear()
+    am_list.clear()
+    tables = ocr_detect_table(iname)
+
+
 def get_info_from_pic(iname, info_list):
     img_path = iname.path
     error_str = "{}_{}_".format(iname.pdf, iname.idx)
@@ -391,8 +411,6 @@ def get_info_from_pdf(pdf, info_list):
     images = convert_from_path(pdf)
     stem , _ = os.path.splitext(os.path.basename(pdf))
     for idx, img in enumerate(images):
-        if idx == 0:
-            continue
         i_path = os.path.join(str_output, "{}_{}_img.png".format(stem, idx))
         img.save(i_path)
         iname = img_name(i_path, stem, idx)
