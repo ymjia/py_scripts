@@ -160,8 +160,17 @@ def copy_sheet(path_from, path_to, sheet_name):
 
 
 
-
-copy_sheet("d:/tmp/广州第一分公司202001.xlsx", "d:/tmp/tmp_out.xlsx", "TB 202001")
+a = ['1', '2', '2', '3']
+print(a)
+ci = 0
+while ci < len(a):
+    print(ci)
+    if a[ci] == '2':
+        a.pop(ci)
+    else:
+        ci += 1
+print(a)
+#copy_sheet("d:/tmp/广州第一分公司202001.xlsx", "d:/tmp/tmp_out.xlsx", "TB 202001")
 # t_in = openpyxl.load_workbook("d:/tmp/tmp.xlsx")
 # t_out = openpyxl.Workbook()
 # ws_in = t_in.active

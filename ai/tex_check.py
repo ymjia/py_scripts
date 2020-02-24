@@ -302,7 +302,7 @@ def build_tex_item(org, iname, tables):
         res.idx = detect_text(res.img_idx).replace('o', '0').replace('O', '0').replace('a', '0')
         res.tex_type = regulate_type_str(detect_text(res.img_tex_type))
         res.port = regulate_port_str(detect_text(res.img_port), port_list)
-        res.con_id = detect_text(res.img_con_id)
+        res.con_id = regulate_con_id_str(detect_text(res.img_con_id))
         str_am = detect_text(res.img_amount).replace(',', '.').replace('，', '.')
         res.amount = float(str_am)
         # try find amount error
@@ -357,13 +357,24 @@ def rotate_horizontal(img, l):
 
 def get_info_from_pic(iname, info_list):
     img_path = iname.path
-    tables = ocr_detect_table(iname)
-    img = Image.open(img_path)
     error_str = "{}_{}_".format(iname.pdf, iname.idx)
+    img = Image.open(img_path)
+
+    
+    tables = ocr_detect_table(iname)
+    #exclude invalid table contour
+    ti = 0
+    while ti < len(tables):
+        t = tables[ti]
+        if t._h != 17 or t._w != 2 or len(t._pos) != 34:
+            tables.pop(ti)
+        else:
+            ti += 1
+            
     if len(tables) != 2:
         error_name = os.path.join(str_output, error_str + "error.png")
         img.save(error_name)
-        print("Error! Fail to detect table from pdf {}".format(error_name))
+        print("Error! Fail to detect table from pdf {}, table number: {}".format(error_name, len(tables)))
         return
     item_res = build_tex_item(img, iname, tables)
     if item_res is not None:
@@ -372,6 +383,8 @@ def get_info_from_pic(iname, info_list):
         error_name = os.path.join(str_output, error_str + "error.png")
         img.save(error_name)
         print("Error! Fail to detect table from pdf {}".format(error_name))
+        print("table0: {} x {}".format(tables[0]._w, tables[0]._h))
+        print("table1: {} x {}".format(tables[1]._w, tables[1]._h))
         return
 
 def get_info_from_pdf(pdf, info_list):
@@ -418,7 +431,7 @@ def set_cell_text(cell, text):
 def write_item_to_doc(filename, out_list):
     doc = docx.Document()
     i_num = len(out_list)
-    table = doc.add_table(rows=1, cols=7)
+    table = doc.add_table(rows=1, cols=8)
     table.style = 'Table Grid'
     row1 = table.rows[0]
     row1.cells[0].text = "日期"
@@ -472,5 +485,5 @@ for file in os.listdir(dir_input):
     elif ext == ".jpg" or ext == ".png":
         get_info_from_pic(img_name(os.path.join(str_input, filename), stem, 0), item_list)
     
-write_item_to_xls(os.path.join(str_output, "res.xlsx"), item_list)
+#write_item_to_xls(os.path.join(str_output, "res.xlsx"), item_list)
 write_item_to_doc(os.path.join(str_output, "res.docx"), item_list)
