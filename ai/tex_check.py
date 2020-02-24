@@ -46,12 +46,14 @@ class tex_item:
         self.tex_type = ""
         self.port = ""
         self.amount = 0
+        self.con_id = ""
         self.img_date = None
         self.img_no = None
         self.img_idx = None
         self.img_tex_type = None
         self.img_port = None
         self.img_amount = None
+        self.img_con_id = None
         self.pdf = ""
         self.pdf_idx = ""
 
@@ -225,6 +227,15 @@ def regulate_port_str(in_str, port_list):
     return ""
 
 
+def regulate_con_id_str(in_str):
+    if len(in_str) < 5:
+        return ""
+    if not (in_str[0].isalpha() and in_str[1].isalpha()
+            and in_str[2].isdigit() and in_str[3].isdigit()):
+        return ""
+    return in_str
+
+
 def rect_shrink(rect, v_step, h_step):
     res = (rect[0] + h_step, rect[1] + v_step,
            rect[2] - h_step, rect[3] - v_step)
@@ -284,13 +295,14 @@ def build_tex_item(org, iname, tables):
     res.img_tex_type = img.crop(rect_shrink(tables[0].rect(1, 0), 6, 3))
     res.img_port = img.crop(rect_shrink(tables[0].rect(2, 0), 6, 3))
     res.img_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 6, 3))
-
+    res.img_con_id = img.crop(rect_shrink(tables[1].rect(5, 0), 6, 3))
     try:    
         res.date = regulate_date_str(detect_chi_text(res.img_date))
         res.no = detect_text(res.img_no)
         res.idx = detect_text(res.img_idx).replace('o', '0').replace('O', '0').replace('a', '0')
         res.tex_type = regulate_type_str(detect_text(res.img_tex_type))
         res.port = regulate_port_str(detect_text(res.img_port), port_list)
+        res.con_id = detect_text(res.img_con_id)
         str_am = detect_text(res.img_amount).replace(',', '.').replace('，', '.')
         res.amount = float(str_am)
         # try find amount error
@@ -415,7 +427,8 @@ def write_item_to_doc(filename, out_list):
     row1.cells[3].text = "税种"
     row1.cells[4].text = "申报口岸"
     row1.cells[5].text = "税款金额"
-    row1.cells[6].text = "文件位置"
+    row1.cells[6].text = "合同号"
+    row1.cells[7].text = "文件位置"
     for idx, item in enumerate(out_list):
         txt_cells = table.add_row().cells
         set_cell_text(txt_cells[0], item.date)
@@ -430,7 +443,8 @@ def write_item_to_doc(filename, out_list):
         if str_am == "0" or str_am == "0.0" or str_am[-2:] == ".0":
             str_am = ""
         set_cell_text(txt_cells[5], str_am)
-        set_cell_text(txt_cells[6], "{}/{}".format(item.pdf, item.pdf_idx))
+        set_cell_text(txt_cells[6], item.con_id)
+        set_cell_text(txt_cells[7], "{}/{}".format(item.pdf, item.pdf_idx))
         pic_cells = table.add_row().cells
         doc_add_cell_pic(pic_cells[0], item.img_date)
         doc_add_cell_pic(pic_cells[1], item.img_no)
@@ -438,6 +452,7 @@ def write_item_to_doc(filename, out_list):
         doc_add_cell_pic(pic_cells[3], item.img_tex_type)
         doc_add_cell_pic(pic_cells[4], item.img_port)
         doc_add_cell_pic(pic_cells[5], item.img_amount)
+        doc_add_cell_pic(pic_cells[6], item.img_con_id)
     doc.save(filename)
 
 
