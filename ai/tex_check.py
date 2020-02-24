@@ -159,9 +159,8 @@ def ocr_detect_table(iname):
 
     tmp_table = cv2.bitwise_or(horizontal, vertical)
 
-    Image.fromarray(joints).save(os.path.join(str_output, "{}_{}_joints.png".format(iname.pdf, iname.idx)))
+    #Image.fromarray(joints).save(os.path.join(str_output, "{}_{}_joints.png".format(iname.pdf, iname.idx)))
     Image.fromarray(tmp_table).save(os.path.join(str_output, "{}_{}_table.png".format(iname.pdf, iname.idx)))
-
 
     # divide and sort tables
     tables = cv2.bitwise_or(horizontal, vertical)
@@ -289,7 +288,7 @@ def build_tex_item(org, iname, tables):
     res.pdf = iname.pdf
     res.pdf_idx = iname.idx
     img = image_preprocess(org)
-    img.save(os.path.join(str_output, file_str + "pre.png"))
+    #img.save(os.path.join(str_output, file_str + "pre.png"))
     to = tables[0]._origin
     coner = tables[0]._pos[0]
     anchor = (to[0] + coner[0], to[1] + coner[1])
