@@ -20,7 +20,7 @@ from docx.shared import Mm
 # docx cell color
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
-
+import time
 
 # main: process all xlsx file in current dir
 cwd = os.getcwd()
@@ -98,11 +98,23 @@ def tuple_mean(tu4):
 
 ## @brief generate table information from ocr region
 def generate_table(origin, horizontal, vertical, h_pattern, v_pattern):
+    dot_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+
     horizontal = cv2.dilate(horizontal, h_pattern, iterations = 5)
+    horizontal = cv2.dilate(horizontal, dot_pattern, iterations = 1)
+    horizontal = cv2.erode(horizontal, dot_pattern, iterations = 1)
+
     vertical = cv2.dilate(vertical, v_pattern, iterations = 5)
+    vertical = cv2.dilate(vertical, dot_pattern, iterations = 1)
+    vertical = cv2.erode(vertical, dot_pattern, iterations = 1)
+
     joints = cv2.bitwise_and(horizontal, vertical)
+    joints = cv2.dilate(joints, dot_pattern, iterations = 1)
+    joints = cv2.erode(joints, dot_pattern, iterations = 1)
 
     c_dots = cv2.findContours(joints, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    tmp_table = cv2.bitwise_or(horizontal, vertical)
+
     c_h_lines = cv2.findContours(horizontal, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
     c_v_lines = cv2.findContours(vertical, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
     d_num = len(c_dots)
@@ -131,10 +143,6 @@ def ocr_detect_table(iname):
     src = cv2.imread(img_path)
     if src is None:
         print("Error! cannot load image file {}".format(img_path))
-    # size
-    x = 0
-    y = 0
-    #rsz = src[y:y+1000, x:x+1600]
     # grey
     grey = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255,
@@ -147,6 +155,7 @@ def ocr_detect_table(iname):
     # Specify size
     horizontalsize = int(w / scale)
     verticalsize = int(h / scale)
+    print("{}-{}".format(horizontalsize, verticalsize))
     # Create structure element for extracting lines through morphology operations
     h_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (horizontalsize, 1))
     v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (1, verticalsize))
@@ -370,13 +379,14 @@ def find_max_line(img_cv):
 
 
 def rotate_horizontal(img, l):
-    w, h = img.shape[:2]
+    h, w = img.shape[:2]
     angle = math.atan((l[0][3] - l[0][1]) / (l[0][2] - l[0][0]))
     angle_d = angle / math.pi * 180
-    mat = cv2.getRotationMatrix2D((w/2, h/2), angle_d, 1)
-    res = cv2.warpAffine(img, mat, (h, w))
+    print("image rotate {}".format(angle_d))
+    mat = cv2.getRotationMatrix2D((h/2, w/2), angle_d, 1)
+    res = cv2.warpAffine(img, mat, (w, h))
     # 转化角度为弧度
-    theta = angle
+    theta = abs(angle)
     # 计算高宽比
     hw_ratio = float(h) / float(w)
     # 计算裁剪边长系数的分子项
@@ -393,9 +403,11 @@ def rotate_horizontal(img, l):
     h_crop = int(crop_mult * h)
     x0 = int((w - w_crop) / 2)
     y0 = int((h - h_crop) / 2)
-    return res[x0 : x0 + w_crop, y0 : y0 + h_crop]
+    print("crop image {} {}".format(w_crop, h_crop))
+    return res[y0 : y0 + h_crop, x0 : x0 + w_crop]
 
 
+# find in first page
 def get_total_from_pic(iname, con_id_list, am_list):
     con_id_list.clear()
     am_list.clear()
@@ -411,7 +423,6 @@ def get_info_from_pic(iname, info_list):
     if l is not None:
         img_rot = rotate_horizontal(img_cv, l)
         cv2.imwrite(img_path, img_rot)
-    img = Image.open(img_path)
     
     tables = ocr_detect_table(iname)
     #exclude invalid table contour
@@ -423,6 +434,7 @@ def get_info_from_pic(iname, info_list):
         else:
             ti += 1
             
+    img = Image.open(img_path)
     if len(tables) != 2:
         error_name = os.path.join(str_output, error_str + "error.png")
         img.save(error_name)

@@ -103,11 +103,11 @@ def find_max_line(img_name):
 
 
 def rotate_horizontal(img, l):
-    w, h = img.shape[:2]
+    h, w = img.shape[:2]
     angle = math.atan((l[0][3] - l[0][1]) / (l[0][2] - l[0][0]))
     angle_d = angle / math.pi * 180
-    mat = cv2.getRotationMatrix2D((w/2, h/2), angle_d, 1)
-    res = cv2.warpAffine(img, mat, (h, w))
+    mat = cv2.getRotationMatrix2D((h/2, w/2), angle_d, 1)
+    res = cv2.warpAffine(img, mat, (w, h))
     # 转化角度为弧度
     theta = angle
     # 计算高宽比
@@ -126,7 +126,7 @@ def rotate_horizontal(img, l):
     h_crop = int(crop_mult * h)
     x0 = int((w - w_crop) / 2)
     y0 = int((h - h_crop) / 2)
-    return res[x0 : x0 + w_crop, y0 : y0 + h_crop]
+    return res[y0 : y0 + h_crop, x0 : x0 + w_crop]
 
 
 def denoise_image(img):
