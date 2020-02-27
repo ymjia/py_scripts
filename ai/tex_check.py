@@ -341,31 +341,59 @@ def image_preprocess(img):
     return blackwhite
 
 
-def find_max_line(filename):
-    img_cv = cv2.imread(filename)
-    dst = cv2.Canny(img_cv, 50, 200, 3);
-    cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 180, 300, 400, 80)
-    if len(lines) < 1:
+def get_line_length(l):
+    w = abs(l[0][2] - l[0][0]) 
+    h = abs(l[0][1] - l[0][3])
+    return w * w + h * h
+
+
+def find_max_line(img_cv):
+    gray = cv2.cvtColor(img_cv,cv2.COLOR_BGR2GRAY)
+    kernel_size = 5
+    h_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+    v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 3))
+    gray = cv2.dilate(gray, h_pattern)
+    dst = cv2.Canny(gray, 50, 200, 3);
+    dst = cv2.dilate(dst, v_pattern)
+    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 720, 100, 0, 0)
+    if lines is None or len(lines) < 1:
+        print("no line found")
         return None
     max_l = lines[0]
     max_len = 0
     for l in lines:
-        len = get_line_length(l)
-        if len > max_len:
+        cur_len = get_line_length(l)
+        if cur_len > max_len:
             max_l = l
-            max_len = len
-    cv2.line(cdst, (max_l[0][0], max_l[0][1]), (max_l[0][2], max_l[0][3]), (255, 255, 0), 3, 2)
-    #Image.fromarray(cdst).save("c:/dev/py_scripts/ai/input/tmp/error_img_9_line.png")
+            max_len = cur_len
     return max_l
 
+
 def rotate_horizontal(img, l):
-    r, c = img.shape[:2]
+    w, h = img.shape[:2]
     angle = math.atan((l[0][3] - l[0][1]) / (l[0][2] - l[0][0]))
     angle_d = angle / math.pi * 180
-    mat = cv2.getRotationMatrix2D((0, 0), angle_d, 1)
-    res = cv2.wrapAffine(img, mat, (r, c))
-
+    mat = cv2.getRotationMatrix2D((w/2, h/2), angle_d, 1)
+    res = cv2.warpAffine(img, mat, (h, w))
+    # 转化角度为弧度
+    theta = angle
+    # 计算高宽比
+    hw_ratio = float(h) / float(w)
+    # 计算裁剪边长系数的分子项
+    tan_theta = np.tan(theta)
+    numerator = np.cos(theta) + np.sin(theta) * np.tan(theta)
+    # 计算分母中和高宽比相关的项
+    r = hw_ratio if h > w else 1 / hw_ratio
+    # 计算分母项
+    denominator = r * tan_theta + 1
+    # 最终的边长系数
+    crop_mult = numerator / denominator
+    # 得到裁剪区域
+    w_crop = int(crop_mult * w)
+    h_crop = int(crop_mult * h)
+    x0 = int((w - w_crop) / 2)
+    y0 = int((h - h_crop) / 2)
+    return res[x0 : x0 + w_crop, y0 : y0 + h_crop]
 
 
 def get_total_from_pic(iname, con_id_list, am_list):
@@ -377,8 +405,13 @@ def get_total_from_pic(iname, con_id_list, am_list):
 def get_info_from_pic(iname, info_list):
     img_path = iname.path
     error_str = "{}_{}_".format(iname.pdf, iname.idx)
+    # rotate image
+    img_cv = cv2.imread(img_path)
+    l = find_max_line(img_cv)
+    if l is not None:
+        img_rot = rotate_horizontal(img_cv, l)
+        cv2.imwrite(img_path, img_rot)
     img = Image.open(img_path)
-
     
     tables = ocr_detect_table(iname)
     #exclude invalid table contour

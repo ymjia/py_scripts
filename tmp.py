@@ -77,37 +77,56 @@ def find_max_line(img_name):
     gray = cv2.cvtColor(img_cv,cv2.COLOR_BGR2GRAY)
     kernel_size = 5
     #blur_gray = cv2.GaussianBlur(gray,(kernel_size, kernel_size),0)
-    v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 1))
+    h_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+    v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 3))
     #v_pattern = np.ones((5,5),np.uint8)
-    gray = cv2.dilate(gray, v_pattern)
-
+    gray = cv2.dilate(gray, h_pattern)
     dst = cv2.Canny(gray, 50, 200, 3);
-    cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 720, 100, 100, 50)
+    dst = cv2.dilate(dst, v_pattern)
+    #dst = gray
+    #cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
+    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 720, 100, 0, 0)
     if lines is None or len(lines) < 1:
         print("no line found")
         return None
     max_l = lines[0]
     max_len = 0
     for l in lines:
+        #cv2.line(cdst, (l[0][0], l[0][1]), (l[0][2], l[0][3]), (255, 0, 0), 3, 2)
         cur_len = get_line_length(l)
         if cur_len > max_len:
             max_l = l
             max_len = cur_len
-    cv2.line(cdst, (max_l[0][0], max_l[0][1]), (max_l[0][2], max_l[0][3]), (255, 255, 0), 3, 2)
-    Image.fromarray(cdst).save("c:/tmp/img_line.png")
+    #cv2.line(cdst, (max_l[0][0], max_l[0][1]), (max_l[0][2], max_l[0][3]), (255, 255, 0), 3, 2)
+    #Image.fromarray(cdst).save("d:/tmp/img_line.png")
     return max_l
 
 
 def rotate_horizontal(img, l):
-    r, c = img.shape[:2]
-    print(l)
+    w, h = img.shape[:2]
     angle = math.atan((l[0][3] - l[0][1]) / (l[0][2] - l[0][0]))
     angle_d = angle / math.pi * 180
-    print(angle_d)
-    mat = cv2.getRotationMatrix2D((0, 0), angle_d, 1)
-    res = cv2.warpAffine(img, mat, (r, c))
-    return res
+    mat = cv2.getRotationMatrix2D((w/2, h/2), angle_d, 1)
+    res = cv2.warpAffine(img, mat, (h, w))
+    # 转化角度为弧度
+    theta = angle
+    # 计算高宽比
+    hw_ratio = float(h) / float(w)
+    # 计算裁剪边长系数的分子项
+    tan_theta = np.tan(theta)
+    numerator = np.cos(theta) + np.sin(theta) * np.tan(theta)
+    # 计算分母中和高宽比相关的项
+    r = hw_ratio if h > w else 1 / hw_ratio
+    # 计算分母项
+    denominator = r * tan_theta + 1
+    # 最终的边长系数
+    crop_mult = numerator / denominator
+    # 得到裁剪区域
+    w_crop = int(crop_mult * w)
+    h_crop = int(crop_mult * h)
+    x0 = int((w - w_crop) / 2)
+    y0 = int((h - h_crop) / 2)
+    return res[x0 : x0 + w_crop, y0 : y0 + h_crop]
 
 
 def denoise_image(img):
@@ -167,12 +186,12 @@ def copy_sheet(path_from, path_to, sheet_name):
     print("{} copyed from {} to {}".format(sheet_name, path_from, path_to))
 
 
-img_name = "c:/dev/py_scripts/ai/result_2002/27_5_2_error.png"
+img_name = "d:/tmp/error.png"
 
 line = find_max_line(img_name)
 img = cv2.imread(img_name)
 res = rotate_horizontal(img, line)
-cv2.imwrite("c:/tmp/rotate.png", res)
+cv2.imwrite("d:/tmp/rotate.png", res)
 
 
 #copy_sheet("d:/tmp/广州第一分公司202001.xlsx", "d:/tmp/tmp_out.xlsx", "TB 202001")
