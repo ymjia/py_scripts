@@ -64,7 +64,7 @@ def regex_cid(in_str):
 
 #image
 #img_pil = Image.open("c:/data/xls/check/img_2.png")
-img_name = "c:/dev/py_scripts/ai/input/tmp/noise.png"
+
 
 def get_line_length(l):
     w = abs(l[0][2] - l[0][0]) 
@@ -74,10 +74,18 @@ def get_line_length(l):
 
 def find_max_line(img_name):
     img_cv = cv2.imread(img_name)
-    dst = cv2.Canny(img_cv, 50, 200, 3);
+    gray = cv2.cvtColor(img_cv,cv2.COLOR_BGR2GRAY)
+    kernel_size = 5
+    #blur_gray = cv2.GaussianBlur(gray,(kernel_size, kernel_size),0)
+    v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 1))
+    #v_pattern = np.ones((5,5),np.uint8)
+    gray = cv2.dilate(gray, v_pattern)
+
+    dst = cv2.Canny(gray, 50, 200, 3);
     cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 180, 300, 400, 80)
-    if len(lines) < 1:
+    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 720, 100, 100, 50)
+    if lines is None or len(lines) < 1:
+        print("no line found")
         return None
     max_l = lines[0]
     max_len = 0
@@ -87,7 +95,7 @@ def find_max_line(img_name):
             max_l = l
             max_len = cur_len
     cv2.line(cdst, (max_l[0][0], max_l[0][1]), (max_l[0][2], max_l[0][3]), (255, 255, 0), 3, 2)
-    Image.fromarray(cdst).save("d:/dev/py_scripts/ai/input/tmp/error_img_line.png")
+    Image.fromarray(cdst).save("c:/tmp/img_line.png")
     return max_l
 
 
@@ -159,17 +167,14 @@ def copy_sheet(path_from, path_to, sheet_name):
     print("{} copyed from {} to {}".format(sheet_name, path_from, path_to))
 
 
+img_name = "c:/dev/py_scripts/ai/result_2002/27_5_2_error.png"
 
-a = ['1', '2', '2', '3']
-print(a)
-ci = 0
-while ci < len(a):
-    print(ci)
-    if a[ci] == '2':
-        a.pop(ci)
-    else:
-        ci += 1
-print(a)
+line = find_max_line(img_name)
+img = cv2.imread(img_name)
+res = rotate_horizontal(img, line)
+cv2.imwrite("c:/tmp/rotate.png", res)
+
+
 #copy_sheet("d:/tmp/广州第一分公司202001.xlsx", "d:/tmp/tmp_out.xlsx", "TB 202001")
 # t_in = openpyxl.load_workbook("d:/tmp/tmp.xlsx")
 # t_out = openpyxl.Workbook()
