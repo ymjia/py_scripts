@@ -10,15 +10,15 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "c:/data/xls/2001/input/"
-dir_output = "c:/data/xls/2001/output/"
+dir_input = "c:/data/xls/2003/input/"
+dir_output = "c:/data/xls/2003/output/"
 
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
 # global variables
-idx_ap_am = 10
-idx_ap_txt = 5
+idx_ap_am = 12
+idx_ap_txt = 7
 idx_ap_ref = 4
 
 idx_ver_am = 7
@@ -226,6 +226,8 @@ def load_verify_item(ver_table, ver_list):
         cur_sup = r[idx_ver_sup]
         ver_map[cid] = len(ver_list)
         ver_list.append(CheckItem(cid, cur_am, cur_sup, rid))
+        if rid == 2:
+            print("first ver item {} {} {}".format(cid, cur_am, cur_sup))
         rid += 1
 
 
@@ -270,6 +272,9 @@ def load_ap_input(ap_table, ap_input_list):
             old_item = ap_input_list[old_pos]
             old_item.amount += am
             old_item.dup_list.append(rid)
+        if rid == 2:
+            print("first ap item {} {} {}".format(text_str, am, cur_ref))
+
 # end##################### FILE LOAD ####################    
 
 ## load ap check items

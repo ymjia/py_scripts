@@ -257,9 +257,9 @@ def regulate_con_id_str(in_str):
     return in_str
 
 
-def rect_shrink(rect, v_step, h_step):
-    res = (rect[0] + h_step, rect[1] + v_step,
-           rect[2] - h_step, rect[3] - v_step)
+def rect_shrink(rect, w_step, h_step):
+    res = (rect[0] + w_step, rect[1] + h_step,
+           rect[2] - w_step, rect[3] - h_step)
     return res
 
 
@@ -301,9 +301,10 @@ def build_tex_item(org, iname, tables):
     to = tables[0]._origin
     coner = tables[0]._pos[0]
     anchor = (to[0] + coner[0], to[1] + coner[1])
-    date_rect = (anchor[0]-240, anchor[1] - 105, anchor[0] + 20, anchor[1] - 60)
+    date_rect = (anchor[0]-360, anchor[1] - 150, anchor[0] + 30, anchor[1] - 90)
+    print(date_rect)
     tmp_img = img.crop(date_rect)
-    tmp_name = os.path.join(str_output, "tmp.png")
+    tmp_name = os.path.join(str_output, "tmp_{}_{}.png".format(iname.pdf, iname.idx))
     tmp_img.save(tmp_name)
     tmp_cv = cv2.imread(tmp_name)
     tmp_cv = denoise_by_components(tmp_cv, 30)
@@ -311,12 +312,12 @@ def build_tex_item(org, iname, tables):
     res.img_date = Image.open(tmp_name)
     #res.img_date = img.crop(date_rect)
     
-    res.img_no = img.crop(rect_shrink(tables[0].rect(0, 0), 6, 3))
-    res.img_idx = img.crop(rect_shrink(tables[1].rect(0, 0), 6, 3))
-    res.img_tex_type = img.crop(rect_shrink(tables[0].rect(1, 0), 6, 3))
-    res.img_port = img.crop(rect_shrink(tables[0].rect(2, 0), 6, 3))
-    res.img_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 6, 3))
-    res.img_con_id = img.crop(rect_shrink(tables[1].rect(5, 0), 6, 3))
+    res.img_no = img.crop(rect_shrink(tables[0].rect(0, 0), 4, 6))
+    res.img_idx = img.crop(rect_shrink(tables[1].rect(0, 0), 3, 6))
+    res.img_tex_type = img.crop(rect_shrink(tables[0].rect(1, 0), 3, 6))
+    res.img_port = img.crop(rect_shrink(tables[0].rect(2, 0), 3, 6))
+    res.img_amount = img.crop(rect_shrink(tables[0].rect(9, 0), 3, 6))
+    res.img_con_id = img.crop(rect_shrink(tables[1].rect(5, 0), 3, 6))
     try:    
         res.date = regulate_date_str(detect_chi_text(res.img_date))
         res.no = detect_text(res.img_no)
