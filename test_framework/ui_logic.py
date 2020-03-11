@@ -412,13 +412,19 @@ def slot_exe_param(ui):
 
 
 def slot_new_project(ui):
-    dp = get_default_proj_path(ui)
-    path, _ = QFileDialog.getSaveFileName(None, "Save New Project", dp, "XML(*.xml)")
-    if path is None or path == "":
-        return
-    p = project_io.Project()
-    if os.path.splitext(path)[1] != ".xml":
-        path += ".xml"
+    while True:
+        dp = get_default_proj_path(ui)
+        path, _ = QFileDialog.getSaveFileName(None, "Save New Project", dp, "XML(*.xml)")
+        if path is None or path == "":
+            return
+        stem = os.path.splitext(os.path.basename(path))[0]
+        if stem == "tf_proj" or stem == "cmd_history":
+            QMessageBox.about(ui, "Error", "'tf_proj' and 'cmd_history' is reserved filename, please change project name!")
+            continue
+        p = project_io.Project()
+        if os.path.splitext(path)[1] != ".xml":
+            path += ".xml"
+        break
     p._configFile = path
     ui._p = p
     ui._p.save_xml(path)
