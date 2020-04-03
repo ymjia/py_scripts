@@ -214,6 +214,9 @@ def create_shot(file_list, cam_list, out_dir, pattern):
     del cur_source
     return len(cam_list)
 
+
+
+
 # read cam position from config file
 def read_cam(case_file):
     if not os.path.exists(case_file):
@@ -240,7 +243,8 @@ def ss_need_update(file_list, file_cam, out_dir, pattern):
     return False
 
 
-# read configuration
+# execute screenshot operation(need config information)
+# general operation, case/version/filanem all have their effects
 def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
     total_num = 0
     # case/version/alg
@@ -280,13 +284,81 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
                 total_num += create_shot(file_list, cam_list, pic_out_dir , alg)
     return total_num
 
+# get cam config float array from view
+def fill_list(res, idx, in_list):
+    if isinstance(in_list, int) or isinstance(in_list, float):
+        res.append(in_list)
+        return 1
+    ac = len(in_list)
+    res[idx:idx+ac] = in_list[:]
+    return ac
+
+
+def build_cam_list(v):
+    camera_pos = []
+    idx = 0
+    idx += fill_list(camera_pos, idx, v.CameraFocalPoint)
+    idx += fill_list(camera_pos, idx, v.CameraParallelProjection)
+    idx += fill_list(camera_pos, idx, v.CameraParallelScale)
+    idx += fill_list(camera_pos, idx, v.CameraPosition)
+    idx += fill_list(camera_pos, idx, v.CameraViewAngle)
+    idx += fill_list(camera_pos, idx, v.CameraViewUp)
+    return camera_pos
+
+
+# screen shot for customized application
+# only case list is needed
+def create_hausdorff_shot(dir_input, dir_output, list_case):
+    total_num = 0
+    for case in list_case:
+        i_list = get_file(dir_input, case)
+        pic_out_dir = os.path.join(dir_output, case_name, "hausdorff_dist")
+        #if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
+        #        print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
+        #        continue
+        (v0, v1, out0, out1) = show_hausdorff_dist(i_list)
+        ss = ScreenShotHelper()
+        # standard
+        std_cam = []
+        co = CameraObject(out0)
+        co.set_camera(v0, "x+")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "x-")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "y+")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "y-")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "z+")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "z-")
+        std_cam.append(build_cam_list(v0))
+        for i in range(0, 6):
+            ss.take_shot(v0, std_cam[i],
+                         "{}/ss_hd_{}.png".format(out_dir, i * 2).replace("\\", "/"))
+            ss.take_shot(v1, std_cam[i],
+                         "{}/ss_hd_{}.png".format(out_dir, i * 2+1).replace("\\", "/"))
+        for i in range(0, len(cam_list)):
+            ss.take_shot(v0, cam_list[i],
+                         "{}/ss_hd_{}.png".format(out_dir, i * 2 + 12).replace("\\", "/"))
+            ss.take_shot(v1, cam_list[i],
+                         "{}/ss_hd_{}.png".format(out_dir, i * 2 + 13).replace("\\", "/"))
+        total_num = total_num + len(cam_list) * 2 + 12
+    return total_num
+
+
+# brief external interface interpreted by PVpython
 def create_screenshots_wrap(dir_input, dir_output, file_config):
     # data to be compared
     # get all concerned file names
     list_case, list_ver, list_alg = read_compare_config(file_config)
-    total_num = create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver)
+    total_n = 0
+    if len(list_ver) < 1 and len(list_alg) < 1:
+        total_n = create_hausdorff_shot(dir_input, dir_output, list_case)
+    else:
+        total_n = create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver)
     f_config = open(file_config, "w", encoding='utf-8')
-    f_config.write("{}\n".format(total_num))
+    f_config.write("{}\n".format(total_n))
     f_config.close()
 
 
