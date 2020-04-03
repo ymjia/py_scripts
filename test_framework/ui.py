@@ -114,6 +114,8 @@ class TFWindow(QWidget):
         self._qle_exe_demo.setText(cur_obj._exeDemo)
         self._qle_doc_name.setText(cur_obj._docName)
         self._qcb_cur_ver.clear()
+        self._qcb_doc_type.setCurrentText(in_obj._curDocType)
+
         for v in cur_obj._ver:
             self._qcb_cur_ver.addItem(v)
         self._qcb_cur_ver.setEditText(cur_obj._eVer)
@@ -137,6 +139,7 @@ class TFWindow(QWidget):
         out_obj._docName = self._qle_doc_name.text()
         out_obj._eVer = self._qcb_cur_ver.currentText()
         out_obj._exeParam = self._qpt_exe_param.toPlainText()
+        out_obj._curDocType = self._qcb_doc_type.currentText()
         self.read_check_list(self._qlv_exe_case, out_obj._case, out_obj._eCaseCheck)
         self.read_check_list(self._qlv_ss_case, out_obj._case, out_obj._sCaseCheck)
         self.read_check_list(self._qlv_ss_ver, out_obj._ver, out_obj._sVerCheck)

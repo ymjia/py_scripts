@@ -86,9 +86,21 @@ def find_ptree_item(pt, name):
             return item
     return None
 
-
 def slot_generate_docx(ui):
     ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    doc_type = p_obj._curDocType
+    if doc_type == "screenshots":
+        return generate_ss_docx(ui)
+    elif doc_type == "time_statics":
+        return generate_time_docx(ui)
+    elif doc_type == "cpu_mem_statics":
+        return generate_proc_docx(ui)
+    else:
+        return generate_hausdorf_docx(ui)
+
+
+def generate_ss_docx(ui):
     p_obj = ui._p
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
@@ -109,8 +121,7 @@ def slot_generate_docx(ui):
     QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
 
 
-def slot_generate_time_docx(ui):
-    ui._p = ui.collect_ui_info()
+def generate_time_docx(ui):
     p_obj = ui._p
     dir_o = p_obj._dirOutput
     dir_doc = os.path.join(dir_o, "doc")
@@ -137,8 +148,7 @@ def slot_generate_time_docx(ui):
         QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
 
 
-def slot_generate_proc_docx(ui):
-    ui._p = ui.collect_ui_info()
+def generate_proc_docx(ui):
     p_obj = ui._p
     dir_o = p_obj._dirOutput
     dir_doc = os.path.join(dir_o, "doc")
@@ -169,6 +179,10 @@ def slot_generate_proc_docx(ui):
     else:
         QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
 
+
+def generate_hausdorf_docx(ui):
+    print("generating hausdorf doc")
+    return 0
 
 def slot_open_docx(ui):
     p_obj = ui._p
