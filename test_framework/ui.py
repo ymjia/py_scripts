@@ -46,7 +46,6 @@ class TFWindow(QWidget):
         self._qle_dir_out = QLineEdit()
         self._qle_exe_pv = QLineEdit()
         self._qle_exe_demo = QLineEdit()
-        #self._qle_cur_ver = QLineEdit()
         self._qcb_cur_ver = QComboBox()
         self._qcb_cur_ver.setEditable(True)
         self._qle_doc_name = QLineEdit()
@@ -67,6 +66,10 @@ class TFWindow(QWidget):
         self._qlv_ss_alg.doubleClicked.connect(lambda: ui_logic.slot_open_ss_alg(self))
         self._qlv_doc_ver.doubleClicked.connect(lambda: ui_logic.slot_open_doc_ver(self))
         self._qlv_doc_alg.doubleClicked.connect(lambda: ui_logic.slot_open_doc_alg(self))
+        # doc type selector
+        self._qcb_doc_type = QComboBox() # type of document to be generated
+        self._qcb_doc_type.setEditable(False)
+        self._qcb_doc_type.addItems(["screenshots", "time_statics", "cpu_mem_statics", "hausdorf_dist"])
         # other object
         self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
         self._filenameSelector = None
@@ -361,12 +364,12 @@ class TFWindow(QWidget):
 
     def create_doc_region(self):
         doc_region = QGroupBox("Docx Configuration")
-        qpb_g_doc = QPushButton('Pic Docx', self)
+        qpb_g_doc = QPushButton('Generate Doc', self)
         qpb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx(self))
-        qpb_gt_doc = QPushButton('Time Docx', self)
-        qpb_gt_doc.clicked.connect(lambda: ui_logic.slot_generate_time_docx(self))
-        qpb_gp_doc = QPushButton('Proc Docx', self)
-        qpb_gp_doc.clicked.connect(lambda: ui_logic.slot_generate_proc_docx(self))
+        # qpb_gt_doc = QPushButton('Time Docx', self)
+        # qpb_gt_doc.clicked.connect(lambda: ui_logic.slot_generate_time_docx(self))
+        # qpb_gp_doc = QPushButton('Proc Docx', self)
+        # qpb_gp_doc.clicked.connect(lambda: ui_logic.slot_generate_proc_docx(self))
         qpb_o_doc = QPushButton('Open Document', self)
         qpb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx(self))
         qpb_o_path = QPushButton('Open Path', self)
@@ -374,8 +377,9 @@ class TFWindow(QWidget):
         qw_doc = QWidget()
         hbox = QHBoxLayout()
         hbox.setContentsMargins(0, 0, 0, 0)
-        hbox.addWidget(qpb_gt_doc)
-        hbox.addWidget(qpb_gp_doc)
+        # hbox.addWidget(qpb_gt_doc)
+        # hbox.addWidget(qpb_gp_doc)
+        hbox.addWidget(self._qcb_doc_type)
         hbox.addWidget(qpb_g_doc)
         qw_doc.setLayout(hbox)
         grid = QGridLayout()
