@@ -10,8 +10,8 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-dir_input = "c:/data/xls/2003/input/"
-dir_output = "c:/data/xls/2003/output/"
+dir_input = "c:/data/xls/2004/input/"
+dir_output = "c:/data/xls/2004/output/"
 
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
