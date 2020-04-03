@@ -118,7 +118,7 @@ def read_and_render(file_list, v):
     reader = read_files(file_list)
     reader_display = Show(reader, v)
     reader_display.ColorArrayName = [None, '']
-    reader_display.Specular = 0.75
+    reader_display.Specular = 0.5
     show_texture(reader, v)
     v.ResetCamera()
     # add anotation

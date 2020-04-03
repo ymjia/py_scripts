@@ -50,6 +50,7 @@ class ExeRunThread(QThread):
         cur_pg = 5
         sys_info = utils.get_sys_info()
         for case in list_case:
+            print("## Start {} =====================".format(case))
             self._sigProgress.emit(cur_pg)
             cur_pg += pg
             # write logs
@@ -86,7 +87,7 @@ class ExeRunThread(QThread):
                     continue
                 self._demoProc.monite_execution()
                 for line in iter(self._demoProc.p.stdout.readline, b''):
-                    lined = line.decode('utf-8')
+                    lined = line.decode('utf-8', errors='ignore')
                     sys.stdout.write(lined)
                     self._fLog.write(lined)
                 self._demoProc.p.wait()
@@ -104,6 +105,7 @@ class ExeRunThread(QThread):
                         self._demoProc._memSample[li])
                     self._fSmp.write(res_str)
             self.release_files()
+            print("## Start {} =====================".format(case))
         self._sigProgress.emit(99)
         need_update = False
         case = p_obj._case
