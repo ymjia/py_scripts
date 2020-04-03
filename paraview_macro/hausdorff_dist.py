@@ -21,16 +21,41 @@ def set_hd_output_display(display, view):
     display.MapScalars = 1
 
 
+def generate_vn(s_in, s_name):
+    sd = servermanager.Fetch(s_in)
+    if not sd.IsA("vtkPolyData"):
+        return s_in
+    vn = sd.GetPointData().GetNormals()
+    if vn is not None:
+        return s_in
+    sn = GenerateSurfaceNormals(Input=s_in)
+    RenameSource("{}_vn".format(s_name), sn)
+    return sn
+
+
 s_list = active_obj.get_selected_sources()
 s_num = len(s_list)
 
-if s_num == 2:
+
+def show_hausdorff_dist(s_list):
+    s_num = len(s_list)
+    if s_num == 2:
+        print("Error! 2 source need to be selected")
+        return
     # get names
     pxm = servermanager.ProxyManager();
     name0 = os.path.splitext(pxm.GetProxyName("sources", s_list[0]))[0]
     name1 = os.path.splitext(pxm.GetProxyName("sources", s_list[1]))[0]
+    # generate vn if not exists
+    s1 = generate_vn(s_list[0], name0)
+    s2 = generate_vn(s_list[1], name1)
+    sd1 = servermanager.Fetch(s1)
+    sd2 = servermanager.Fetch(s2)
+    p2c = sd1.IsA("vtkPolyData") and sd2.IsA("vtkPolyData")
     # create filter
-    hd = HausdorffDistance(InputA=s_list[0], InputB=s_list[1])
+    hd = HausdorffDistance(InputA=s1, InputB=s2)
+    if not p2c:
+        hd.TargetDistanceMethod = 'Point-to-Point'
     SetActiveSource(hd)    # set active source to hd to find transfer function
     RenameSource("{}_{}".format(name0, name1), hd)
     
