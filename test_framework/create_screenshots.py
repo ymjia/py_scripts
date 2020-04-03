@@ -11,7 +11,7 @@ import datetime
 from shutil import move
 from paraview.simple import *
 from paraview.simple import _active_objects
-from paraview.simple import GetDisplayProperities
+from paraview.simple import GetDisplayProperties
 dir_py_module = os.path.join(os.getcwd(), "..", "Sn3D_plugins", "scripts", "pv_module")
 sys.path.append(dir_py_module)
 from framework_util import *
@@ -94,12 +94,21 @@ def generate_vn(s_in, s_name):
     RenameSource("{}_vn".format(s_name), sn)
     return sn
 
-def show_hausdorff_dist(s_list):
+def show_hausdorff_dist(s_name_list):
+    s_num = len(s_name_list)
+    if s_num != 2:
+        print("Error! 2 source need to be selected, current source:")
+        print(s_name_list)
+        return (None, None, None, None)
+    s_list = []
+    for name in s_name_list:
+        reader = read_files([name])
+        if reader is not None:
+            s_list.append(reader)
+    if len(s_list) != 2:
+        print("2 poly mesh needed, now got {}".format(len(s_list)))
+        return (None, None, None, None)
     LoadPlugin("./plugins/Utils/Utils.dll", remote=False, ns=globals())
-    s_num = len(s_list)
-    if s_num == 2:
-        print("Error! 2 source need to be selected")
-        return
     # get names
     pxm = servermanager.ProxyManager();
     name0 = os.path.splitext(pxm.GetProxyName("sources", s_list[0]))[0]
@@ -120,6 +129,8 @@ def show_hausdorff_dist(s_list):
     ly = CreateLayout('Hdf_{}{}'.format(name0, name1))
     v0 = CreateRenderView(False, registrationName=name0)
     v1 = CreateRenderView(False, registrationName=name1)
+    v0.ViewSize = [1024, 768]
+    v1.ViewSize = [1024, 768]
     out0 = OutputPort(hd, 0)
     out1 = OutputPort(hd, 1)
     display0 = Show(out0, v0)
@@ -245,7 +256,7 @@ def ss_need_update(file_list, file_cam, out_dir, pattern):
 
 # execute screenshot operation(need config information)
 # general operation, case/version/filanem all have their effects
-def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
+def create_screenshots(dir_input, dir_output, list_case, list_ver, list_alg):
     total_num = 0
     # case/version/alg
     file_dir = []
@@ -309,14 +320,20 @@ def build_cam_list(v):
 # screen shot for customized application
 # only case list is needed
 def create_hausdorff_shot(dir_input, dir_output, list_case):
+    print("Creating hausdorf distance screenshots")
+    print("Case: {}".format(list_case))
     total_num = 0
     for case in list_case:
         i_list = get_file(dir_input, case)
-        pic_out_dir = os.path.join(dir_output, case_name, "hausdorff_dist")
+        out_dir = os.path.join(dir_output, case, "hausdorff_dist")
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         #if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
         #        print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
         #        continue
         (v0, v1, out0, out1) = show_hausdorff_dist(i_list)
+        if v0 is None:
+            continue
         ss = ScreenShotHelper()
         # standard
         std_cam = []
@@ -338,6 +355,12 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
                          "{}/ss_hd_{}.png".format(out_dir, i * 2).replace("\\", "/"))
             ss.take_shot(v1, std_cam[i],
                          "{}/ss_hd_{}.png".format(out_dir, i * 2+1).replace("\\", "/"))
+
+        cam_file = os.path.join(dir_input, case, "config.txt")
+        if not os.path.exists(cam_file):
+            print("Camera config file {} does not exist!".format(cam_file))
+            continue
+        cam_list = read_cam(cam_file)
         for i in range(0, len(cam_list)):
             ss.take_shot(v0, cam_list[i],
                          "{}/ss_hd_{}.png".format(out_dir, i * 2 + 12).replace("\\", "/"))
@@ -352,11 +375,15 @@ def create_screenshots_wrap(dir_input, dir_output, file_config):
     # data to be compared
     # get all concerned file names
     list_case, list_ver, list_alg = read_compare_config(file_config)
+    print("Start screenshot: ")
+    print("case: {}".format(list_case))
+    print("ver: {}".format(list_ver))
+    print("filename: {}".format(list_alg))
     total_n = 0
-    if len(list_ver) < 1 and len(list_alg) < 1:
+    if len(list_ver) < 1 or list_ver[0] == "__hausdorff":
         total_n = create_hausdorff_shot(dir_input, dir_output, list_case)
     else:
-        total_n = create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver)
+        total_n = create_screenshots(dir_input, dir_output, list_case, list_ver, list_alg)
     f_config = open(file_config, "w", encoding='utf-8')
     f_config.write("{}\n".format(total_n))
     f_config.close()

@@ -181,8 +181,22 @@ def generate_proc_docx(ui):
 
 
 def generate_hausdorf_docx(ui):
-    print("generating hausdorf doc")
-    return 0
+    # create hausdorff shot
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    exe_pvpython = p_obj._exePV
+    if not os.path.exists(exe_pvpython):
+        QMessageBox.about(ui, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
+        return
+    dir_i = p_obj._dirInput
+    dir_o = p_obj._dirOutput
+    l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
+    total_num = call_pvpython(exe_pvpython, l_case, ['__hausdorff'], [], dir_i, dir_o)
+    if total_num > 0:
+        ui.add_hist_item("ss", total_num)
+    print(total_num)
+    # generate doc
+    
 
 def slot_open_docx(ui):
     p_obj = ui._p
@@ -225,7 +239,7 @@ def slot_create_screenshots(ui):
         ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
         if ret == qm.Cancel:
             return
-    total_num = call_pvpython(exe_pvpython, l_case, l_alg, l_ver, dir_i, dir_o)
+    total_num = call_pvpython(exe_pvpython, l_case, l_ver, l_alg, dir_i, dir_o)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))

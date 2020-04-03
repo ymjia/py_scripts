@@ -268,7 +268,7 @@ class CameraObject:
     def create_default_cam_angle(self, type_str):
         if len(type_str) < 2:
             type_str = "x+"
-        position_ratio = math.tan(self.CameraViewAngle / 360.f / math.pi)
+        position_ratio = math.tan(self.CameraViewAngle / 360.0 * math.pi)
         # reset camera
         self.CameraViewUp[1] = 0
         self.CameraViewUp[2] = 0
