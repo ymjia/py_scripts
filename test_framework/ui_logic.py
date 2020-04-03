@@ -90,11 +90,11 @@ def slot_generate_docx(ui):
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     doc_type = p_obj._curDocType
-    if doc_type == "screenshots":
+    if doc_type == "Screenshots":
         return generate_ss_docx(ui)
-    elif doc_type == "time_statics":
+    elif doc_type == "Time_statistics":
         return generate_time_docx(ui)
-    elif doc_type == "cpu_mem_statics":
+    elif doc_type == "CPU_MEM_statistics":
         return generate_proc_docx(ui)
     else:
         return generate_hausdorf_docx(ui)

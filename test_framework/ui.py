@@ -69,7 +69,7 @@ class TFWindow(QWidget):
         # doc type selector
         self._qcb_doc_type = QComboBox() # type of document to be generated
         self._qcb_doc_type.setEditable(False)
-        self._qcb_doc_type.addItems(["screenshots", "time_statics", "cpu_mem_statics", "hausdorf_dist"])
+        self._qcb_doc_type.addItems(["Screenshots", "Time_statistics", "CPU_MEM_statistics", "Hausdorf_dist"])
         # other object
         self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
         self._filenameSelector = None

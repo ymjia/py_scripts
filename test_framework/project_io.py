@@ -49,7 +49,7 @@ class Project:
         self._dVerCheck = {}
         self._docName = ""
         self._curDocName = ""
-        self._curDocType = "screenshots"
+        self._curDocType = "Screenshots"
 
     # load functions
     def load_xml(self, filename):
@@ -79,7 +79,7 @@ class Project:
         self.load_check(root_doc, self._dCaseCheck, self._dAlgCheck, self._dVerCheck)
         self._docName = root_doc.find("doc_name").attrib["name"]
         self._curDocName = root_doc.find("current_name").attrib["name"]
-        self._curDocType = xml_find_or_def(root_doc,"current_type","name", "screenshots")
+        self._curDocType = xml_find_or_def(root_doc,"current_type","name", "Screenshots")
 
     def load_list(self):
         branch = self._tree.getroot().find("all")
