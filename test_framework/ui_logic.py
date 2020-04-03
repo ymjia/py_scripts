@@ -815,6 +815,10 @@ def slot_qlv_check_list(ui, qlv):
         item.setCheckState(check)
 
 
+def slot_project_list_filter(ui):
+    filter_str = ui._qle_proj_filter.text()
+    ui.fill_proj_list(filter_str)
+
 def fill_dict(d, l_item):
     for item in l_item:
         if item in d:

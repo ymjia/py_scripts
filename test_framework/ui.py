@@ -41,6 +41,9 @@ class TFWindow(QWidget):
         self._ql_hist_ss = QLabel(str(self.get_hist_item("ss")))
         self._ql_hist_doc = QLabel(str(self.get_hist_item("doc")))
         # text
+        self._qle_proj_filter = QLineEdit() # filter to project list
+        self._qle_proj_filter.setPlaceholderText("Search...")
+        self._qle_proj_filter.textChanged.connect(lambda: ui_logic.slot_project_list_filter(self))
         self._qle_conf_file = QLineEdit()
         self._qle_dir_in = QLineEdit()
         self._qle_dir_out = QLineEdit()
@@ -48,6 +51,7 @@ class TFWindow(QWidget):
         self._qle_exe_demo = QLineEdit()
         self._qcb_cur_ver = QComboBox()
         self._qcb_cur_ver.setEditable(True)
+        self._qcb_cur_ver.lineEdit().setPlaceholderText("Input or Select..")
         self._qle_doc_name = QLineEdit()
         self._qpt_exe_param = QPlainTextEdit()
         # listview
@@ -84,15 +88,27 @@ class TFWindow(QWidget):
         grid.setColumnStretch(1, 3)
         self.setLayout(grid)
         self.setWindowTitle("Test Framework")
-        self.resize(1000, 800)
+        self.resize(1200, 800)
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
 
-    def fill_proj_list(self):
+    def fill_proj_list(self, flt = ""):
         m = QStandardItemModel()
         flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
         for item in self._pTree.getroot():
             p_name = item.attrib["name"]
+            flt_pass = True
+            if len(flt) > 0:
+                sub_pname = p_name
+                for c in flt:
+                    pos = sub_pname.find(c)
+                    if pos == -1:
+                        flt_pass = False
+                        break
+                    else:
+                        sub_pname = sub_pname[pos + 1:]
+            if not flt_pass:
+                continue
             qsi = QStandardItem(p_name)
             qsi.setFlags(flag)
             qsi.setCheckable(False)
@@ -188,11 +204,12 @@ class TFWindow(QWidget):
         qpb_save.clicked.connect(lambda: ui_logic.slot_save_project(self))
         qpb_load.clicked.connect(lambda: ui_logic.slot_load_project(self))
         grid = QGridLayout()
-        grid.addWidget(self._qlv_all_proj, 0, 0, 1, 2)
-        grid.addWidget(qpb_new, 1, 0)
-        grid.addWidget(qpb_load, 1, 1)
-        grid.addWidget(qpb_delete, 2, 0)
-        grid.addWidget(qpb_save, 2, 1)
+        grid.addWidget(self._qle_proj_filter, 0, 0, 1, 2)
+        grid.addWidget(self._qlv_all_proj, 1, 0, 1, 2)
+        grid.addWidget(qpb_new, 2, 0)
+        grid.addWidget(qpb_load, 2, 1)
+        grid.addWidget(qpb_delete, 3, 0)
+        grid.addWidget(qpb_save, 3, 1)
         manage.setLayout(grid)
         return manage
 
