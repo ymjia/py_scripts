@@ -33,8 +33,6 @@ def generate_vn(s_in, s_name):
     return sn
 
 
-s_list = active_obj.get_selected_sources()
-s_num = len(s_list)
 
 
 def show_hausdorff_dist(s_list):
@@ -81,3 +79,6 @@ def show_hausdorff_dist(s_list):
     v0.ResetCamera()
     SetActiveView(v0)
     Render()    
+
+s_list = active_obj.get_selected_sources()
+show_hausdorff_dist(s_list)
