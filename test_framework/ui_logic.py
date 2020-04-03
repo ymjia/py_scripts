@@ -225,6 +225,14 @@ def slot_create_screenshots(ui):
         ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
         if ret == qm.Cancel:
             return
+    total_num = call_pvpython(exe_pvpython, l_case, l_alg, l_ver, dir_i, dir_o)
+    if total_num > 0:
+        ui.add_hist_item("ss", total_num)
+    QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
+
+
+# call pvpython to take screenshot return screenshot number
+def call_pvpython(exe_pvpython, l_case, l_ver, l_alg, dir_i, dir_o):
     # write to file
     filename = os.path.join(dir_o, "ss_config.txt")
     line_case = "cas"
@@ -256,9 +264,8 @@ def slot_create_screenshots(ui):
         str_list = [l.strip() for l in content]
         if len(str_list) == 1:
             total_num = int(str_list[0])
-    if total_num > 0:
-        ui.add_hist_item("ss", total_num)
-    QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
+    return total_num
+
 
 
 def get_default_path(in_path):
