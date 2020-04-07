@@ -342,7 +342,6 @@ def write_dist_statistics(s, filename):
     f_sts.write("{}\n".format(max_positive))
     f_sts.write("{}\n".format(max_negtive))
     f_sts.write("{}\n".format(standard_deviation))
-    f_sts.write("{}\n".format())
     f_sts.close()
 
 # screen shot for customized application
