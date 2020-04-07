@@ -72,6 +72,27 @@ def get_line_length(l):
     return w * w + h * h
 
 
+h_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 40))
+
+
+def find_lines(img_cv, pattern, color):
+    dot_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    gray = cv2.cvtColor(img_cv,cv2.COLOR_BGR2GRAY)
+    #gray = cv2.dilate(gray, pattern)
+    dst = cv2.Canny(gray, 50, 200, 3);
+    dst = cv2.dilate(dst, dot_pattern)
+    cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
+    lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 720, 100, 0, 0)
+    if lines is None or len(lines) < 1:
+        print("no line found")
+        return cdst
+    for l in lines:
+        cv2.line(cdst, (l[0][0], l[0][1]), (l[0][2], l[0][3]), color, 3, 2)
+    return cdst
+    
+
+
 def find_max_line(img_name):
     img_cv = cv2.imread(img_name)
     gray = cv2.cvtColor(img_cv,cv2.COLOR_BGR2GRAY)
@@ -84,7 +105,7 @@ def find_max_line(img_name):
     dst = cv2.Canny(gray, 50, 200, 3);
     dst = cv2.dilate(dst, v_pattern)
     #dst = gray
-    #cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
+    cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
     lines = cv2.HoughLinesP(dst, 1, 3.1415926 / 720, 100, 0, 0)
     if lines is None or len(lines) < 1:
         print("no line found")
@@ -92,7 +113,7 @@ def find_max_line(img_name):
     max_l = lines[0]
     max_len = 0
     for l in lines:
-        #cv2.line(cdst, (l[0][0], l[0][1]), (l[0][2], l[0][3]), (255, 0, 0), 3, 2)
+        cv2.line(cdst, (l[0][0], l[0][1]), (l[0][2], l[0][3]), (255, 0, 0), 3, 2)
         cur_len = get_line_length(l)
         if cur_len > max_len:
             max_l = l
@@ -187,11 +208,14 @@ def copy_sheet(path_from, path_to, sheet_name):
 
 
 img_name = "d:/tmp/error.png"
+h_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 10))
 
-line = find_max_line(img_name)
 img = cv2.imread(img_name)
-res = rotate_horizontal(img, line)
-cv2.imwrite("d:/tmp/rotate.png", res)
+res_h = find_lines(img, h_pattern, (255, 0, 0))
+cv2.imwrite("d:/tmp/line_h.png", res_h)
+res_v = find_lines(res_h, v_pattern, (0, 255, 0))
+cv2.imwrite("d:/tmp/line_v.png", res_v)
 
 
 #copy_sheet("d:/tmp/广州第一分公司202001.xlsx", "d:/tmp/tmp_out.xlsx", "TB 202001")

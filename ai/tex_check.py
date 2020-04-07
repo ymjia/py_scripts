@@ -146,7 +146,8 @@ def ocr_detect_table(iname):
     # grey
     grey = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     bw = cv2.adaptiveThreshold(cv2.bitwise_not(grey), 255,
-                               cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 25, -2)
+                               cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 51, -5)
+    cv2.imwrite(os.path.join(str_output, "bw{}_{}.png".format(iname.pdf, iname.idx)), bw)
     # extract horizontal
     horizontal = bw
     vertical = bw
