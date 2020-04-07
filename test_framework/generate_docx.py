@@ -145,8 +145,8 @@ class DocxGenerator:
             doc.add_paragraph(case, style='List Bullet')
             list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
             if list_cam is None or len(list_cam) == 0:
-                print("no cam table for {}".format(case))
-                continue
+                print("Warning! no cam table for {}".format(case))
+                list_cam = []
             if self.add_case_table(case, len(list_cam)) != 0:
                 print("Case Table Error for case: {}".format(case))
         doc.save(file_save)
