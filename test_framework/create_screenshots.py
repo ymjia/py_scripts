@@ -317,6 +317,34 @@ def build_cam_list(v):
     return camera_pos
 
 
+def write_dist_statistics(s, filename):
+    sd = servermanager.Fetch(s)
+    fd = sd.GetFieldData()
+    sigma_rate = fd.GetArray("sigma_rate")
+    if sigma_rate is None or len(sigma_rate) != 6:
+        print("Warning! no statistics info in hausdorff output")
+        return
+    sigma_num = fd.GetArray("sigma_num")
+    mean_total = fd.GetArray("mean_total").GetTuple(0)[0]
+    mean_positive = fd.GetArray("mean_positive").GetTuple(0)[0]
+    mean_negtive = fd.GetArray("mean_negtive").GetTuple(0)[0]
+    max_positive = fd.GetArray("max_positive").GetTuple(0)[0]
+    max_negtive = fd.GetArray("max_negtive").GetTuple(0)[0]
+    standard_deviation = fd.GetArray("standard_deviation").GetTuple(0)[0]
+    f_sts = open(filename, "w", encoding='utf-8')
+    f_sts.write("{} {} {} {} {} {}\n".format(sigma_rate[0], sigma_rate[1], sigma_rate[2],
+                                              sigma_rate[3], sigma_rate[4], sigma_rate[5]))
+    f_sts.write("{} {} {} {} {} {}\n".format(sigma_num[0], sigma_num[1], sigma_num[2],
+                                              sigma_num[3], sigma_num[4], sigma_num[5]))
+    f_sts.write("{}\n".format(mean_total))
+    f_sts.write("{}\n".format(mean_positive))
+    f_sts.write("{}\n".format(mean_negtive))
+    f_sts.write("{}\n".format(max_positive))
+    f_sts.write("{}\n".format(max_negtive))
+    f_sts.write("{}\n".format(standard_deviation))
+    f_sts.write("{}\n".format())
+    f_sts.close()
+
 # screen shot for customized application
 # only case list is needed
 def create_hausdorff_shot(dir_input, dir_output, list_case):
@@ -335,6 +363,8 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
         #        print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
         #        continue
         (v0, v1, out0, out1) = show_hausdorff_dist(i_list)
+        write_dist_statistics(v0, "{}/dist.sts".format(out_dir))
+        write_dist_statistics(v1, "{}/dist.sts".format(out_dir2))
         if v0 is None:
             continue
         ss = ScreenShotHelper()
