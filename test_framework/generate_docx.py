@@ -117,6 +117,8 @@ class DocxGenerator:
             shade_cell(row1.cells[0])
             shade_cell(row2[0])
             self.get_paraview_project(file_state, case, alg)
+            if (alg == "__hd"):
+                cam_num = cam_num + 6
             for cam in range(0, cam_num):
                 row_cells = table.add_row().cells
                 for vi in range(0, col_num):

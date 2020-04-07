@@ -196,6 +196,20 @@ def generate_hausdorf_docx(ui):
         ui.add_hist_item("ss", total_num)
     print(total_num)
     # generate doc
+    doc_name = p_obj._docName
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    doc_name_final = "{}_{}_hd.docx".format(doc_name, str_time)
+    p_obj._curDocName = doc_name_final
+    dir_doc = os.path.join(dir_o, "doc")
+    if not os.path.exists(dir_doc):
+        os.makedirs(dir_doc)
+    file_save = os.path.join(dir_doc, doc_name_final)
+    l_ver = ["hausdorff_A2B", "hausdorff_B2A"]
+    l_alg = ["__hd"] # reserved alg_name for hausdorff dist
+    gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
+    gd.generate_docx(file_save, p_obj._configFile)
+    ui.add_hist_item("doc", 1)
+    QMessageBox.about(ui, "Message", "Hausdorff Docx wrote to {}!".format(file_save))
     
 
 def slot_open_docx(ui):

@@ -325,9 +325,12 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
     total_num = 0
     for case in list_case:
         i_list = get_file(dir_input, case)
-        out_dir = os.path.join(dir_output, case, "hausdorff_dist")
+        out_dir = os.path.join(dir_output, case, "hausdorff_A2B")
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
+        out_dir2 = os.path.join(dir_output, case, "hausdorff_B2A")
+        if not os.path.exists(out_dir2):
+            os.makedirs(out_dir2)
         #if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
         #        print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
         #        continue
@@ -352,10 +355,10 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
         std_cam.append(build_cam_list(v0))
         for i in range(0, 6):
             ss.take_shot(v0, std_cam[i],
-                         "{}/ss_hd_{}.png".format(out_dir, i * 2).replace("\\", "/"))
+                         "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
             ss.take_shot(v1, std_cam[i],
-                         "{}/ss_hd_{}.png".format(out_dir, i * 2+1).replace("\\", "/"))
-
+                         "{}/ss___hd_v{}.png".format(out_dir2, i).replace("\\", "/"))
+        total_num = total_num + 12
         cam_file = os.path.join(dir_input, case, "config.txt")
         if not os.path.exists(cam_file):
             print("Camera config file {} does not exist!".format(cam_file))
@@ -363,10 +366,10 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
         cam_list = read_cam(cam_file)
         for i in range(0, len(cam_list)):
             ss.take_shot(v0, cam_list[i],
-                         "{}/ss_hd_{}.png".format(out_dir, i * 2 + 12).replace("\\", "/"))
+                         "{}/ss___hd_v{}.png".format(out_dir, i + 6).replace("\\", "/"))
             ss.take_shot(v1, cam_list[i],
-                         "{}/ss_hd_{}.png".format(out_dir, i * 2 + 13).replace("\\", "/"))
-        total_num = total_num + len(cam_list) * 2 + 12
+                         "{}/ss___hd_v{}.png".format(out_dir2, i + 6).replace("\\", "/"))
+        total_num = total_num + len(cam_list) * 2
     return total_num
 
 
