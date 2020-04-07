@@ -35,7 +35,7 @@ def get_sub_dir(cur):
 
 
 # get all file from folder except subdir
-support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
+support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin", ".tb"]
 
 
 def get_file_list(folder):
@@ -55,12 +55,12 @@ def get_file(folder, stem):
     if not os.path.exists(folder):
         return None
     for f in os.listdir(folder):
-        cur_stem = os.path.splitext(f)[0]
+        cur_stem, cur_ext = os.path.splitext(f)
         if cur_stem == stem:
             find_res = os.path.join(folder, f)
             if os.path.isdir(find_res):
                 return get_file_list(find_res)
-            else:
+            elif cur_ext in support_ext:
                 return [find_res]
     return None
 
@@ -247,3 +247,63 @@ def read_compare_config(file_config):
         elif line[0:3] == "alg":
             alg_list = read_config_list(line, "alg")
     return case_list, ver_list, alg_list
+
+
+class CameraObject:
+    def __init__(self, s):
+        (xmin, xmax, ymin, ymax, zmin, zmax) = s.GetDataInformation().GetBounds()
+        xmid = (xmin + xmax) / 2
+        ymid = (ymin + ymax) / 2
+        zmid = (zmin + zmax) / 2
+        self.xdelta = xmax - xmin
+        self.ydelta = ymax - ymin
+        self.zdelta = zmax - zmin
+        self.CameraFocalPoint = [xmid, ymid, zmid]
+        self.CameraParallelProjection = 0
+        self.CameraParallelScale = 20.0
+        self.CameraPosition = [xmid, ymid, zmid]
+        self.CameraViewAngle = 30.0
+        self.CameraViewUp = [0.0, 0.0, 0.0]
+
+    def create_default_cam_angle(self, type_str):
+        if len(type_str) < 2:
+            type_str = "x+"
+        position_ratio = math.tan(self.CameraViewAngle / 360.0 * math.pi)
+        # reset camera
+        self.CameraViewUp[1] = 0
+        self.CameraViewUp[2] = 0
+        self.CameraPosition[0] = self.CameraFocalPoint[0]
+        self.CameraPosition[1] = self.CameraFocalPoint[1]
+        self.CameraPosition[2] = self.CameraFocalPoint[2]
+        # get camera info
+        if type_str[0] == 'y':
+            self.CameraViewUp[2] = 1
+            camera_move = (self.xdelta + self.zdelta) / 2 / position_ratio
+            if type_str[1] == '+':
+                self.CameraPosition[1] = self.CameraPosition[1] - camera_move
+            else:
+                self.CameraPosition[1] = self.CameraPosition[1] + camera_move
+        elif type_str[0] == 'z':
+            self.CameraViewUp[1] = 1
+            camera_move = (self.xdelta + self.ydelta) / 2 / position_ratio
+            if type_str[1] == '+':
+                self.CameraPosition[2] = self.CameraPosition[2] - camera_move
+            else:
+                self.CameraPosition[2] = self.CameraPosition[2] + camera_move
+        else: # x
+            self.CameraViewUp[2] = 1
+            camera_move = (self.ydelta + self.zdelta) / 2 / position_ratio
+            if type_str[1] == '+':
+                self.CameraPosition[0] = self.CameraPosition[0] - camera_move
+            else:
+                self.CameraPosition[0] = self.CameraPosition[0] + camera_move
+
+    def set_camera(self, v, type_str):
+        self.create_default_cam_angle(type_str)
+        v.CameraFocalPoint = self.CameraFocalPoint
+        v.CameraParallelProjection = self.CameraParallelProjection
+        v.CameraParallelScale = self.CameraParallelScale
+        v.CameraPosition = self.CameraPosition
+        v.CameraViewAngle = self.CameraViewAngle
+        v.CameraViewUp = self.CameraViewUp
+        v.Update()

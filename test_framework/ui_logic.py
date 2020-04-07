@@ -86,9 +86,21 @@ def find_ptree_item(pt, name):
             return item
     return None
 
-
 def slot_generate_docx(ui):
     ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    doc_type = p_obj._curDocType
+    if doc_type == "Screenshots":
+        return generate_ss_docx(ui)
+    elif doc_type == "Time_statistics":
+        return generate_time_docx(ui)
+    elif doc_type == "CPU_MEM_statistics":
+        return generate_proc_docx(ui)
+    else:
+        return generate_hausdorf_docx(ui)
+
+
+def generate_ss_docx(ui):
     p_obj = ui._p
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
@@ -109,8 +121,7 @@ def slot_generate_docx(ui):
     QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
 
 
-def slot_generate_time_docx(ui):
-    ui._p = ui.collect_ui_info()
+def generate_time_docx(ui):
     p_obj = ui._p
     dir_o = p_obj._dirOutput
     dir_doc = os.path.join(dir_o, "doc")
@@ -137,8 +148,7 @@ def slot_generate_time_docx(ui):
         QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
 
 
-def slot_generate_proc_docx(ui):
-    ui._p = ui.collect_ui_info()
+def generate_proc_docx(ui):
     p_obj = ui._p
     dir_o = p_obj._dirOutput
     dir_doc = os.path.join(dir_o, "doc")
@@ -169,6 +179,38 @@ def slot_generate_proc_docx(ui):
     else:
         QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
 
+
+def generate_hausdorf_docx(ui):
+    # create hausdorff shot
+    ui._p = ui.collect_ui_info()
+    p_obj = ui._p
+    exe_pvpython = p_obj._exePV
+    if not os.path.exists(exe_pvpython):
+        QMessageBox.about(ui, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
+        return
+    dir_i = p_obj._dirInput
+    dir_o = p_obj._dirOutput
+    l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
+    total_num = call_pvpython(exe_pvpython, l_case, ['__hausdorff'], [], dir_i, dir_o)
+    if total_num > 0:
+        ui.add_hist_item("ss", total_num)
+    print(total_num)
+    # generate doc
+    doc_name = p_obj._docName
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    doc_name_final = "{}_{}_hd.docx".format(doc_name, str_time)
+    p_obj._curDocName = doc_name_final
+    dir_doc = os.path.join(dir_o, "doc")
+    if not os.path.exists(dir_doc):
+        os.makedirs(dir_doc)
+    file_save = os.path.join(dir_doc, doc_name_final)
+    l_ver = ["hausdorff_A2B", "hausdorff_B2A"]
+    l_alg = ["__hd"] # reserved alg_name for hausdorff dist
+    gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
+    gd.generate_docx(file_save, p_obj._configFile)
+    ui.add_hist_item("doc", 1)
+    QMessageBox.about(ui, "Message", "Hausdorff Docx wrote to {}!".format(file_save))
+    
 
 def slot_open_docx(ui):
     p_obj = ui._p
@@ -211,6 +253,14 @@ def slot_create_screenshots(ui):
         ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
         if ret == qm.Cancel:
             return
+    total_num = call_pvpython(exe_pvpython, l_case, l_ver, l_alg, dir_i, dir_o)
+    if total_num > 0:
+        ui.add_hist_item("ss", total_num)
+    QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
+
+
+# call pvpython to take screenshot return screenshot number
+def call_pvpython(exe_pvpython, l_case, l_ver, l_alg, dir_i, dir_o):
     # write to file
     filename = os.path.join(dir_o, "ss_config.txt")
     line_case = "cas"
@@ -242,9 +292,8 @@ def slot_create_screenshots(ui):
         str_list = [l.strip() for l in content]
         if len(str_list) == 1:
             total_num = int(str_list[0])
-    if total_num > 0:
-        ui.add_hist_item("ss", total_num)
-    QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
+    return total_num
+
 
 
 def get_default_path(in_path):
@@ -413,12 +462,22 @@ def slot_exe_param(ui):
 
 def slot_new_project(ui):
     dp = get_default_proj_path(ui)
-    path, _ = QFileDialog.getSaveFileName(None, "Save New Project", dp, "XML(*.xml)")
-    if path is None or path == "":
+    path = ""
+    while True:
+        path, _ = QFileDialog.getSaveFileName(None, "Save New Project", dp, "XML(*.xml)")
+        if path is None or path == "":
+            return
+        base_filename = os.path.basename(path)
+        stem, ext = os.path.splitext(base_filename)
+        if stem == "tf_proj" or stem == "cmd_history":
+            QMessageBox.about(ui, "Error", "'tf_proj' and 'cmd_history' is reserved filename, please change project name!")
+            continue
+        if ext != ".xml":
+            path += ".xml"
+        break
+    if path == "":
         return
     p = project_io.Project()
-    if os.path.splitext(path)[1] != ".xml":
-        path += ".xml"
     p._configFile = path
     ui._p = p
     ui._p.save_xml(path)
@@ -769,6 +828,10 @@ def slot_qlv_check_list(ui, qlv):
         item = model.item(idx.row())
         item.setCheckState(check)
 
+
+def slot_project_list_filter(ui):
+    filter_str = ui._qle_proj_filter.text()
+    ui.fill_proj_list(filter_str)
 
 def fill_dict(d, l_item):
     for item in l_item:

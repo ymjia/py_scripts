@@ -15,6 +15,42 @@ from docx.oxml import parse_xml
 from docx.shared import Mm
 
 
+## hausdorff relative#########################
+class HausdorffSts:
+    def __init__(self):
+        self.sigma_rate = []
+        self.sigma_num = []
+        self.mean_total = 0.0
+        self.mean_positive = 0.0
+        self.mean_negtive = 0.0
+        self.max_positive = 0.0
+        self.max_negtive = 0.0
+        self.standard_deviation = 0.0
+
+    def read_from_file(self, filename):
+        content = None
+        with open(filename) as f:
+            content = f.readlines()
+        if len(content) < 8:
+            return
+        str_list = [l.strip() for l in content]
+        l_rate = str_list[0].split(" ")
+        l_num = str_list[1].split(" ")
+        for item in l_rate:
+            self.sigma_rate.append(item)
+        for item in l_num:
+            self.sigma_num.append(item)
+        mean_total = float(str_list[2])
+        mean_positive = float(str_list[3])
+        mean_negtive = float(str_list[4])
+        max_positive = float(str_list[5])
+        max_negtive = float(str_list[6])
+        standard_deviation = float(str_list[7])
+
+
+## end hausdorff relative#######################
+
+
 ## @brief read camera positions in input config
 def read_cam(case_file):
     if not os.path.exists(case_file):
@@ -117,6 +153,8 @@ class DocxGenerator:
             shade_cell(row1.cells[0])
             shade_cell(row2[0])
             self.get_paraview_project(file_state, case, alg)
+            if (alg == "__hd"):
+                cam_num = cam_num + 6
             for cam in range(0, cam_num):
                 row_cells = table.add_row().cells
                 for vi in range(0, col_num):
@@ -128,6 +166,26 @@ class DocxGenerator:
                     file_pic = os.path.join(dir_pic, name_pic)
                     add_cell_content(row_cells[vi], ver, file_pic)
         return 0
+
+
+    def add_hausdorff_statistic_table(self, case):
+        if len(self._listVer) != 2:
+            return
+        # read sts info
+        dir_a2b = os.path.join(self._dirOutput, _listVer[0])
+        dir_b2a = os.path.join(self._dirOutput, _listVer[1])
+        a2b = HausdorffSts()
+        b2a = HausdorffSts()
+        a2b.read_from_file(os.path.join(dir_a2b, "dist.sts"))
+        a2b.read_from_file(os.path.join(dir_b2a, "dist.sts"))
+        # build table
+        table = self._doc.add_table(rows = 8, cols = 3)
+        table.style = 'Table Grid'
+        r0 = table.rows[0].cells
+        r0[0].text = "dist"
+        r0[0].text = "DistanceA2B"
+        r0[0].text = "DistanceB2A"
+
 
     ## @brief generate docx file from given algorithm output dir, and config
     ## @param dir_input data case config directory
@@ -143,8 +201,8 @@ class DocxGenerator:
             doc.add_paragraph(case, style='List Bullet')
             list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
             if list_cam is None or len(list_cam) == 0:
-                print("no cam table for {}".format(case))
-                continue
+                print("Warning! no cam table for {}".format(case))
+                list_cam = []
             if self.add_case_table(case, len(list_cam)) != 0:
                 print("Case Table Error for case: {}".format(case))
         doc.save(file_save)

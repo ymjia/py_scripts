@@ -9,6 +9,18 @@ import xml.etree.ElementTree as ET
 from test_framework import utils
 
 
+def xml_find_or_def(root, key, attrib_name, default_val):
+    try:
+        item = root.find(key)
+        if item is None:
+            return default_val
+        if attrib_name not in item.attrib:
+            return default_val
+        return item.attrib[attrib_name]
+    except ET.ParseError:
+        return default_val
+    
+
 class Project:
     def __init__(self):
         # xml tree object
@@ -37,6 +49,7 @@ class Project:
         self._dVerCheck = {}
         self._docName = ""
         self._curDocName = ""
+        self._curDocType = "Screenshots"
 
     # load functions
     def load_xml(self, filename):
@@ -66,6 +79,7 @@ class Project:
         self.load_check(root_doc, self._dCaseCheck, self._dAlgCheck, self._dVerCheck)
         self._docName = root_doc.find("doc_name").attrib["name"]
         self._curDocName = root_doc.find("current_name").attrib["name"]
+        self._curDocType = xml_find_or_def(root_doc,"current_type","name", "Screenshots")
 
     def load_list(self):
         branch = self._tree.getroot().find("all")
@@ -159,6 +173,7 @@ class Project:
                                    self._dVerCheck)
         doc_root.append(ET.Element("doc_name", {"name": self._docName}))
         doc_root.append(ET.Element("current_name", {"name": self._curDocName}))
+        doc_root.append(ET.Element("current_type", {"name": self._curDocType}))
         root.append(exe_root)
         root.append(ss_root)
         root.append(doc_root)

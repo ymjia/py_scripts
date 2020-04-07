@@ -41,14 +41,17 @@ class TFWindow(QWidget):
         self._ql_hist_ss = QLabel(str(self.get_hist_item("ss")))
         self._ql_hist_doc = QLabel(str(self.get_hist_item("doc")))
         # text
+        self._qle_proj_filter = QLineEdit() # filter to project list
+        self._qle_proj_filter.setPlaceholderText("Search...")
+        self._qle_proj_filter.textChanged.connect(lambda: ui_logic.slot_project_list_filter(self))
         self._qle_conf_file = QLineEdit()
         self._qle_dir_in = QLineEdit()
         self._qle_dir_out = QLineEdit()
         self._qle_exe_pv = QLineEdit()
         self._qle_exe_demo = QLineEdit()
-        #self._qle_cur_ver = QLineEdit()
         self._qcb_cur_ver = QComboBox()
         self._qcb_cur_ver.setEditable(True)
+        self._qcb_cur_ver.lineEdit().setPlaceholderText("Input or Select..")
         self._qle_doc_name = QLineEdit()
         self._qpt_exe_param = QPlainTextEdit()
         # listview
@@ -67,6 +70,10 @@ class TFWindow(QWidget):
         self._qlv_ss_alg.doubleClicked.connect(lambda: ui_logic.slot_open_ss_alg(self))
         self._qlv_doc_ver.doubleClicked.connect(lambda: ui_logic.slot_open_doc_ver(self))
         self._qlv_doc_alg.doubleClicked.connect(lambda: ui_logic.slot_open_doc_alg(self))
+        # doc type selector
+        self._qcb_doc_type = QComboBox() # type of document to be generated
+        self._qcb_doc_type.setEditable(False)
+        self._qcb_doc_type.addItems(["Screenshots", "Time_statistics", "CPU_MEM_statistics", "Hausdorf_dist"])
         # other object
         self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
         self._filenameSelector = None
@@ -81,15 +88,27 @@ class TFWindow(QWidget):
         grid.setColumnStretch(1, 3)
         self.setLayout(grid)
         self.setWindowTitle("Test Framework")
-        self.resize(1000, 800)
+        self.resize(1200, 800)
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
 
-    def fill_proj_list(self):
+    def fill_proj_list(self, flt = ""):
         m = QStandardItemModel()
         flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
         for item in self._pTree.getroot():
             p_name = item.attrib["name"]
+            flt_pass = True
+            if len(flt) > 0:
+                sub_pname = p_name
+                for c in flt:
+                    pos = sub_pname.find(c)
+                    if pos == -1:
+                        flt_pass = False
+                        break
+                    else:
+                        sub_pname = sub_pname[pos + 1:]
+            if not flt_pass:
+                continue
             qsi = QStandardItem(p_name)
             qsi.setFlags(flag)
             qsi.setCheckable(False)
@@ -111,6 +130,8 @@ class TFWindow(QWidget):
         self._qle_exe_demo.setText(cur_obj._exeDemo)
         self._qle_doc_name.setText(cur_obj._docName)
         self._qcb_cur_ver.clear()
+        self._qcb_doc_type.setCurrentText(in_obj._curDocType)
+
         for v in cur_obj._ver:
             self._qcb_cur_ver.addItem(v)
         self._qcb_cur_ver.setEditText(cur_obj._eVer)
@@ -134,6 +155,7 @@ class TFWindow(QWidget):
         out_obj._docName = self._qle_doc_name.text()
         out_obj._eVer = self._qcb_cur_ver.currentText()
         out_obj._exeParam = self._qpt_exe_param.toPlainText()
+        out_obj._curDocType = self._qcb_doc_type.currentText()
         self.read_check_list(self._qlv_exe_case, out_obj._case, out_obj._eCaseCheck)
         self.read_check_list(self._qlv_ss_case, out_obj._case, out_obj._sCaseCheck)
         self.read_check_list(self._qlv_ss_ver, out_obj._ver, out_obj._sVerCheck)
@@ -182,11 +204,12 @@ class TFWindow(QWidget):
         qpb_save.clicked.connect(lambda: ui_logic.slot_save_project(self))
         qpb_load.clicked.connect(lambda: ui_logic.slot_load_project(self))
         grid = QGridLayout()
-        grid.addWidget(self._qlv_all_proj, 0, 0, 1, 2)
-        grid.addWidget(qpb_new, 1, 0)
-        grid.addWidget(qpb_load, 1, 1)
-        grid.addWidget(qpb_delete, 2, 0)
-        grid.addWidget(qpb_save, 2, 1)
+        grid.addWidget(self._qle_proj_filter, 0, 0, 1, 2)
+        grid.addWidget(self._qlv_all_proj, 1, 0, 1, 2)
+        grid.addWidget(qpb_new, 2, 0)
+        grid.addWidget(qpb_load, 2, 1)
+        grid.addWidget(qpb_delete, 3, 0)
+        grid.addWidget(qpb_save, 3, 1)
         manage.setLayout(grid)
         return manage
 
@@ -361,12 +384,12 @@ class TFWindow(QWidget):
 
     def create_doc_region(self):
         doc_region = QGroupBox("Docx Configuration")
-        qpb_g_doc = QPushButton('Pic Docx', self)
+        qpb_g_doc = QPushButton('Generate Doc', self)
         qpb_g_doc.clicked.connect(lambda: ui_logic.slot_generate_docx(self))
-        qpb_gt_doc = QPushButton('Time Docx', self)
-        qpb_gt_doc.clicked.connect(lambda: ui_logic.slot_generate_time_docx(self))
-        qpb_gp_doc = QPushButton('Proc Docx', self)
-        qpb_gp_doc.clicked.connect(lambda: ui_logic.slot_generate_proc_docx(self))
+        # qpb_gt_doc = QPushButton('Time Docx', self)
+        # qpb_gt_doc.clicked.connect(lambda: ui_logic.slot_generate_time_docx(self))
+        # qpb_gp_doc = QPushButton('Proc Docx', self)
+        # qpb_gp_doc.clicked.connect(lambda: ui_logic.slot_generate_proc_docx(self))
         qpb_o_doc = QPushButton('Open Document', self)
         qpb_o_doc.clicked.connect(lambda: ui_logic.slot_open_docx(self))
         qpb_o_path = QPushButton('Open Path', self)
@@ -374,8 +397,9 @@ class TFWindow(QWidget):
         qw_doc = QWidget()
         hbox = QHBoxLayout()
         hbox.setContentsMargins(0, 0, 0, 0)
-        hbox.addWidget(qpb_gt_doc)
-        hbox.addWidget(qpb_gp_doc)
+        # hbox.addWidget(qpb_gt_doc)
+        # hbox.addWidget(qpb_gp_doc)
+        hbox.addWidget(self._qcb_doc_type)
         hbox.addWidget(qpb_g_doc)
         qw_doc.setLayout(hbox)
         grid = QGridLayout()

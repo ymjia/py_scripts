@@ -11,7 +11,7 @@ import datetime
 from shutil import move
 from paraview.simple import *
 from paraview.simple import _active_objects
-from paraview.simple import GetDisplayProperities
+from paraview.simple import GetDisplayProperties
 dir_py_module = os.path.join(os.getcwd(), "..", "Sn3D_plugins", "scripts", "pv_module")
 sys.path.append(dir_py_module)
 from framework_util import *
@@ -77,6 +77,79 @@ def show_texture(cur_source, cur_view):
 
 ## end=================texture =================================
 
+## ===================hausdorff distance ======================
+def set_hd_output_display(display, view):
+    ColorBy(display, ('POINTS', 'Distance'))
+    display.SetScalarBarVisibility(view, True)
+    display.MapScalars = 1
+
+def generate_vn(s_in, s_name):
+    sd = servermanager.Fetch(s_in)
+    if not sd.IsA("vtkPolyData"):
+        return s_in
+    vn = sd.GetPointData().GetNormals()
+    if vn is not None:
+        return s_in
+    sn = GenerateSurfaceNormals(Input=s_in)
+    RenameSource("{}_vn".format(s_name), sn)
+    return sn
+
+def show_hausdorff_dist(s_name_list):
+    s_num = len(s_name_list)
+    if s_num != 2:
+        print("Error! 2 source need to be selected, current source:")
+        print(s_name_list)
+        return (None, None, None, None)
+    s_list = []
+    for name in s_name_list:
+        reader = read_files([name])
+        if reader is not None:
+            s_list.append(reader)
+    if len(s_list) != 2:
+        print("2 poly mesh needed, now got {}".format(len(s_list)))
+        return (None, None, None, None)
+    LoadPlugin("./plugins/Utils/Utils.dll", remote=False, ns=globals())
+    # get names
+    pxm = servermanager.ProxyManager();
+    name0 = os.path.splitext(pxm.GetProxyName("sources", s_list[0]))[0]
+    name1 = os.path.splitext(pxm.GetProxyName("sources", s_list[1]))[0]
+    # generate vn if not exists
+    s1 = generate_vn(s_list[0], name0)
+    s2 = generate_vn(s_list[1], name1)
+    sd1 = servermanager.Fetch(s1)
+    sd2 = servermanager.Fetch(s2)
+    p2c = sd1.IsA("vtkPolyData") and sd2.IsA("vtkPolyData")
+    # create filter
+    hd = HausdorffDistance(InputA=s1, InputB=s2)
+    if not p2c:
+        hd.TargetDistanceMethod = 'Point-to-Point'
+    SetActiveSource(hd)    # set active source to hd to find transfer function
+    RenameSource("{}_{}".format(name0, name1), hd)
+    
+    ly = CreateLayout('Hdf_{}{}'.format(name0, name1))
+    v0 = CreateRenderView(False, registrationName=name0)
+    v1 = CreateRenderView(False, registrationName=name1)
+    v0.ViewSize = [1024, 768]
+    v1.ViewSize = [1024, 768]
+    out0 = OutputPort(hd, 0)
+    out1 = OutputPort(hd, 1)
+    display0 = Show(out0, v0)
+    display1 = Show(out1, v1)
+    set_hd_output_display(display0, v0)
+    set_hd_output_display(display1, v1)
+
+    # Rescale transfer function
+    distanceLUT = GetColorTransferFunction('Distance')
+    distancePWF = GetOpacityTransferFunction('Distance')
+    distanceLUT.ApplyPreset('hausdorff', True)
+    distancePWF.ApplyPreset('hausdorff', True)
+    distanceLUT.RescaleTransferFunction(0.0, 0.1)
+    distancePWF.RescaleTransferFunction(0.0, 0.1)
+    return (v0, v1, out0, out1)
+
+## end=================hausdorff distance ======================
+
+
 # class for screenshots
 class ScreenShotHelper:
     def __init__(self):
@@ -118,7 +191,7 @@ def read_and_render(file_list, v):
     reader = read_files(file_list)
     reader_display = Show(reader, v)
     reader_display.ColorArrayName = [None, '']
-    reader_display.Specular = 0.75
+    reader_display.Specular = 0.5
     show_texture(reader, v)
     v.ResetCamera()
     # add anotation
@@ -152,6 +225,9 @@ def create_shot(file_list, cam_list, out_dir, pattern):
     del cur_source
     return len(cam_list)
 
+
+
+
 # read cam position from config file
 def read_cam(case_file):
     if not os.path.exists(case_file):
@@ -178,8 +254,9 @@ def ss_need_update(file_list, file_cam, out_dir, pattern):
     return False
 
 
-# read configuration
-def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
+# execute screenshot operation(need config information)
+# general operation, case/version/filanem all have their effects
+def create_screenshots(dir_input, dir_output, list_case, list_ver, list_alg):
     total_num = 0
     # case/version/alg
     file_dir = []
@@ -218,13 +295,129 @@ def create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver):
                 total_num += create_shot(file_list, cam_list, pic_out_dir , alg)
     return total_num
 
+# get cam config float array from view
+def fill_list(res, idx, in_list):
+    if isinstance(in_list, int) or isinstance(in_list, float):
+        res.append(in_list)
+        return 1
+    ac = len(in_list)
+    res[idx:idx+ac] = in_list[:]
+    return ac
+
+
+def build_cam_list(v):
+    camera_pos = []
+    idx = 0
+    idx += fill_list(camera_pos, idx, v.CameraFocalPoint)
+    idx += fill_list(camera_pos, idx, v.CameraParallelProjection)
+    idx += fill_list(camera_pos, idx, v.CameraParallelScale)
+    idx += fill_list(camera_pos, idx, v.CameraPosition)
+    idx += fill_list(camera_pos, idx, v.CameraViewAngle)
+    idx += fill_list(camera_pos, idx, v.CameraViewUp)
+    return camera_pos
+
+
+def write_dist_statistics(s, filename):
+    sd = servermanager.Fetch(s)
+    fd = sd.GetFieldData()
+    sigma_rate = fd.GetArray("sigma_rate")
+    if sigma_rate is None or len(sigma_rate) != 6:
+        print("Warning! no statistics info in hausdorff output")
+        return
+    sigma_num = fd.GetArray("sigma_num")
+    mean_total = fd.GetArray("mean_total").GetTuple(0)[0]
+    mean_positive = fd.GetArray("mean_positive").GetTuple(0)[0]
+    mean_negtive = fd.GetArray("mean_negtive").GetTuple(0)[0]
+    max_positive = fd.GetArray("max_positive").GetTuple(0)[0]
+    max_negtive = fd.GetArray("max_negtive").GetTuple(0)[0]
+    standard_deviation = fd.GetArray("standard_deviation").GetTuple(0)[0]
+    f_sts = open(filename, "w", encoding='utf-8')
+    f_sts.write("{} {} {} {} {} {}\n".format(sigma_rate[0], sigma_rate[1], sigma_rate[2],
+                                              sigma_rate[3], sigma_rate[4], sigma_rate[5]))
+    f_sts.write("{} {} {} {} {} {}\n".format(sigma_num[0], sigma_num[1], sigma_num[2],
+                                              sigma_num[3], sigma_num[4], sigma_num[5]))
+    f_sts.write("{}\n".format(mean_total))
+    f_sts.write("{}\n".format(mean_positive))
+    f_sts.write("{}\n".format(mean_negtive))
+    f_sts.write("{}\n".format(max_positive))
+    f_sts.write("{}\n".format(max_negtive))
+    f_sts.write("{}\n".format(standard_deviation))
+    f_sts.close()
+
+# screen shot for customized application
+# only case list is needed
+def create_hausdorff_shot(dir_input, dir_output, list_case):
+    print("Creating hausdorf distance screenshots")
+    print("Case: {}".format(list_case))
+    total_num = 0
+    for case in list_case:
+        i_list = get_file(dir_input, case)
+        out_dir = os.path.join(dir_output, case, "hausdorff_A2B")
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        out_dir2 = os.path.join(dir_output, case, "hausdorff_B2A")
+        if not os.path.exists(out_dir2):
+            os.makedirs(out_dir2)
+        #if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
+        #        print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
+        #        continue
+        (v0, v1, out0, out1) = show_hausdorff_dist(i_list)
+        write_dist_statistics(v0, "{}/dist.sts".format(out_dir))
+        write_dist_statistics(v1, "{}/dist.sts".format(out_dir2))
+        if v0 is None:
+            continue
+        ss = ScreenShotHelper()
+        # standard
+        std_cam = []
+        co = CameraObject(out0)
+        co.set_camera(v0, "x+")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "x-")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "y+")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "y-")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "z+")
+        std_cam.append(build_cam_list(v0))
+        co.set_camera(v0, "z-")
+        std_cam.append(build_cam_list(v0))
+        for i in range(0, 6):
+            ss.take_shot(v0, std_cam[i],
+                         "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
+            ss.take_shot(v1, std_cam[i],
+                         "{}/ss___hd_v{}.png".format(out_dir2, i).replace("\\", "/"))
+        total_num = total_num + 12
+        cam_file = os.path.join(dir_input, case, "config.txt")
+        if not os.path.exists(cam_file):
+            print("Camera config file {} does not exist!".format(cam_file))
+            continue
+        cam_list = read_cam(cam_file)
+        for i in range(0, len(cam_list)):
+            ss.take_shot(v0, cam_list[i],
+                         "{}/ss___hd_v{}.png".format(out_dir, i + 6).replace("\\", "/"))
+            ss.take_shot(v1, cam_list[i],
+                         "{}/ss___hd_v{}.png".format(out_dir2, i + 6).replace("\\", "/"))
+        total_num = total_num + len(cam_list) * 2
+    return total_num
+
+
+# brief external interface interpreted by PVpython
 def create_screenshots_wrap(dir_input, dir_output, file_config):
     # data to be compared
     # get all concerned file names
     list_case, list_ver, list_alg = read_compare_config(file_config)
-    total_num = create_screenshots(dir_input, dir_output, list_case, list_alg, list_ver)
+    print("Start screenshot: ")
+    print("case: {}".format(list_case))
+    print("ver: {}".format(list_ver))
+    print("filename: {}".format(list_alg))
+    total_n = 0
+    if len(list_ver) < 1 or list_ver[0] == "__hausdorff":
+        total_n = create_hausdorff_shot(dir_input, dir_output, list_case)
+    else:
+        total_n = create_screenshots(dir_input, dir_output, list_case, list_ver, list_alg)
     f_config = open(file_config, "w", encoding='utf-8')
-    f_config.write("{}\n".format(total_num))
+    f_config.write("{}\n".format(total_n))
     f_config.close()
 
 
