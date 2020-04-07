@@ -37,15 +37,15 @@ class HausdorffSts:
         l_rate = str_list[0].split(" ")
         l_num = str_list[1].split(" ")
         for item in l_rate:
-            self.sigma_rate.append(item)
+            self.sigma_rate.append(float(item))
         for item in l_num:
-            self.sigma_num.append(item)
-        mean_total = float(str_list[2])
-        mean_positive = float(str_list[3])
-        mean_negtive = float(str_list[4])
-        max_positive = float(str_list[5])
-        max_negtive = float(str_list[6])
-        standard_deviation = float(str_list[7])
+            self.sigma_num.append(float(item))
+        self.mean_total = float(str_list[2])
+        self.mean_positive = float(str_list[3])
+        self.mean_negtive = float(str_list[4])
+        self.max_positive = float(str_list[5])
+        self.max_negtive = float(str_list[6])
+        self.standard_deviation = float(str_list[7])
 
 
 ## end hausdorff relative#######################
@@ -167,25 +167,60 @@ class DocxGenerator:
                     add_cell_content(row_cells[vi], ver, file_pic)
         return 0
 
+    def fill_row(self, table, rid, content):
+        r = table.rows[rid].cells
+        shade_cell(r[0])
+        for ci in range(0, len(content)):
+            r[ci].text = str(content[ci])
 
     def add_hausdorff_statistic_table(self, case):
         if len(self._listVer) != 2:
             return
+        #heading
+        self._doc.add_paragraph("General Statistics")
         # read sts info
-        dir_a2b = os.path.join(self._dirOutput, _listVer[0])
-        dir_b2a = os.path.join(self._dirOutput, _listVer[1])
+        dir_a2b = os.path.join(self._dirOutput, case, self._listVer[0])
+        dir_b2a = os.path.join(self._dirOutput, case, self._listVer[1])
         a2b = HausdorffSts()
         b2a = HausdorffSts()
         a2b.read_from_file(os.path.join(dir_a2b, "dist.sts"))
-        a2b.read_from_file(os.path.join(dir_b2a, "dist.sts"))
+        b2a.read_from_file(os.path.join(dir_b2a, "dist.sts"))
         # build table
-        table = self._doc.add_table(rows = 8, cols = 3)
+        table = self._doc.add_table(rows = 7, cols = 3)
         table.style = 'Table Grid'
-        r0 = table.rows[0].cells
-        r0[0].text = "dist"
-        r0[0].text = "DistanceA2B"
-        r0[0].text = "DistanceB2A"
+        self.fill_row(table, 0, ["", "A to B", "B to A"])
+        shade_cell(table.rows[0].cells[1])
+        shade_cell(table.rows[0].cells[2])
+        self.fill_row(table, 1, ["mean_total", a2b.mean_total, b2a.mean_total])
+        self.fill_row(table, 2, ["standard_deviation", a2b.standard_deviation, b2a.standard_deviation])
+        self.fill_row(table, 3, ["mean_positive", a2b.mean_positive, b2a.mean_positive])
+        self.fill_row(table, 4, ["mean_negtive", a2b.mean_negtive, b2a.mean_negtive])
+        self.fill_row(table, 5, ["max_positive", a2b.max_positive, b2a.max_positive])
+        self.fill_row(table, 6, ["max_negtive", a2b.max_negtive, b2a.max_negtive])
 
+        self._doc.add_paragraph("6-SIGMA Statistics A to B")
+        ts_a2b = self._doc.add_table(rows = 7, cols = 4)
+        ts_a2b.style = 'Table Grid'
+        self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
+        shade_cell(ts_a2b.rows[0].cells[1])
+        shade_cell(ts_a2b.rows[0].cells[2])
+        sigma_map = [-3, -2, -1, 1, 2, 3]
+        for ri in range(0, 6):
+            self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
+                                           a2b.sigma_num[ri], "{}%".format(a2b.sigma_rate[ri] * 100.0)])
+        # histogram
+        ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
+
+        self._doc.add_paragraph("6-SIGMA Statistics B to A")
+        ts_b2a = self._doc.add_table(rows = 7, cols = 4)
+        ts_b2a.style = 'Table Grid'
+        self.fill_row(ts_b2a, 0, ["", "Point Number", "Point Percentage"])
+        shade_cell(ts_b2a.rows[0].cells[1])
+        shade_cell(ts_b2a.rows[0].cells[2])
+        for ri in range(0, 6):
+            self.fill_row(ts_b2a, ri + 1, ["{} sigma".format(sigma_map[ri]),
+                                           b2a.sigma_num[ri], "{}%".format(b2a.sigma_rate[ri] * 100.0)])
+        ts_b2a.rows[0].cells[3].merge(ts_b2a.rows[6].cells[3])        
 
     ## @brief generate docx file from given algorithm output dir, and config
     ## @param dir_input data case config directory
@@ -203,6 +238,9 @@ class DocxGenerator:
             if list_cam is None or len(list_cam) == 0:
                 print("Warning! no cam table for {}".format(case))
                 list_cam = []
+            # hausdorff
+            self.add_hausdorff_statistic_table(case)
+            doc.add_paragraph("ScreenShots Compare Tables")
             if self.add_case_table(case, len(list_cam)) != 0:
                 print("Case Table Error for case: {}".format(case))
         doc.save(file_save)

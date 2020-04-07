@@ -331,6 +331,15 @@ def write_dist_statistics(s, filename):
     max_positive = fd.GetArray("max_positive").GetTuple(0)[0]
     max_negtive = fd.GetArray("max_negtive").GetTuple(0)[0]
     standard_deviation = fd.GetArray("standard_deviation").GetTuple(0)[0]
+
+    # sigma_rate = [0.01, 0.02, 0.23, 0.38, 0.21, 0.1]
+    # sigma_num = [10, 20, 230, 380, 210, 100]
+    # mean_total = 0.01
+    # mean_positive = 0.02
+    # mean_negtive = -0.01
+    # max_positive = 0.1
+    # max_negtive = -0.1
+    # standard_deviation = 0.11
     f_sts = open(filename, "w", encoding='utf-8')
     f_sts.write("{} {} {} {} {} {}\n".format(sigma_rate[0], sigma_rate[1], sigma_rate[2],
                                               sigma_rate[3], sigma_rate[4], sigma_rate[5]))
@@ -362,8 +371,8 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
         #        print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
         #        continue
         (v0, v1, out0, out1) = show_hausdorff_dist(i_list)
-        write_dist_statistics(v0, "{}/dist.sts".format(out_dir))
-        write_dist_statistics(v1, "{}/dist.sts".format(out_dir2))
+        write_dist_statistics(out0, "{}/dist.sts".format(out_dir))
+        write_dist_statistics(out1, "{}/dist.sts".format(out_dir2))
         if v0 is None:
             continue
         ss = ScreenShotHelper()
