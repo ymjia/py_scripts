@@ -317,14 +317,14 @@ def build_cam_list(v):
     return camera_pos
 
 
-def write_dist_statistics(s, filename):
+def write_dist_statistics(s, filename, in_file):
     sd = servermanager.Fetch(s)
     fd = sd.GetFieldData()
-    sigma_rate = fd.GetArray("sigma_rate")
+    sigma_rate = fd.GetArray("six_sigma_rate")
     if sigma_rate is None or sigma_rate.GetDataSize() != 6:
         print("Warning! no statistics info in hausdorff output")
         return
-    sigma_num = fd.GetArray("sigma_num")
+    sigma_num = fd.GetArray("six_sigma_num")
     mean_total = fd.GetArray("mean_total").GetTuple1(0)
     mean_positive = fd.GetArray("mean_positive").GetTuple1(0)
     mean_negative = fd.GetArray("mean_negative").GetTuple1(0)
@@ -351,6 +351,7 @@ def write_dist_statistics(s, filename):
     f_sts.write("{}\n".format(max_positive))
     f_sts.write("{}\n".format(max_negative))
     f_sts.write("{}\n".format(standard_deviation))
+    f_sts.write("{}\n".format(in_file))
     f_sts.close()
 
 # screen shot for customized application
@@ -371,8 +372,8 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
         #        print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
         #        continue
         (v0, v1, out0, out1) = show_hausdorff_dist(i_list)
-        write_dist_statistics(out0, "{}/dist.sts".format(out_dir))
-        write_dist_statistics(out1, "{}/dist.sts".format(out_dir2))
+        write_dist_statistics(out0, "{}/dist.sts".format(out_dir), i_list[0])
+        write_dist_statistics(out1, "{}/dist.sts".format(out_dir2), i_list[1])
         if v0 is None:
             continue
         ss = ScreenShotHelper()

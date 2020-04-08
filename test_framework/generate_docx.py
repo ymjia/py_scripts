@@ -26,6 +26,7 @@ class HausdorffSts:
         self.max_positive = 0.0
         self.max_negtive = 0.0
         self.standard_deviation = 0.0
+        self.in_file = ""
 
     def read_from_file(self, filename):
         content = None
@@ -34,7 +35,7 @@ class HausdorffSts:
                 print("Warning! no dist sts file found in {}".format(filename))
                 return
             content = f.readlines()
-        if len(content) < 8:
+        if len(content) < 9:
             return
         str_list = [l.strip() for l in content]
         l_rate = str_list[0].split(" ")
@@ -49,6 +50,7 @@ class HausdorffSts:
         self.max_positive = float(str_list[5])
         self.max_negtive = float(str_list[6])
         self.standard_deviation = float(str_list[7])
+        self.in_file = str_list[8]
 
 
 ## end hausdorff relative#######################
@@ -179,9 +181,6 @@ class DocxGenerator:
     def add_hausdorff_statistic_table(self, case):
         if len(self._listVer) != 2:
             return
-        #heading
-        self._doc.add_paragraph("")
-        self._doc.add_paragraph("General Statistics")
         # read sts info
         dir_a2b = os.path.join(self._dirOutput, case, self._listVer[0])
         dir_b2a = os.path.join(self._dirOutput, case, self._listVer[1])
@@ -189,6 +188,12 @@ class DocxGenerator:
         b2a = HausdorffSts()
         a2b.read_from_file(os.path.join(dir_a2b, "dist.sts"))
         b2a.read_from_file(os.path.join(dir_b2a, "dist.sts"))
+        # heading
+        self._doc.add_paragraph("Deviation Report between two mesh A and B")
+        self._doc.add_paragraph("A: {}".format(a2b.in_file))
+        self._doc.add_paragraph("B: {}".format(b2a.in_file))
+        self._doc.add_paragraph("")
+        self._doc.add_paragraph("General Statistics")
         # build table
         table = self._doc.add_table(rows = 7, cols = 3)
         table.style = 'Table Grid'
@@ -245,7 +250,7 @@ class DocxGenerator:
                 print("Warning! no cam table for {}".format(case))
                 list_cam = []
             # hausdorff
-            if len(self._listVer) == 2 and _listVer[0] = "hausdorff_A2B":
+            if len(self._listVer) == 2 and self._listVer[0] == "hausdorff_A2B":
                 self.add_hausdorff_statistic_table(case)
             doc.add_paragraph("ScreenShots Compare Tables")
             if self.add_case_table(case, len(list_cam)) != 0:
