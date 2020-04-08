@@ -321,35 +321,35 @@ def write_dist_statistics(s, filename):
     sd = servermanager.Fetch(s)
     fd = sd.GetFieldData()
     sigma_rate = fd.GetArray("sigma_rate")
-    if sigma_rate is None or len(sigma_rate) != 6:
+    if sigma_rate is None or sigma_rate.GetDataSize() != 6:
         print("Warning! no statistics info in hausdorff output")
         return
     sigma_num = fd.GetArray("sigma_num")
-    mean_total = fd.GetArray("mean_total").GetTuple(0)[0]
-    mean_positive = fd.GetArray("mean_positive").GetTuple(0)[0]
-    mean_negtive = fd.GetArray("mean_negtive").GetTuple(0)[0]
-    max_positive = fd.GetArray("max_positive").GetTuple(0)[0]
-    max_negtive = fd.GetArray("max_negtive").GetTuple(0)[0]
-    standard_deviation = fd.GetArray("standard_deviation").GetTuple(0)[0]
+    mean_total = fd.GetArray("mean_total").GetTuple1(0)
+    mean_positive = fd.GetArray("mean_positive").GetTuple1(0)
+    mean_negative = fd.GetArray("mean_negative").GetTuple1(0)
+    max_positive = fd.GetArray("max_positive").GetTuple1(0)
+    max_negative = fd.GetArray("max_negative").GetTuple1(0)
+    standard_deviation = fd.GetArray("standard_deviation").GetTuple1(0)
 
     # sigma_rate = [0.01, 0.02, 0.23, 0.38, 0.21, 0.1]
     # sigma_num = [10, 20, 230, 380, 210, 100]
     # mean_total = 0.01
     # mean_positive = 0.02
-    # mean_negtive = -0.01
+    # mean_negative = -0.01
     # max_positive = 0.1
-    # max_negtive = -0.1
+    # max_negative = -0.1
     # standard_deviation = 0.11
     f_sts = open(filename, "w", encoding='utf-8')
-    f_sts.write("{} {} {} {} {} {}\n".format(sigma_rate[0], sigma_rate[1], sigma_rate[2],
-                                              sigma_rate[3], sigma_rate[4], sigma_rate[5]))
-    f_sts.write("{} {} {} {} {} {}\n".format(sigma_num[0], sigma_num[1], sigma_num[2],
-                                              sigma_num[3], sigma_num[4], sigma_num[5]))
+    f_sts.write("{} {} {} {} {} {}\n".format(sigma_rate.GetTuple1(0), sigma_rate.GetTuple1(1), sigma_rate.GetTuple1(2),
+                                              sigma_rate.GetTuple1(3), sigma_rate.GetTuple1(4), sigma_rate.GetTuple1(5)))
+    f_sts.write("{} {} {} {} {} {}\n".format(sigma_num.GetTuple1(0), sigma_num.GetTuple1(1), sigma_num.GetTuple1(2),
+                                              sigma_num.GetTuple1(3), sigma_num.GetTuple1(4), sigma_num.GetTuple1(5)))
     f_sts.write("{}\n".format(mean_total))
     f_sts.write("{}\n".format(mean_positive))
-    f_sts.write("{}\n".format(mean_negtive))
+    f_sts.write("{}\n".format(mean_negative))
     f_sts.write("{}\n".format(max_positive))
-    f_sts.write("{}\n".format(max_negtive))
+    f_sts.write("{}\n".format(max_negative))
     f_sts.write("{}\n".format(standard_deviation))
     f_sts.close()
 

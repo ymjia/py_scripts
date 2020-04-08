@@ -30,6 +30,9 @@ class HausdorffSts:
     def read_from_file(self, filename):
         content = None
         with open(filename) as f:
+            if f is None:
+                print("Warning! no dist sts file found in {}".format(filename))
+                return
             content = f.readlines()
         if len(content) < 8:
             return
@@ -177,6 +180,7 @@ class DocxGenerator:
         if len(self._listVer) != 2:
             return
         #heading
+        self._doc.add_paragraph("")
         self._doc.add_paragraph("General Statistics")
         # read sts info
         dir_a2b = os.path.join(self._dirOutput, case, self._listVer[0])
@@ -198,6 +202,7 @@ class DocxGenerator:
         self.fill_row(table, 5, ["max_positive", a2b.max_positive, b2a.max_positive])
         self.fill_row(table, 6, ["max_negtive", a2b.max_negtive, b2a.max_negtive])
 
+        self._doc.add_paragraph("")
         self._doc.add_paragraph("6-SIGMA Statistics A to B")
         ts_a2b = self._doc.add_table(rows = 7, cols = 4)
         ts_a2b.style = 'Table Grid'
@@ -211,6 +216,7 @@ class DocxGenerator:
         # histogram
         ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
 
+        self._doc.add_paragraph("")
         self._doc.add_paragraph("6-SIGMA Statistics B to A")
         ts_b2a = self._doc.add_table(rows = 7, cols = 4)
         ts_b2a.style = 'Table Grid'
@@ -239,7 +245,8 @@ class DocxGenerator:
                 print("Warning! no cam table for {}".format(case))
                 list_cam = []
             # hausdorff
-            self.add_hausdorff_statistic_table(case)
+            if len(self._listVer) == 2 and _listVer[0] = "hausdorff_A2B":
+                self.add_hausdorff_statistic_table(case)
             doc.add_paragraph("ScreenShots Compare Tables")
             if self.add_case_table(case, len(list_cam)) != 0:
                 print("Case Table Error for case: {}".format(case))
