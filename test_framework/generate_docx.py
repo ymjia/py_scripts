@@ -43,7 +43,7 @@ class HausdorffSts:
         for item in l_rate:
             self.sigma_rate.append(float(item))
         for item in l_num:
-            self.sigma_num.append(float(item))
+            self.sigma_num.append(int(float(item)))
         self.mean_total = float(str_list[2])
         self.mean_positive = float(str_list[3])
         self.mean_negtive = float(str_list[4])
@@ -176,7 +176,10 @@ class DocxGenerator:
         r = table.rows[rid].cells
         shade_cell(r[0])
         for ci in range(0, len(content)):
-            r[ci].text = str(content[ci])
+            if isinstance(content[ci], float):
+                r[ci].text = "{:.5f}".format(content[ci])
+            else:
+                r[ci].text = str(content[ci])
 
     def add_hausdorff_statistic_table(self, case):
         if len(self._listVer) != 2:
@@ -217,7 +220,7 @@ class DocxGenerator:
         sigma_map = [-3, -2, -1, 1, 2, 3]
         for ri in range(0, 6):
             self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                           a2b.sigma_num[ri], "{}%".format(a2b.sigma_rate[ri] * 100.0)])
+                                           a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
         # histogram
         ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
 
@@ -230,7 +233,7 @@ class DocxGenerator:
         shade_cell(ts_b2a.rows[0].cells[2])
         for ri in range(0, 6):
             self.fill_row(ts_b2a, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                           b2a.sigma_num[ri], "{}%".format(b2a.sigma_rate[ri] * 100.0)])
+                                           b2a.sigma_num[ri], "{:.2f}%".format(b2a.sigma_rate[ri] * 100.0)])
         ts_b2a.rows[0].cells[3].merge(ts_b2a.rows[6].cells[3])        
 
     ## @brief generate docx file from given algorithm output dir, and config
