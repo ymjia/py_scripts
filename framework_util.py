@@ -231,7 +231,7 @@ def read_config_list(config_str, pattern):
 
 def read_compare_config(file_config):
     if not os.path.exists(file_config):
-        return None
+        return None, None, None
     case_list = []
     ver_list = []
     alg_list = []

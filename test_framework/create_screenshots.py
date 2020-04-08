@@ -417,6 +417,9 @@ def create_screenshots_wrap(dir_input, dir_output, file_config):
     # data to be compared
     # get all concerned file names
     list_case, list_ver, list_alg = read_compare_config(file_config)
+    if list_case is None:
+        print("Error! no config file in {}".format(file_config))
+        return
     print("Start screenshot: ")
     print("case: {}".format(list_case))
     print("ver: {}".format(list_ver))

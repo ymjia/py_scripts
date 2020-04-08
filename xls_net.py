@@ -10,15 +10,15 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-xls_input = "c:/data/xls/net/216336V1.XLSX"
-xls_output = "c:/data/xls/net/output.XLSX"
+xls_input = "c:/data/xls/net/215000.XLSX"
+xls_output = "c:/data/xls/net/215000_output.XLSX"
 
 
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
 # global variables
-idx_column = 10
+idx_column = 12
 
 
 # ##################### FILE LOAD ####################    
@@ -27,7 +27,12 @@ val_list = [0]
 def load_value(input_table):
     ws = input_table.active
     max_ver_col = idx_column + 1
-    for r in ws.iter_rows(min_row=2, max_col=max_ver_col, values_only=True):
+    rows = ws.iter_rows(min_row=2, max_col=max_ver_col, values_only=True)
+    rid = 0
+    for r in rows:
+        rid += 1
+        if rid == 1:
+            print("first value: {}".format(r[idx_column]))            
         val = float(r[idx_column])
         find_net = False
         for i in range(1, len(val_list)):

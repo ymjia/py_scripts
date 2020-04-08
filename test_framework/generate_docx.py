@@ -18,8 +18,8 @@ from docx.shared import Mm
 ## hausdorff relative#########################
 class HausdorffSts:
     def __init__(self):
-        self.sigma_rate = []
-        self.sigma_num = []
+        self.sigma_rate = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.sigma_num = [0, 0, 0, 0, 0, 0]
         self.mean_total = 0.0
         self.mean_positive = 0.0
         self.mean_negtive = 0.0
@@ -30,16 +30,18 @@ class HausdorffSts:
 
     def read_from_file(self, filename):
         content = None
+        if not os.path.exists(filename):
+            print("Warning! no dist sts file found in {}".format(filename))
+            return
         with open(filename) as f:
-            if f is None:
-                print("Warning! no dist sts file found in {}".format(filename))
-                return
             content = f.readlines()
         if len(content) < 9:
             return
         str_list = [l.strip() for l in content]
         l_rate = str_list[0].split(" ")
         l_num = str_list[1].split(" ")
+        self.sigma_rate.clear()
+        self.sigma_num.clear()
         for item in l_rate:
             self.sigma_rate.append(float(item))
         for item in l_num:

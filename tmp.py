@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 from operator import itemgetter
 import docx
-
+import pathlib
 
 
 def read_config_list(config_str, pattern):
@@ -207,15 +207,15 @@ def copy_sheet(path_from, path_to, sheet_name):
     print("{} copyed from {} to {}".format(sheet_name, path_from, path_to))
 
 
-img_name = "d:/tmp/error.png"
-h_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
-v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 10))
+# img_name = "d:/tmp/error.png"
+# h_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+# v_pattern = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 10))
 
-img = cv2.imread(img_name)
-res_h = find_lines(img, h_pattern, (255, 0, 0))
-cv2.imwrite("d:/tmp/line_h.png", res_h)
-res_v = find_lines(res_h, v_pattern, (0, 255, 0))
-cv2.imwrite("d:/tmp/line_v.png", res_v)
+# img = cv2.imread(img_name)
+# res_h = find_lines(img, h_pattern, (255, 0, 0))
+# cv2.imwrite("d:/tmp/line_h.png", res_h)
+# res_v = find_lines(res_h, v_pattern, (0, 255, 0))
+# cv2.imwrite("d:/tmp/line_v.png", res_v)
 
 
 #copy_sheet("d:/tmp/广州第一分公司202001.xlsx", "d:/tmp/tmp_out.xlsx", "TB 202001")
@@ -227,3 +227,8 @@ cv2.imwrite("d:/tmp/line_v.png", res_v)
 # ws_out.cell(row=1, column = 1).data_type = "s"
 # ws_out.cell(row=1, column = 1).value = txt
 # t_out.save("d:/tmp/tmp_out.xlsx")
+
+dir_in = "c:/tmp/copy_sheet"
+path = pathlib.Path(dir_in)
+print(os.path.basename(path))
+print(path.parent)
