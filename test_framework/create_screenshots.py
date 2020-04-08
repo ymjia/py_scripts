@@ -141,10 +141,10 @@ def show_hausdorff_dist(s_name_list):
     # Rescale transfer function
     distanceLUT = GetColorTransferFunction('Distance')
     distancePWF = GetOpacityTransferFunction('Distance')
-    distanceLUT.ApplyPreset('hausdorff', True)
-    distancePWF.ApplyPreset('hausdorff', True)
-    distanceLUT.RescaleTransferFunction(0.0, 0.1)
-    distancePWF.RescaleTransferFunction(0.0, 0.1)
+    distanceLUT.ApplyPreset('hausdorff_dir', True)
+    distancePWF.ApplyPreset('hausdorff_dir', True)
+    distanceLUT.RescaleTransferFunction(-0.05, 0.05)
+    distancePWF.RescaleTransferFunction(-0.05, 0.05)
     return (v0, v1, out0, out1)
 
 ## end=================hausdorff distance ======================
