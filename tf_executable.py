@@ -14,11 +14,13 @@ def create_screenshots(file_config):
     total_num = call_pvpython(exe_pvpython, l_case, ['__hausdorff'], [], dir_i, dir_o)
 
 
-def deviation_report(dir_input):
+def deviation_report(dir_input, exe_pvpython):
     if not os.path.isdir(dir_input):
         print("Error! Input Argument {} is not a directory".format(dir_input))
-    case_name = os.path.basename(dir_input)
-    l_case = [case_name]
+    case_name = str(Path(dir_input).name)
+    print("case_name: {}".format(case_name))
+    l_case = [str(case_name)]
+    print(l_case)
     dir_in = str(Path(dir_input).parent)
     dir_out = os.path.join(dir_in, "__output")
     if not os.path.exists(dir_out):
@@ -38,6 +40,15 @@ def deviation_report(dir_input):
     gd.generate_docx(file_save, "")
 
 
-exe_pvpython = "c:/ParaView/bin/pvpython.exe"
-dir_test = "C:/data/test_framework/management/project1/input/case1"
-deviation_report(dir_test)
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: tf_executable dir_in")
+        exit(0)
+    dir_test = str(os.fsdecode(sys.argv[1]))
+    cwd = os.getcwd()
+    exe_pvpython = os.path.join(cwd, "pv", "bin", "pvpython.exe")
+    if len(sys.argv) > 2:
+        exe_pvpython = str(os.fsdecode(sys.argv[2]))
+    print("dir_input: {}".format(dir_test))
+    print("screenshot tool: {}".format(exe_pvpython))
+    deviation_report(dir_test, exe_pvpython)
