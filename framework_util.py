@@ -314,7 +314,7 @@ class CameraObject:
 
         if len(type_str) < 2:
             type_str = "x+"
-        position_ratio = math.tan(self.CameraViewAngle / 360.0 * math.pi)
+        position_ratio = math.tan(self.CameraViewAngle / 300.0 * math.pi)
         # reset camera
         self.CameraViewUp = [0.0, 0.0, 0.0]
         self.CameraFocalPoint = [xmid, ymid, zmid]

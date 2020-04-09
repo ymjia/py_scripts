@@ -205,6 +205,49 @@ class DocxGenerator:
                                            b2a.sigma_num[ri], "{:.2f}%".format(b2a.sigma_rate[ri] * 100.0)])
         ts_b2a.rows[0].cells[3].merge(ts_b2a.rows[6].cells[3])        
 
+    def add_hausdorff_statistic_table_single(self, case):
+        if len(self._listVer) != 1:
+            return
+        # read sts info
+        dir_a2b = os.path.join(self._dirOutput, case, self._listVer[0])
+        dir_b2a = os.path.join(self._dirOutput, case, "hausdorff_B2A")
+        a2b = HausdorffSts()
+        b2a = HausdorffSts()
+        a2b.read_from_file(os.path.join(dir_a2b, "dist.sts"))
+        b2a.read_from_file(os.path.join(dir_b2a, "dist.sts"))
+        # heading
+        self._doc.add_paragraph("Deviation Report between two mesh A and B")
+        self._doc.add_paragraph("A: {}".format(a2b.in_file))
+        self._doc.add_paragraph("B: {}".format(b2a.in_file))
+        self._doc.add_paragraph("")
+        self._doc.add_paragraph("General Statistics")
+        # build table
+        table = self._doc.add_table(rows = 7, cols = 2)
+        table.style = 'Table Grid'
+        self.fill_row(table, 0, ["", "A to B"])
+        shade_cell(table.rows[0].cells[1])
+        self.fill_row(table, 1, ["mean_total", a2b.mean_total])
+        self.fill_row(table, 2, ["standard_deviation", a2b.standard_deviation])
+        self.fill_row(table, 3, ["mean_positive", a2b.mean_positive])
+        self.fill_row(table, 4, ["mean_negtive", a2b.mean_negtive])
+        self.fill_row(table, 5, ["max_positive", a2b.max_positive])
+        self.fill_row(table, 6, ["max_negtive", a2b.max_negtive])
+
+        self._doc.add_paragraph("")
+        self._doc.add_paragraph("6-SIGMA Statistics A to B")
+        ts_a2b = self._doc.add_table(rows = 7, cols = 4)
+        ts_a2b.style = 'Table Grid'
+        self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
+        shade_cell(ts_a2b.rows[0].cells[1])
+        shade_cell(ts_a2b.rows[0].cells[2])
+        sigma_map = [-3, -2, -1, 1, 2, 3]
+        for ri in range(0, 6):
+            self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
+                                           a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
+        # histogram
+        ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
+
+
     ## @brief generate docx file from given algorithm output dir, and config
     ## @param dir_input data case config directory
     ## @param dir_output algorithm/screenshots output directory
@@ -222,9 +265,13 @@ class DocxGenerator:
                 print("Warning! no cam table for {}".format(case))
                 list_cam = []
             # hausdorff
-            if len(self._listVer) == 2 and self._listVer[0] == "hausdorff_A2B":
-                self.add_hausdorff_statistic_table(case)
-            doc.add_paragraph("ScreenShots Compare Tables")
+            ver_num = len(self._listVer)
+            if ver_num > 0 and self._listVer[0] == "hausdorff_A2B":
+                if ver_num == 2:
+                    self.add_hausdorff_statistic_table(case)
+                else:
+                    self.add_hausdorff_statistic_table_single(case)
+                doc.add_paragraph("ScreenShots Compare Tables")
             if self.add_case_table(case, len(list_cam)) != 0:
                 print("Case Table Error for case: {}".format(case))
         doc.save(file_save)

@@ -32,6 +32,7 @@ def deviation_report(dir_input, exe_pvpython):
 
     sc.config_map["dir_i"] = dir_in
     sc.config_map["dir_o"] = dir_out
+    sc.config_map["view_height"] = "600"
     total_num = ui_logic.call_pvpython(exe_pvpython, sc)
 
     # generate docx
@@ -41,7 +42,7 @@ def deviation_report(dir_input, exe_pvpython):
     if not os.path.exists(dir_doc):
         os.makedirs(dir_doc)
     file_save = os.path.join(dir_doc, doc_name_final)
-    l_ver = ["hausdorff_A2B", "hausdorff_B2A"]
+    l_ver = ["hausdorff_A2B"]
     l_alg = ["__hd"] # reserved alg_name for hausdorff dist
     gd = generate_docx.DocxGenerator(dir_in, dir_out, sc.list_case, l_ver, l_alg)
     gd.generate_docx(file_save, "")

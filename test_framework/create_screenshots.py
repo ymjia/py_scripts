@@ -95,7 +95,13 @@ def generate_vn(s_in, s_name):
     RenameSource("{}_vn".format(s_name), sn)
     return sn
 
-def show_hausdorff_dist(s_name_list, critical_dist, nominal_dist, max_dist):
+def show_hausdorff_dist(s_name_list, sc):
+    #get parameter
+    critical_dist = float(sc.config_val("hd_critical_dist", "0.03"))
+    nominal_dist = float(sc.config_val("hd_nominal_dist", "0.5"))
+    max_dist = float(sc.config_val("hd_max_dist", "0.3"))
+    view_height = int(sc.config_val("view_height", "768"))
+    view_width = int(sc.config_val("view_width", "1024"))
     s_num = len(s_name_list)
     if s_num != 2:
         print("Error! 2 source need to be selected, current source:")
@@ -131,8 +137,8 @@ def show_hausdorff_dist(s_name_list, critical_dist, nominal_dist, max_dist):
     ly = CreateLayout('Hdf_{}{}'.format(name0, name1))
     v0 = CreateRenderView(False, registrationName=name0)
     v1 = CreateRenderView(False, registrationName=name1)
-    v0.ViewSize = [1024, 768]
-    v1.ViewSize = [1024, 768]
+    v0.ViewSize = [view_width, view_height]
+    v1.ViewSize = [view_width, view_height]
     out0 = OutputPort(hd, 0)
     out1 = OutputPort(hd, 1)
     display0 = Show(out0, v0)
@@ -346,10 +352,6 @@ def create_screenshots(sc):
 def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
     print("Case: {}".format(sc.list_case))
-    #get parameter
-    hd_critical_dist = float(sc.config_val("hd_critical_dist", "0.03"))
-    hd_nominal_dist = float(sc.config_val("hd_nominal_dist", "0.5"))
-    hd_max_dist = float(sc.config_val("hd_max_dist", "0.3"))
 
     dir_input = sc.config_map["dir_i"]
     dir_output = sc.config_map["dir_o"]
@@ -362,7 +364,7 @@ def create_hausdorff_shot(sc):
         out_dir2 = os.path.join(dir_output, case, "hausdorff_B2A")
         if not os.path.exists(out_dir2):
             os.makedirs(out_dir2)
-        (v0, v1, out0, out1) = show_hausdorff_dist(i_list, hd_critical_dist, hd_nominal_dist, hd_max_dist)
+        (v0, v1, out0, out1) = show_hausdorff_dist(i_list, sc)
         write_dist_statistics(out0, "{}/dist.sts".format(out_dir), i_list[0])
         write_dist_statistics(out1, "{}/dist.sts".format(out_dir2), i_list[1])
         if v0 is None:
