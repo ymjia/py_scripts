@@ -249,6 +249,7 @@ def slot_create_screenshots(ui):
     sc.list_ver = get_checked_items(p_obj._ver, p_obj._sVerCheck)
     sc.config_map["dir_i"] = p_obj._dirInput
     sc.config_map["dir_o"] = p_obj._dirOutput
+    sc.config_map["rep_specular"] = "0.0"
     if len(sc.list_case) < 1:
         QMessageBox.about(ui, "Error", "No Case checked")
         return

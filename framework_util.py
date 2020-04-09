@@ -226,7 +226,10 @@ class SessionConfig:
         self.config_map["hd_max_dist"] = "0.05"
         self.config_map["hd_single_color"] = "True"
         self.config_map["rep_specular"] = "0.5"
-        
+        self.config_map["view_width"] = "1024"
+        self.config_map["view_height"] = "768"
+        self.config_map["transparent_background"] = "False"
+
     def read_config(self, filename):
         if not os.path.exists(filename):
             print("Warning! config file {} does not exists".format(filename))

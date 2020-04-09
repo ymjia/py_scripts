@@ -148,142 +148,6 @@ def show_hausdorff_dist(s_name_list):
     distancePWF.RescaleTransferFunction(-0.05, 0.05)
     return (v0, v1, out0, out1)
 
-## end=================hausdorff distance ======================
-
-
-# class for screenshots
-class ScreenShotHelper:
-    def __init__(self):
-        paraview.simple._DisableFirstRenderCameraReset()
-
-    def take_shot(self, view, cam, filename):
-        co = CameraObject()
-        if not co.read_camera_from_str(cam):
-            print("Warning! cannot decode camera from string {}".format(cam))
-            return
-        co.set_camera(view)
-        v_size = view.ViewSize
-        view.Update()
-        # create temporary file to cope utf-8 char
-        if not os.path.exists("c:/tf_tmp"):
-            os.makedirs("c:/tf_tmp")
-        tmp_file = "c:/tf_tmp/ss.png"
-        SaveScreenshot(tmp_file, view, ImageResolution=v_size, TransparentBackground=0)
-        move(tmp_file, filename)
-
-
-# read file or file list and render in given view
-def read_and_render(file_list, v):
-    HideAll(v)
-    reader = read_files(file_list)
-    reader_display = Show(reader, v)
-    reader_display.ColorArrayName = [None, '']
-    reader_display.Specular = 0.5
-    show_texture(reader, v)
-    v.ResetCamera()
-    # add anotation
-    f = file_list[0]
-    path, filename = os.path.split(f)
-    if len(file_list) > 1: # file list, fetch parent dir
-        path, filename = os.path.split(path)
-    stem = trim_last_number(os.path.splitext(filename)[0])
-    path, ver = os.path.split(path)
-    path, case = os.path.split(path)
-    add_annotation(v, "{}\n{}\n{}".format(case, ver, stem), 28)
-    add_time_annotation(v, f)
-    v.Update()
-    return reader
-
-
-# create screenshots for given file from given cam_list    
-def create_shot(file_list, cam_list, out_dir, pattern):
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    cur_view = GetActiveViewOrCreate("RenderView")
-    cur_view.ViewSize = [1024, 768]
-    add_light_to_view(cur_view, False)
-    cur_view.CenterAxesVisibility = 0
-    cur_source = read_and_render(file_list, cur_view)
-    ss = ScreenShotHelper()
-    for i in range(0, len(cam_list)):
-        ss.take_shot(cur_view, cam_list[i],
-                     "{}/ss_{}_v{}.png".format(out_dir, pattern, i).replace("\\", "/"))
-    Delete(cur_source)
-    del cur_source
-    return len(cam_list)
-
-
-
-
-# read cam position from config file
-def read_cam(case_file):
-    if not os.path.exists(case_file):
-        return None
-    content = None
-    with open(case_file) as f:
-        content = f.readlines()
-    return [l.strip() for l in content if len(l) > 20]
-
-
-# if data_file newer than ss_file, need update
-def ss_need_update(file_list, file_cam, out_dir, pattern):
-    file_pic = os.path.join("{}/ss_{}_v0.png".format(out_dir, pattern)).replace("\\", "/")
-    if not os.path.exists(file_pic):
-        return True
-    time_config = os.path.getmtime(file_cam)
-    time_data = os.path.getmtime(file_list[0])
-    time_pic = os.path.getmtime(file_pic)
-    if time_config > time_pic: # new cam config
-        return True
-    if time_data > time_pic: # new data
-        return True
-    return False
-
-
-# execute screenshot operation(need config information)
-# general operation, case/version/filanem all have their effects
-def create_screenshots(sc):
-    total_num = 0
-    dir_input = sc.config_map["dir_i"]
-    dir_output = sc.config_map["dir_o"]
-    # case/version/alg
-    file_dir = []
-    for ci in sc.list_case:
-        for vi in sc.list_ver:
-            file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
-    #create shot
-    for item in file_dir:
-        case_name = item[0]
-        ver_name = item[1]
-        case_files = item[2]
-        cam_file = os.path.join(dir_input, case_name, "config.txt")
-        if not os.path.exists(cam_file):
-            print("Camera config file {} does not exist!".format(cam_file))
-            continue
-        cam_list = read_cam(cam_file)
-        if cam_list is None or len(cam_list) < 1:
-            continue
-        if ver_name == "input":
-            i_list = get_file(dir_input, case_name)
-            pic_out_dir = os.path.join(dir_output, case_name, "input")
-            if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
-                print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
-                continue
-            total_num += create_shot(i_list, cam_list, pic_out_dir, "input")
-        else:
-            for alg in sc.list_alg:
-                file_list = get_file(case_files, alg)
-                if file_list is None or len(file_list) < 1:
-                    continue
-                pic_out_dir = os.path.join(dir_output, case_name, ver_name)
-                if not ss_need_update(file_list, cam_file, pic_out_dir, alg):
-                    print("{}/{}/{} already up-to-date".format(case_name, ver_name, alg))
-                    continue
-                print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
-                total_num += create_shot(file_list, cam_list, pic_out_dir , alg)
-    return total_num
-
-
 def write_dist_statistics(s, filename, in_file):
     sd = servermanager.Fetch(s)
     fd = sd.GetFieldData()
@@ -327,6 +191,147 @@ def write_dist_statistics(s, filename, in_file):
     f_sts.write("{}\n".format(standard_deviation))
     f_sts.write("{}\n".format(in_file))
     f_sts.close()
+## end=================hausdorff distance ======================
+
+
+# class for screenshots with config
+class ScreenShotHelper:
+    def __init__(self, sc):
+        paraview.simple._DisableFirstRenderCameraReset()
+        self._config = sc
+
+    def config_val(self, key_str, default_val):
+        if key_str in self._config.config_map:
+            return self._config.config_map[key_str]
+        return default_val
+
+    def take_shot(self, view, cam, filename):
+        trans_bg = self.config_val("transparent_background", "False") == "True"
+        co = CameraObject()
+        if not co.read_camera_from_str(cam):
+            print("Warning! cannot decode camera from string {}".format(cam))
+            return
+        co.set_camera(view)
+        v_size = view.ViewSize
+        view.Update()
+        # create temporary file to cope utf-8 char
+        if not os.path.exists("c:/tf_tmp"):
+            os.makedirs("c:/tf_tmp")
+        tmp_file = "c:/tf_tmp/ss.png"
+        SaveScreenshot(tmp_file, view,
+                       ImageResolution=v_size, TransparentBackground=trans_bg)
+        move(tmp_file, filename)
+
+    # read file or file list and render in given view
+    def read_and_render(self, file_list, v):
+        HideAll(v)
+        reader = read_files(file_list)
+        reader_display = Show(reader, v)
+        reader_display.ColorArrayName = [None, '']
+        reader_display.Specular = float(self.config_val("rep_specular", "0.5"))
+        show_texture(reader, v)
+        v.ResetCamera()
+        # add anotation
+        f = file_list[0]
+        path, filename = os.path.split(f)
+        if len(file_list) > 1: # file list, fetch parent dir
+            path, filename = os.path.split(path)
+        stem = trim_last_number(os.path.splitext(filename)[0])
+        path, ver = os.path.split(path)
+        path, case = os.path.split(path)
+        add_annotation(v, "{}\n{}\n{}".format(case, ver, stem), 28)
+        add_time_annotation(v, f)
+        v.Update()
+        return reader
+
+    # create screenshots for given file from given cam_list    
+    def create_shot(self, file_list, cam_list, out_dir, pattern):
+        v_w = int(self.config_val("view_width", 1024))
+        v_h = int(self.config_val("view_height", 768))
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        cur_view = GetActiveViewOrCreate("RenderView")
+        cur_view.ViewSize = [v_w, v_h]
+        cur_view.CenterAxesVisibility = 0
+        cur_source = self.read_and_render(file_list, cur_view)
+        for i in range(0, len(cam_list)):
+            self.take_shot(cur_view, cam_list[i],
+                         "{}/ss_{}_v{}.png".format(out_dir, pattern, i).replace("\\", "/"))
+        Delete(cur_source)
+        del cur_source
+        return len(cam_list)
+
+
+# read cam position from config file
+def read_cam(case_file):
+    if not os.path.exists(case_file):
+        return None
+    content = None
+    with open(case_file) as f:
+        content = f.readlines()
+    return [l.strip() for l in content if len(l) > 20]
+
+
+# if data_file newer than ss_file, need update
+def ss_need_update(file_list, file_cam, out_dir, pattern):
+    file_pic = os.path.join("{}/ss_{}_v0.png".format(out_dir, pattern)).replace("\\", "/")
+    if not os.path.exists(file_pic):
+        return True
+    time_config = os.path.getmtime(file_cam)
+    time_data = os.path.getmtime(file_list[0])
+    time_pic = os.path.getmtime(file_pic)
+    if time_config > time_pic: # new cam config
+        return True
+    if time_data > time_pic: # new data
+        return True
+    return False
+
+
+# execute screenshot operation(need config information)
+# general operation, case/version/filanem all have their effects
+def create_screenshots(sc):
+    total_num = 0
+    dir_input = sc.config_map["dir_i"]
+    dir_output = sc.config_map["dir_o"]
+    # case/version/alg
+    ss = ScreenShotHelper(sc)
+    file_dir = []
+    for ci in sc.list_case:
+        for vi in sc.list_ver:
+            file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
+    #create shot
+    for item in file_dir:
+        case_name = item[0]
+        ver_name = item[1]
+        case_files = item[2]
+        cam_file = os.path.join(dir_input, case_name, "config.txt")
+        if not os.path.exists(cam_file):
+            print("Camera config file {} does not exist!".format(cam_file))
+            continue
+        cam_list = read_cam(cam_file)
+        if cam_list is None or len(cam_list) < 1:
+            continue
+        if ver_name == "input":
+            i_list = get_file(dir_input, case_name)
+            pic_out_dir = os.path.join(dir_output, case_name, "input")
+            if not ss_need_update(i_list, cam_file, pic_out_dir , "input"):
+                print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
+                continue
+            total_num += ss.create_shot(i_list, cam_list, pic_out_dir, "input")
+        else:
+            for alg in sc.list_alg:
+                file_list = get_file(case_files, alg)
+                if file_list is None or len(file_list) < 1:
+                    continue
+                pic_out_dir = os.path.join(dir_output, case_name, ver_name)
+                if not ss_need_update(file_list, cam_file, pic_out_dir, alg):
+                    print("{}/{}/{} already up-to-date".format(case_name, ver_name, alg))
+                    continue
+                print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
+                total_num += ss.create_shot(file_list, cam_list, pic_out_dir , alg)
+    return total_num
+
+
 
 # screen shot for customized application
 # only case list is needed
