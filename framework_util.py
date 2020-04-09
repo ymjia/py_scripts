@@ -215,7 +215,19 @@ def load_state_files(dir_input, dir_output, case, alg, list_v):
 
 # config operations ===========
 ## read config file, generate information for test framework
-## @todo may use xml as config file
+## @brief configuration for current session
+class SessionConfig:
+    def __init__(self):
+        self.list_case = []
+        self.list_ver = []
+        self.list_alg = []
+        self.config_map = {}
+        self.config_map["hd_max_dist"] = "0.05"
+        self.config_map["hd_single_color"] = "True"
+        self.config_map["rep_specular"] = "0.5"
+        
+    def read_config(self, filename):
+        return
 
 ## @brief read user concerned case name list
 def read_config_list(config_str, pattern):
@@ -249,61 +261,111 @@ def read_compare_config(file_config):
     return case_list, ver_list, alg_list
 
 
+def fill_list(res, idx, in_list):
+    if isinstance(in_list, int) or isinstance(in_list, float):
+        res.append(in_list)
+        return 1
+    ac = len(in_list)
+    res[idx: idx + len(in_list)] = in_list[:]
+    return ac
+
+## @brief camera info save/load/generate object
 class CameraObject:
-    def __init__(self, s):
+    def __init__(self):
+        self.CameraFocalPoint = [0.0, 0.0, 1.0]
+        self.CameraParallelProjection = 0
+        self.CameraParallelScale = 20.0
+        self.CameraPosition = [0.0, 0.0, 0.0]
+        self.CameraViewAngle = 30.0
+        self.CameraViewUp = [0.0, 0.0, 0.0]
+
+    ## @brief create standard camera info from object
+    def create_default_cam_angle(self, s, type_str):
         (xmin, xmax, ymin, ymax, zmin, zmax) = s.GetDataInformation().GetBounds()
         xmid = (xmin + xmax) / 2
         ymid = (ymin + ymax) / 2
         zmid = (zmin + zmax) / 2
-        self.xdelta = xmax - xmin
-        self.ydelta = ymax - ymin
-        self.zdelta = zmax - zmin
-        self.CameraFocalPoint = [xmid, ymid, zmid]
-        self.CameraParallelProjection = 0
-        self.CameraParallelScale = 20.0
-        self.CameraPosition = [xmid, ymid, zmid]
-        self.CameraViewAngle = 30.0
-        self.CameraViewUp = [0.0, 0.0, 0.0]
+        xdelta = xmax - xmin
+        ydelta = ymax - ymin
+        zdelta = zmax - zmin
 
-    def create_default_cam_angle(self, type_str):
         if len(type_str) < 2:
             type_str = "x+"
         position_ratio = math.tan(self.CameraViewAngle / 360.0 * math.pi)
         # reset camera
-        self.CameraViewUp[1] = 0
-        self.CameraViewUp[2] = 0
-        self.CameraPosition[0] = self.CameraFocalPoint[0]
-        self.CameraPosition[1] = self.CameraFocalPoint[1]
-        self.CameraPosition[2] = self.CameraFocalPoint[2]
+        self.CameraViewUp = [0.0, 0.0, 0.0]
+        self.CameraFocalPoint = [xmid, ymid, zmid]
+        self.CameraPosition = [xmid, ymid, zmid]
+
         # get camera info
         if type_str[0] == 'y':
             self.CameraViewUp[2] = 1
-            camera_move = (self.xdelta + self.zdelta) / 2 / position_ratio
+            camera_move = (xdelta + zdelta) / 2 / position_ratio
             if type_str[1] == '+':
                 self.CameraPosition[1] = self.CameraPosition[1] - camera_move
             else:
                 self.CameraPosition[1] = self.CameraPosition[1] + camera_move
         elif type_str[0] == 'z':
             self.CameraViewUp[1] = 1
-            camera_move = (self.xdelta + self.ydelta) / 2 / position_ratio
+            camera_move = (xdelta + ydelta) / 2 / position_ratio
             if type_str[1] == '+':
                 self.CameraPosition[2] = self.CameraPosition[2] - camera_move
             else:
                 self.CameraPosition[2] = self.CameraPosition[2] + camera_move
         else: # x
             self.CameraViewUp[2] = 1
-            camera_move = (self.ydelta + self.zdelta) / 2 / position_ratio
+            camera_move = (ydelta + zdelta) / 2 / position_ratio
             if type_str[1] == '+':
                 self.CameraPosition[0] = self.CameraPosition[0] - camera_move
             else:
                 self.CameraPosition[0] = self.CameraPosition[0] + camera_move
 
-    def set_camera(self, v, type_str):
-        self.create_default_cam_angle(type_str)
-        v.CameraFocalPoint = self.CameraFocalPoint
-        v.CameraParallelProjection = self.CameraParallelProjection
+    ## @brief set view camera to current object
+    def set_camera(self, v):
+        v.CameraFocalPoint = self.CameraFocalPoint.copy()
+        v.CameraParallelProjection = int(self.CameraParallelProjection)
         v.CameraParallelScale = self.CameraParallelScale
-        v.CameraPosition = self.CameraPosition
+        v.CameraPosition = self.CameraPosition.copy()
         v.CameraViewAngle = self.CameraViewAngle
-        v.CameraViewUp = self.CameraViewUp
+        v.CameraViewUp = self.CameraViewUp.copy()
         v.Update()
+
+    ## @brief fill camera info from view
+    def get_camera(self, v):
+        self.CameraFocalPoint = v.CameraFocalPoint.copy()
+        self.CameraParallelProjection = v.CameraParallelProjection
+        self.CameraParallelScale = v.CameraParallelScale
+        self.CameraPosition = v.CameraPosition.copy()
+        self.CameraViewAngle = v.CameraViewAngle
+        self.CameraViewUp = v.CameraViewUp.copy()
+
+    def generate_camera_str(self):
+        camera_pos = []
+        idx = 0
+        idx += fill_list(camera_pos, idx, self.CameraFocalPoint)
+        idx += fill_list(camera_pos, idx, self.CameraParallelProjection)
+        idx += fill_list(camera_pos, idx, self.CameraParallelScale)
+        idx += fill_list(camera_pos, idx, self.CameraPosition)
+        idx += fill_list(camera_pos, idx, self.CameraViewAngle)
+        idx += fill_list(camera_pos, idx, self.CameraViewUp)
+        clip_str = str(camera_pos[0])
+        for i in range(1, len(camera_pos)):
+            clip_str += ", {}".format(camera_pos[i])
+        return clip_str
+
+    def read_camera_from_str(self, cam_str):
+        str_list = cam_str.split(", ")
+        try:
+            if len(str_list) == 12:
+                flt_list = [float(s) for s in str_list]
+                self.CameraFocalPoint = flt_list[0:3]
+                self.CameraParallelProjection = flt_list[3]
+                self.CameraParallelScale = flt_list[4]
+                self.CameraPosition = flt_list[5:8]
+                self.CameraViewAngle = flt_list[8]
+                self.CameraViewUp = flt_list[9:12]
+                return True
+            else:
+                return False
+        except ValueError:
+            return False

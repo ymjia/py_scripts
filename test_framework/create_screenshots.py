@@ -155,26 +155,12 @@ class ScreenShotHelper:
     def __init__(self):
         paraview.simple._DisableFirstRenderCameraReset()
 
-    # fill camera variable from number list
-    def fill_var(self, in_list, idx, var):
-        if isinstance(var, int) or isinstance(var, float):
-            var = in_list[idx]
-            return 1
-        ac = len(var)
-        var[:] = in_list[idx: idx + len(var)]
-        return ac
-
-    def set_camera(self, v, cam):
-        idx = 0
-        idx += self.fill_var(cam, idx, v.CameraFocalPoint)
-        idx += self.fill_var(cam, idx, v.CameraParallelProjection)
-        idx += self.fill_var(cam, idx, v.CameraParallelScale)
-        idx += self.fill_var(cam, idx, v.CameraPosition)
-        idx += self.fill_var(cam, idx, v.CameraViewAngle)
-        idx += self.fill_var(cam, idx, v.CameraViewUp)
-
     def take_shot(self, view, cam, filename):
-        self.set_camera(view, cam)
+        co = CameraObject()
+        if not co.read_camera_from_str(cam):
+            print("Warning! cannot decode camera from string {}".format(cam))
+            return
+        co.set_camera(view)
         v_size = view.ViewSize
         view.Update()
         # create temporary file to cope utf-8 char
@@ -235,9 +221,8 @@ def read_cam(case_file):
     content = None
     with open(case_file) as f:
         content = f.readlines()
-    str_list = [l.strip() for l in content if len(l) > 20]
-    str_lines = [line.split(", ") for line in str_list]
-    return [[float(s) for s in item] for item in str_lines if len(item) == 12]
+    return [l.strip() for l in content if len(l) > 20]
+
 
 # if data_file newer than ss_file, need update
 def ss_need_update(file_list, file_cam, out_dir, pattern):
@@ -379,19 +364,19 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
         ss = ScreenShotHelper()
         # standard
         std_cam = []
-        co = CameraObject(out0)
-        co.set_camera(v0, "x+")
-        std_cam.append(build_cam_list(v0))
-        co.set_camera(v0, "x-")
-        std_cam.append(build_cam_list(v0))
-        co.set_camera(v0, "y+")
-        std_cam.append(build_cam_list(v0))
-        co.set_camera(v0, "y-")
-        std_cam.append(build_cam_list(v0))
-        co.set_camera(v0, "z+")
-        std_cam.append(build_cam_list(v0))
-        co.set_camera(v0, "z-")
-        std_cam.append(build_cam_list(v0))
+        co = CameraObject()
+        co.create_default_cam_angle(out0, "x+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "x-")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "y+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "y-")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "z+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "z-")
+        std_cam.append(co.generate_camera_str())
         for i in range(0, 6):
             ss.take_shot(v0, std_cam[i],
                          "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
