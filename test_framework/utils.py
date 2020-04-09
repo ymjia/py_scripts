@@ -366,6 +366,55 @@ class ProcessMonitor:
             pass
 
 
+# class for global config
+## read config file, generate information for test framework
+## @brief configuration for current session
+class SessionConfig:
+    def __init__(self):
+        self.list_case = []
+        self.list_ver = []
+        self.list_alg = []
+        self.config_map = {}
+        self.config_map["hd_max_dist"] = "0.05"
+        self.config_map["hd_single_color"] = "True"
+        self.config_map["rep_specular"] = "0.5"
+        
+    def read_config(self, filename):
+        if not os.path.exists(fileame):
+            print("Warning! config file {} does not exists".format(filename))
+            return
+        content = None
+        with open(filename, encoding='utf-8') as f:
+            content = f.readlines()
+        lines = [l.strip() for l in content]
+        if len(lines) < 3:
+            print("Warning! Invalid config file {}".format(filename))
+            return
+        # fix part
+        if lines[0][0:3] != "cas" or lines[1][0:3] != "ver" or lines[2][0:3] != "alg":
+            print("Warning! Invalid config file {}".format(filename))
+            return
+        self.list_case = lines[0].split(" ")[1:]
+        self.list_case = lines[1].split(" ")[1:]
+        self.list_case = lines[2].split(" ")[1:]
+        # optional part
+        for i in range(4, len(lines)):
+            l_couple = lines[i].split(" ")
+            if len(l_couple) != 2:
+                continue
+            self.config_map[l_couple[0]] = l_couple[1]
+        return
+
+    def write_config(self, filename):
+        f_config = open(filename, "w", encoding='utf-8')
+        f_config.writelines("cas {}\n".format(" ".join(map(str, self.list_case))))
+        f_config.writelines("ver {}\n".format(" ".join(map(str, self.list_ver))))
+        f_config.writelines("alg {}\n".format(" ".join(map(str, self.list_alg))))
+        for key, val in self.config_map.items():
+            f_config.writelines("{} {}\n".format(key, val))
+        f_config.close()
+
+
 # indent xml ElementTree.root
 def indent_xml(elem, level=0):
     i = "\n" + level*"  "
@@ -467,3 +516,4 @@ if __name__ == "__main__":
     # os.startfile("c:/tmp/res.xlsx")
     set_reg_item("exe", "5")
     print(get_reg_item("ss"))
+ 
