@@ -376,9 +376,22 @@ class SessionConfig:
         self.list_ver = []
         self.list_alg = []
         self.config_map = {}
-        self.config_map["hd_max_dist"] = "0.05"
+        # parameter for hausdorff
+        self.config_map["hd_critical_dist"] = "0.03"
+        self.config_map["hd_nominal_dist"] = "0.05"
+        self.config_map["hd_max_dist"] = "0.3"
         self.config_map["hd_single_color"] = "True"
-        self.config_map["rep_specular"] = "0.5"
+        # parameter for screenshot
+        self.config_map["ss_force_update"] = "False"
+        self.config_map["rep_specular"] = "True"
+        self.config_map["view_width"] = "1024"
+        self.config_map["view_height"] = "768"
+        self.config_map["transparent_background"] = "False"
+
+    def config_val(self, key_str, default_val):
+        if key_str in self.config_map:
+            return self.config_map[key_str]
+        return default_val
         
     def read_config(self, filename):
         if not os.path.exists(filename):

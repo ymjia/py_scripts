@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, os.getcwd())
 from test_framework import ui_logic
 from test_framework import generate_docx
+from test_framework.utils import SessionConfig
 def create_screenshots(file_config):
     total_num = call_pvpython(exe_pvpython, l_case, ['__hausdorff'], [], dir_i, dir_o)
 
@@ -19,13 +20,19 @@ def deviation_report(dir_input, exe_pvpython):
         print("Error! Input Argument {} is not a directory".format(dir_input))
     case_name = str(Path(dir_input).name)
     print("case_name: {}".format(case_name))
-    l_case = [str(case_name)]
-    print(l_case)
+    sc = SessionConfig()
+    sc.list_case = [str(case_name)]
+    sc.list_ver = ['__hausdorff']
+    sc.list_alg = []
+    print(sc.list_case)
     dir_in = str(Path(dir_input).parent)
     dir_out = os.path.join(dir_in, "__output")
     if not os.path.exists(dir_out):
         os.makedirs(dir_out)
-    total_num = ui_logic.call_pvpython(exe_pvpython, l_case, ['__hausdorff'], [], dir_in, dir_out)
+
+    sc.config_map["dir_i"] = dir_in
+    sc.config_map["dir_o"] = dir_out
+    total_num = ui_logic.call_pvpython(exe_pvpython, sc)
 
     # generate docx
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
@@ -36,7 +43,7 @@ def deviation_report(dir_input, exe_pvpython):
     file_save = os.path.join(dir_doc, doc_name_final)
     l_ver = ["hausdorff_A2B", "hausdorff_B2A"]
     l_alg = ["__hd"] # reserved alg_name for hausdorff dist
-    gd = generate_docx.DocxGenerator(dir_in, dir_out, l_case, l_ver, l_alg)
+    gd = generate_docx.DocxGenerator(dir_in, dir_out, sc.list_case, l_ver, l_alg)
     gd.generate_docx(file_save, "")
 
 

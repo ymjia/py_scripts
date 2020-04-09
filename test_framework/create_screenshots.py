@@ -95,7 +95,7 @@ def generate_vn(s_in, s_name):
     RenameSource("{}_vn".format(s_name), sn)
     return sn
 
-def show_hausdorff_dist(s_name_list, critical_dist, max_dist):
+def show_hausdorff_dist(s_name_list, critical_dist, nominal_dist, max_dist):
     s_num = len(s_name_list)
     if s_num != 2:
         print("Error! 2 source need to be selected, current source:")
@@ -143,10 +143,16 @@ def show_hausdorff_dist(s_name_list, critical_dist, max_dist):
     # Rescale transfer function
     distanceLUT = GetColorTransferFunction('Distance')
     distancePWF = GetOpacityTransferFunction('Distance')
-    distanceLUT.ApplyPreset('hausdorff_dir', True)
-    distancePWF.ApplyPreset('hausdorff_dir', True)
-    distanceLUT.RescaleTransferFunction(-0.05, 0.05)
-    distancePWF.RescaleTransferFunction(-0.05, 0.05)
+    eps = 1e-8
+    distanceLUT.RGBPoints = [-max_dist, 0, 0, 1, -max_dist + eps, 0, 1, 1,
+                             -critical_dist - eps, 0, 1, 1, -critical_dist, 0, 1, 0,
+                             critical_dist, 0, 1, 0, critical_dist + eps, 1, 1, 0,
+                             max_dist - eps, 1, 1, 0, max_dist, 1, 0, 0]
+    distancePWF.Points = [-max_dist, 1.0, 0.5, 0, max_dist, 1.0, 0.5, 0]
+    #distanceLUT.ApplyPreset('hausdorff_dir', True)
+    #distancePWF.ApplyPreset('hausdorff_dir', True)
+    #distanceLUT.RescaleTransferFunction(-0.05, 0.05)
+    #distancePWF.RescaleTransferFunction(-0.05, 0.05)
     return (v0, v1, out0, out1)
 
 def write_dist_statistics(s, filename, in_file):
@@ -341,8 +347,9 @@ def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
     print("Case: {}".format(sc.list_case))
     #get parameter
-    hd_critical_dist = float(sc.config_val("hd_critical_dist", "0.02"))
-    hd_max_dist = float(sc.config_val("hd_max_dist", "0.1"))
+    hd_critical_dist = float(sc.config_val("hd_critical_dist", "0.03"))
+    hd_nominal_dist = float(sc.config_val("hd_nominal_dist", "0.5"))
+    hd_max_dist = float(sc.config_val("hd_max_dist", "0.3"))
 
     dir_input = sc.config_map["dir_i"]
     dir_output = sc.config_map["dir_o"]
@@ -355,12 +362,12 @@ def create_hausdorff_shot(sc):
         out_dir2 = os.path.join(dir_output, case, "hausdorff_B2A")
         if not os.path.exists(out_dir2):
             os.makedirs(out_dir2)
-        (v0, v1, out0, out1) = show_hausdorff_dist(i_list)
+        (v0, v1, out0, out1) = show_hausdorff_dist(i_list, hd_critical_dist, hd_nominal_dist, hd_max_dist)
         write_dist_statistics(out0, "{}/dist.sts".format(out_dir), i_list[0])
         write_dist_statistics(out1, "{}/dist.sts".format(out_dir2), i_list[1])
         if v0 is None:
             continue
-        ss = ScreenShotHelper()
+        ss = ScreenShotHelper(sc)
         # standard
         std_cam = []
         co = CameraObject()
