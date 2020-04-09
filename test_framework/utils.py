@@ -380,30 +380,30 @@ class SessionConfig:
         self.config_map["rep_specular"] = "0.5"
         
     def read_config(self, filename):
-        if not os.path.exists(fileame):
+        if not os.path.exists(filename):
             print("Warning! config file {} does not exists".format(filename))
-            return
+            return False
         content = None
         with open(filename, encoding='utf-8') as f:
             content = f.readlines()
         lines = [l.strip() for l in content]
         if len(lines) < 3:
             print("Warning! Invalid config file {}".format(filename))
-            return
+            return False
         # fix part
         if lines[0][0:3] != "cas" or lines[1][0:3] != "ver" or lines[2][0:3] != "alg":
             print("Warning! Invalid config file {}".format(filename))
-            return
-        self.list_case = lines[0].split(" ")[1:]
-        self.list_case = lines[1].split(" ")[1:]
-        self.list_case = lines[2].split(" ")[1:]
+            return False
+        self.list_case = lines[0].split(" ")[1:].copy()
+        self.list_ver = lines[1].split(" ")[1:].copy()
+        self.list_alg = lines[2].split(" ")[1:].copy()
         # optional part
         for i in range(4, len(lines)):
             l_couple = lines[i].split(" ")
             if len(l_couple) != 2:
                 continue
             self.config_map[l_couple[0]] = l_couple[1]
-        return
+        return True
 
     def write_config(self, filename):
         f_config = open(filename, "w", encoding='utf-8')

@@ -263,20 +263,25 @@ def slot_create_screenshots(ui):
 def call_pvpython(exe_pvpython, l_case, l_ver, l_alg, dir_i, dir_o):
     # write to file
     filename = os.path.join(dir_o, "ss_config.txt")
-    line_case = "cas"
-    for c in l_case:
-        line_case = line_case + " {}".format(c)
-    line_ver = "ver"
-    for c in l_ver:
-        line_ver = line_ver + " {}".format(c)
-    line_alg = "alg"
-    for c in l_alg:
-        line_alg = line_alg + " {}".format(c)
-    f_config = open(filename, "w", encoding='utf-8')
-    f_config.write(line_case + "\n")
-    f_config.write(line_ver + "\n")
-    f_config.write(line_alg + "\n")
-    f_config.close()
+    sc = utils.SessionConfig()
+    sc.list_case = l_case.copy()
+    sc.list_ver = l_ver.copy()
+    sc.list_alg = l_alg.copy()
+    sc.write_config(filename)
+    # line_case = "cas"
+    # for c in l_case:
+    #     line_case = line_case + " {}".format(c)
+    # line_ver = "ver"
+    # for c in l_ver:
+    #     line_ver = line_ver + " {}".format(c)
+    # line_alg = "alg"
+    # for c in l_alg:
+    #     line_alg = line_alg + " {}".format(c)
+    # f_config = open(filename, "w", encoding='utf-8')
+    # f_config.write(line_case + "\n")
+    # f_config.write(line_ver + "\n")
+    # f_config.write(line_alg + "\n")
+    # f_config.close()
     # run pvpython.exe
     dir_pv_wd = os.path.dirname(exe_pvpython)
     py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")

@@ -401,19 +401,22 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
 def create_screenshots_wrap(dir_input, dir_output, file_config):
     # data to be compared
     # get all concerned file names
-    list_case, list_ver, list_alg = read_compare_config(file_config)
-    if list_case is None:
+    sc = SessionConfig()
+    if not sc.read_config(file_config):
+        print("Warning! Fail to read config file {}".format(file_config))
+        return
+    if sc.list_case is None:
         print("Error! no config file in {}".format(file_config))
         return
     print("Start screenshot: ")
-    print("case: {}".format(list_case))
-    print("ver: {}".format(list_ver))
-    print("filename: {}".format(list_alg))
+    print("case: {}".format(sc.list_case))
+    print("ver: {}".format(sc.list_ver))
+    print("filename: {}".format(sc.list_alg))
     total_n = 0
-    if len(list_ver) < 1 or list_ver[0] == "__hausdorff":
-        total_n = create_hausdorff_shot(dir_input, dir_output, list_case)
+    if len(sc.list_ver) < 1 or sc.list_ver[0] == "__hausdorff":
+        total_n = create_hausdorff_shot(dir_input, dir_output, sc.list_case)
     else:
-        total_n = create_screenshots(dir_input, dir_output, list_case, list_ver, list_alg)
+        total_n = create_screenshots(dir_input, dir_output, sc.list_case, sc.list_ver, sc.list_alg)
     f_config = open(file_config, "w", encoding='utf-8')
     f_config.write("{}\n".format(total_n))
     f_config.close()

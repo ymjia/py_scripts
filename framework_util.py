@@ -228,30 +228,30 @@ class SessionConfig:
         self.config_map["rep_specular"] = "0.5"
         
     def read_config(self, filename):
-        if not os.path.exists(fileame):
+        if not os.path.exists(filename):
             print("Warning! config file {} does not exists".format(filename))
-            return
+            return False
         content = None
         with open(filename, encoding='utf-8') as f:
             content = f.readlines()
         lines = [l.strip() for l in content]
         if len(lines) < 3:
             print("Warning! Invalid config file {}".format(filename))
-            return
+            return False
         # fix part
         if lines[0][0:3] != "cas" or lines[1][0:3] != "ver" or lines[2][0:3] != "alg":
             print("Warning! Invalid config file {}".format(filename))
-            return
-        self.list_case = lines[0].split(" ")[1:]
-        self.list_case = lines[1].split(" ")[1:]
-        self.list_case = lines[2].split(" ")[1:]
+            return False
+        self.list_case = lines[0].split(" ")[1:].copy()
+        self.list_ver = lines[1].split(" ")[1:].copy()
+        self.list_alg = lines[2].split(" ")[1:].copy()
         # optional part
         for i in range(4, len(lines)):
             l_couple = lines[i].split(" ")
             if len(l_couple) != 2:
                 continue
             self.config_map[l_couple[0]] = l_couple[1]
-        return
+        return True
 
     def write_config(self, filename):
         f_config = open(filename, "w", encoding='utf-8')
@@ -261,37 +261,6 @@ class SessionConfig:
         for key, val in self.config_map.items():
             f_config.writelines("{} {}\n".format(key, val))
         f_config.close()
-
-## @brief read user concerned case name list
-def read_config_list(config_str, pattern):
-    lc = len(config_str)
-    lp = len(pattern)
-    if lc < lp:
-        return None
-    if config_str[0:lp] != pattern:
-        return None
-    return config_str[lp+1:].split(" ")
-
-
-
-def read_compare_config(file_config):
-    if not os.path.exists(file_config):
-        return None, None, None
-    case_list = []
-    ver_list = []
-    alg_list = []
-    content = None
-    with open(file_config, encoding='utf-8') as f:
-        content = f.readlines()
-    str_list = [l.strip() for l in content]
-    for line in str_list:
-        if line[0:3] == "cas":
-            case_list = read_config_list(line, "cas")
-        elif line[0:3] == "ver":
-            ver_list = read_config_list(line, "ver")
-        elif line[0:3] == "alg":
-            alg_list = read_config_list(line, "alg")
-    return case_list, ver_list, alg_list
 
 
 def fill_list(res, idx, in_list):
