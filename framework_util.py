@@ -262,6 +262,14 @@ class SessionConfig:
             f_config.writelines("{} {}\n".format(key, val))
         f_config.close()
 
+    def print_config(self):
+        print("cas {}".format(" ".join(map(str, self.list_case))))
+        print("ver {}".format(" ".join(map(str, self.list_ver))))
+        print("alg {}".format(" ".join(map(str, self.list_alg))))
+        for key, val in self.config_map.items():
+            print("{} {}".format(key, val))
+
+
 
 def fill_list(res, idx, in_list):
     if isinstance(in_list, int) or isinstance(in_list, float):

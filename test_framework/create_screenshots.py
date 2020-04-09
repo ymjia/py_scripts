@@ -10,6 +10,7 @@ import time
 import datetime
 from shutil import move
 from paraview.simple import *
+from paraview import vtk
 from paraview.simple import _active_objects
 from paraview.simple import GetDisplayProperties
 dir_py_module = os.path.join(os.getcwd(), "..", "Sn3D_plugins", "scripts", "pv_module")
@@ -282,27 +283,6 @@ def create_screenshots(sc):
                 total_num += create_shot(file_list, cam_list, pic_out_dir , alg)
     return total_num
 
-# get cam config float array from view
-def fill_list(res, idx, in_list):
-    if isinstance(in_list, int) or isinstance(in_list, float):
-        res.append(in_list)
-        return 1
-    ac = len(in_list)
-    res[idx:idx+ac] = in_list[:]
-    return ac
-
-
-def build_cam_list(v):
-    camera_pos = []
-    idx = 0
-    idx += fill_list(camera_pos, idx, v.CameraFocalPoint)
-    idx += fill_list(camera_pos, idx, v.CameraParallelProjection)
-    idx += fill_list(camera_pos, idx, v.CameraParallelScale)
-    idx += fill_list(camera_pos, idx, v.CameraPosition)
-    idx += fill_list(camera_pos, idx, v.CameraViewAngle)
-    idx += fill_list(camera_pos, idx, v.CameraViewUp)
-    return camera_pos
-
 
 def write_dist_statistics(s, filename, in_file):
     sd = servermanager.Fetch(s)
@@ -319,8 +299,17 @@ def write_dist_statistics(s, filename, in_file):
     max_negative = fd.GetArray("max_negative").GetTuple1(0)
     standard_deviation = fd.GetArray("standard_deviation").GetTuple1(0)
 
-    # sigma_rate = [0.01, 0.02, 0.23, 0.38, 0.21, 0.1]
-    # sigma_num = [10, 20, 230, 380, 210, 100]
+    # sigma_rate = vtk.vtkDoubleArray()
+    # sigma_rate.SetNumberOfComponents(1)
+    # sigma_rate.SetNumberOfTuples(6)
+    # sigma_num = vtk.vtkDoubleArray()
+    # sigma_num.SetNumberOfComponents(1)
+    # sigma_num.SetNumberOfTuples(6)
+    # l_sigma_rate = [0.01, 0.02, 0.23, 0.38, 0.21, 0.1]
+    # l_sigma_num = [10, 20, 230, 380, 210, 100]
+    # for i in range(0, 6):
+    #     sigma_rate.SetTuple1(i, l_sigma_rate[i])
+    #     sigma_num.SetTuple1(i, l_sigma_num[i])
     # mean_total = 0.01
     # mean_positive = 0.02
     # mean_negative = -0.01
@@ -328,10 +317,8 @@ def write_dist_statistics(s, filename, in_file):
     # max_negative = -0.1
     # standard_deviation = 0.11
     f_sts = open(filename, "w", encoding='utf-8')
-    f_sts.write("{} {} {} {} {} {}\n".format(sigma_rate.GetTuple1(0), sigma_rate.GetTuple1(1), sigma_rate.GetTuple1(2),
-                                              sigma_rate.GetTuple1(3), sigma_rate.GetTuple1(4), sigma_rate.GetTuple1(5)))
-    f_sts.write("{} {} {} {} {} {}\n".format(sigma_num.GetTuple1(0), sigma_num.GetTuple1(1), sigma_num.GetTuple1(2),
-                                              sigma_num.GetTuple1(3), sigma_num.GetTuple1(4), sigma_num.GetTuple1(5)))
+    f_sts.write("{}\n".format(" ".join(map(str, [sigma_rate.GetTuple1(i) for i in range(0, 6)]))))
+    f_sts.write("{}\n".format(" ".join(map(str, [sigma_num.GetTuple1(i) for i in range(0, 6)]))))
     f_sts.write("{}\n".format(mean_total))
     f_sts.write("{}\n".format(mean_positive))
     f_sts.write("{}\n".format(mean_negative))
@@ -412,10 +399,9 @@ def create_screenshots_wrap(file_config):
     if sc.list_case is None:
         print("Error! no config file in {}".format(file_config))
         return
-    print("Start screenshot: ")
-    print("case: {}".format(sc.list_case))
-    print("ver: {}".format(sc.list_ver))
-    print("filename: {}".format(sc.list_alg))
+    print("Start screenshot: ==============")
+    sc.print_config()
+    print("===============================")
     total_n = 0
     if len(sc.list_ver) < 1 or sc.list_ver[0] == "__hausdorff":
         total_n = create_hausdorff_shot(sc)
