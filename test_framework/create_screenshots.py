@@ -241,12 +241,14 @@ def ss_need_update(file_list, file_cam, out_dir, pattern):
 
 # execute screenshot operation(need config information)
 # general operation, case/version/filanem all have their effects
-def create_screenshots(dir_input, dir_output, list_case, list_ver, list_alg):
+def create_screenshots(sc):
     total_num = 0
+    dir_input = sc.config_map["dir_i"]
+    dir_output = sc.config_map["dir_o"]
     # case/version/alg
     file_dir = []
-    for ci in list_case:
-        for vi in list_ver:
+    for ci in sc.list_case:
+        for vi in sc.list_ver:
             file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
     #create shot
     for item in file_dir:
@@ -268,7 +270,7 @@ def create_screenshots(dir_input, dir_output, list_case, list_ver, list_alg):
                 continue
             total_num += create_shot(i_list, cam_list, pic_out_dir, "input")
         else:
-            for alg in list_alg:
+            for alg in sc.list_alg:
                 file_list = get_file(case_files, alg)
                 if file_list is None or len(file_list) < 1:
                     continue
@@ -341,11 +343,13 @@ def write_dist_statistics(s, filename, in_file):
 
 # screen shot for customized application
 # only case list is needed
-def create_hausdorff_shot(dir_input, dir_output, list_case):
+def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
-    print("Case: {}".format(list_case))
+    print("Case: {}".format(sc.list_case))
+    dir_input = sc.config_map["dir_i"]
+    dir_output = sc.config_map["dir_o"]
     total_num = 0
-    for case in list_case:
+    for case in sc.list_case:
         i_list = get_file(dir_input, case)
         out_dir = os.path.join(dir_output, case, "hausdorff_A2B")
         if not os.path.exists(out_dir):
@@ -398,7 +402,7 @@ def create_hausdorff_shot(dir_input, dir_output, list_case):
 
 
 # brief external interface interpreted by PVpython
-def create_screenshots_wrap(dir_input, dir_output, file_config):
+def create_screenshots_wrap(file_config):
     # data to be compared
     # get all concerned file names
     sc = SessionConfig()
@@ -414,16 +418,14 @@ def create_screenshots_wrap(dir_input, dir_output, file_config):
     print("filename: {}".format(sc.list_alg))
     total_n = 0
     if len(sc.list_ver) < 1 or sc.list_ver[0] == "__hausdorff":
-        total_n = create_hausdorff_shot(dir_input, dir_output, sc.list_case)
+        total_n = create_hausdorff_shot(sc)
     else:
-        total_n = create_screenshots(dir_input, dir_output, sc.list_case, sc.list_ver, sc.list_alg)
+        total_n = create_screenshots(sc)
     f_config = open(file_config, "w", encoding='utf-8')
     f_config.write("{}\n".format(total_n))
     f_config.close()
 
 
 if __name__ == "__main__":
-    dir_input = sys.argv[1]
-    dir_output = sys.argv[2]
-    file_config = sys.argv[3]
-    create_screenshots_wrap(dir_input, dir_output, file_config)
+    file_config = sys.argv[1]
+    create_screenshots_wrap(file_config)

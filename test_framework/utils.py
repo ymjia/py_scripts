@@ -369,6 +369,7 @@ class ProcessMonitor:
 # class for global config
 ## read config file, generate information for test framework
 ## @brief configuration for current session
+## @note for information transfer from ui to pvpython.exe
 class SessionConfig:
     def __init__(self):
         self.list_case = []

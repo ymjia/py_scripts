@@ -70,39 +70,6 @@ def read_cam(case_file):
     return [[float(s) for s in item] for item in str_lines if len(item) == 12]
 
 
-## @brief read user concerned case name list
-def read_config_list(config_str, pattern):
-    lc = len(config_str)
-    lp = len(pattern)
-    if lc < lp:
-        return None
-    if config_str[0:lp] != pattern:
-        return None
-    return config_str[lp+1:].split(" ")
-
-
-## @brief read all configs from config file
-## @return tuple of config list
-def read_compare_config(file_config):
-    if not os.path.exists(file_config):
-        return None
-    case_list = []
-    ver_list = []
-    alg_list = []
-    content = None
-    with open(file_config) as f:
-        content = f.readlines()
-    str_list = [l.strip() for l in content]
-    for line in str_list:
-        if line[0:3] == "cas":
-            case_list = read_config_list(line, "cas")
-        elif line[0:3] == "ver":
-            ver_list = read_config_list(line, "ver")
-        elif line[0:3] == "alg":
-            alg_list = read_config_list(line, "alg")
-    return case_list, ver_list, alg_list
-
-
 def add_cell_content(cell, text, pic):
     if os.path.exists(pic):
         pg = cell.paragraphs[0]
@@ -264,8 +231,11 @@ class DocxGenerator:
 
 
 def generate_docx_wrap(dir_input, dir_output, file_config):
-    listCase, listVer, listAlg = read_compare_config(file_config)
-    d = DocxGenerator(dir_input, dir_output, listCase, listVer, listAlg)
+    ss = utils.SessionConfig()
+    if not ss.read_config(file_config):
+        return
+
+    d = DocxGenerator(dir_input, dir_output, sc.list_case, sc.list_ver, sc.list_alg)
     # input data read from config file
     config_stem = os.path.splitext(os.path.split(file_config)[1])[0]
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))

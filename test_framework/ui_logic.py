@@ -188,10 +188,13 @@ def generate_hausdorf_docx(ui):
     if not os.path.exists(exe_pvpython):
         QMessageBox.about(ui, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
         return
-    dir_i = p_obj._dirInput
-    dir_o = p_obj._dirOutput
-    l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
-    total_num = call_pvpython(exe_pvpython, l_case, ['__hausdorff'], [], dir_i, dir_o)
+    sc = utils.SessionConfig()
+    sc.config_map["dir_i"] = p_obj._dirInput
+    sc.config_map["dir_o"] = p_obj._dirOutput
+    sc.list_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
+    sc.list_ver = ['__hausdorff']
+    sc.list_alg.clear()
+    total_num = call_pvpython(exe_pvpython, sc)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     print(total_num)
@@ -200,13 +203,14 @@ def generate_hausdorf_docx(ui):
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     doc_name_final = "{}_{}_hd.docx".format(doc_name, str_time)
     p_obj._curDocName = doc_name_final
-    dir_doc = os.path.join(dir_o, "doc")
+    dir_doc = os.path.join(p_obj._dirOutput, "doc")
     if not os.path.exists(dir_doc):
         os.makedirs(dir_doc)
     file_save = os.path.join(dir_doc, doc_name_final)
     l_ver = ["hausdorff_A2B", "hausdorff_B2A"]
     l_alg = ["__hd"] # reserved alg_name for hausdorff dist
-    gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
+    gd = generate_docx.DocxGenerator(p_obj._dirInput, p_obj._dirOutput, sc.list_case,
+                                     l_ver, l_alg)
     gd.generate_docx(file_save, p_obj._configFile)
     ui.add_hist_item("doc", 1)
     QMessageBox.about(ui, "Message", "Hausdorff Docx wrote to {}!".format(file_save))
@@ -238,56 +242,39 @@ def slot_create_screenshots(ui):
     if not os.path.exists(exe_pvpython):
         QMessageBox.about(ui, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
         return
-    dir_i = p_obj._dirInput
-    dir_o = p_obj._dirOutput
-    l_case = get_checked_items(p_obj._case, p_obj._sCaseCheck)
-    l_alg = get_checked_items(p_obj._alg, p_obj._sAlgCheck)
-    l_ver = get_checked_items(p_obj._ver, p_obj._sVerCheck)
-    if len(l_case) < 1:
+    # create session config object
+    sc = utils.SessionConfig()
+    sc.list_case = get_checked_items(p_obj._case, p_obj._sCaseCheck)
+    sc.list_alg = get_checked_items(p_obj._alg, p_obj._sAlgCheck)
+    sc.list_ver = get_checked_items(p_obj._ver, p_obj._sVerCheck)
+    sc.config_map["dir_i"] = p_obj._dirInput
+    sc.config_map["dir_o"] = p_obj._dirOutput
+    if len(sc.list_case) < 1:
         QMessageBox.about(ui, "Error", "No Case checked")
         return
-    if len(l_ver) < 1:
+    if len(sc.list_ver) < 1:
         QMessageBox.about(ui, "Error", "No Version checked")
         return
-    if len(l_alg) < 1:
+    if len(sc.list_alg) < 1:
         ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
         if ret == qm.Cancel:
             return
-    total_num = call_pvpython(exe_pvpython, l_case, l_ver, l_alg, dir_i, dir_o)
+    total_num = call_pvpython(exe_pvpython, sc)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
 
 
 # call pvpython to take screenshot return screenshot number
-def call_pvpython(exe_pvpython, l_case, l_ver, l_alg, dir_i, dir_o):
+def call_pvpython(exe_pvpython, sc):
     # write to file
-    filename = os.path.join(dir_o, "ss_config.txt")
-    sc = utils.SessionConfig()
-    sc.list_case = l_case.copy()
-    sc.list_ver = l_ver.copy()
-    sc.list_alg = l_alg.copy()
+    filename = os.path.join(sc.config_map["dir_o"], "ss_config.txt")
     sc.write_config(filename)
-    # line_case = "cas"
-    # for c in l_case:
-    #     line_case = line_case + " {}".format(c)
-    # line_ver = "ver"
-    # for c in l_ver:
-    #     line_ver = line_ver + " {}".format(c)
-    # line_alg = "alg"
-    # for c in l_alg:
-    #     line_alg = line_alg + " {}".format(c)
-    # f_config = open(filename, "w", encoding='utf-8')
-    # f_config.write(line_case + "\n")
-    # f_config.write(line_ver + "\n")
-    # f_config.write(line_alg + "\n")
-    # f_config.close()
     # run pvpython.exe
     dir_pv_wd = os.path.dirname(exe_pvpython)
     py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
     proc_ss = subprocess.Popen(
-        [exe_pvpython, py_ss,
-         dir_i, dir_o, filename], cwd=dir_pv_wd)
+        [exe_pvpython, py_ss, filename], cwd=dir_pv_wd)
     proc_ss.wait()
     # read statistics number
     total_num = int(0)
