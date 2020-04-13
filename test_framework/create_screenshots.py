@@ -95,6 +95,14 @@ def generate_vn(s_in, s_name):
     RenameSource("{}_vn".format(s_name), sn)
     return sn
 
+def set_legend_prop(lgd):
+    lgd.Orientation = "Horizontal"
+    lgd.WindowLocation = "LowerCenter"
+    lgd.ScalarBarLength = 0.33
+    lgd.TitleColor = [0, 0, 0]
+    lgd.LabelColor = [0, 0, 0]
+    
+
 def show_hausdorff_dist(s_name_list, sc):
     #get parameter
     critical_dist = float(sc.config_val("hd_critical_dist", "0.03"))
@@ -115,7 +123,13 @@ def show_hausdorff_dist(s_name_list, sc):
     if len(s_list) != 2:
         print("2 poly mesh needed, now got {}".format(len(s_list)))
         return (None, None, None, None)
-    LoadPlugin("./plugins/Utils/Utils.dll", remote=False, ns=globals())
+
+    if os.path.exists("./paraview-5.8/plugins/Utils/Utils.dll"):
+        LoadPlugin("./paraview-5.8/plugins/Utils/Utils.dll", remote=False, ns=globals())
+    elif os.path.exists("./plugins/Utils/Utils.dll"):
+        LoadPlugin("./plugins/Utils/Utils.dll", remote=False, ns=globals())
+    else:
+        print("Warning! Fail to load hausdorff dist plugin")
     # get names
     pxm = servermanager.ProxyManager();
     name0 = os.path.splitext(pxm.GetProxyName("sources", s_list[0]))[0]
@@ -128,7 +142,7 @@ def show_hausdorff_dist(s_name_list, sc):
     p2c = sd1.IsA("vtkPolyData") and sd2.IsA("vtkPolyData")
     # create filter
     hd = HausdorffDistance(InputA=s1, InputB=s2)
-
+    hd.MaxSearchRadius = max_dist
     if not p2c:
         hd.TargetDistanceMethod = 'Point-to-Point'
     SetActiveSource(hd)    # set active source to hd to find transfer function
@@ -149,16 +163,21 @@ def show_hausdorff_dist(s_name_list, sc):
     # Rescale transfer function
     distanceLUT = GetColorTransferFunction('Distance')
     distancePWF = GetOpacityTransferFunction('Distance')
+    distanceLUT.ColorSpace = 'RGB'
     eps = 1e-8
-    distanceLUT.RGBPoints = [-max_dist, 0, 0, 1, -max_dist + eps, 0, 1, 1,
-                             -critical_dist - eps, 0, 1, 1, -critical_dist, 0, 1, 0,
-                             critical_dist, 0, 1, 0, critical_dist + eps, 1, 1, 0,
-                             max_dist - eps, 1, 1, 0, max_dist, 1, 0, 0]
-    distancePWF.Points = [-max_dist, 1.0, 0.5, 0, max_dist, 1.0, 0.5, 0]
-    #distanceLUT.ApplyPreset('hausdorff_dir', True)
-    #distancePWF.ApplyPreset('hausdorff_dir', True)
-    #distanceLUT.RescaleTransferFunction(-0.05, 0.05)
-    #distancePWF.RescaleTransferFunction(-0.05, 0.05)
+    max_eps = max_dist * 1.05
+    distanceLUT.RGBPoints = [-max_eps, 0, 0, 1, -max_dist, 0, 0, 1, 
+                             -nominal_dist, 0, 1, 1, -critical_dist - eps, 0, 1, 1, 
+                             -critical_dist, 0, 1, 0, critical_dist, 0, 1, 0,
+                             critical_dist + eps, 1, 1, 0, nominal_dist, 1, 1, 0,
+                              max_dist, 1, 0, 0, max_eps, 1, 0, 0]
+    distancePWF.Points = [-max_eps, 1.0, 0.5, 0, max_eps, 1.0, 0.5, 0]
+    
+    # legend position
+    lgd_v0 = GetScalarBar(distanceLUT, v0)
+    lgd_v1 = GetScalarBar(distanceLUT, v1)
+    set_legend_prop(lgd_v0)
+    set_legend_prop(lgd_v1)
     return (v0, v1, out0, out1)
 
 def write_dist_statistics(s, filename, in_file):
