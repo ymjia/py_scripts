@@ -303,6 +303,7 @@ class CameraObject:
         self.CameraViewUp = [0.0, 0.0, 0.0]
 
     ## @brief create standard camera info from object
+    ## @param type_str x+ x- y+ y- z+ z-
     def create_default_cam_angle(self, s, type_str):
         (xmin, xmax, ymin, ymax, zmin, zmax) = s.GetDataInformation().GetBounds()
         xmid = (xmin + xmax) / 2
@@ -342,6 +343,36 @@ class CameraObject:
                 self.CameraPosition[0] = self.CameraPosition[0] - camera_move
             else:
                 self.CameraPosition[0] = self.CameraPosition[0] + camera_move
+
+    ## @brief create camera in 4 phase
+    ## @param type_str x+y+, x+y-, x-y+, x-y-
+    def create_4_cam_angle(self, s, type_str):
+        (xmin, xmax, ymin, ymax, zmin, zmax) = s.GetDataInformation().GetBounds()
+        xmid = (xmin + xmax) / 2
+        ymid = (ymin + ymax) / 2
+        zmid = (zmin + zmax) / 2
+        xdelta = xmax - xmin
+        ydelta = ymax - ymin
+        zdelta = zmax - zmin
+        if len(type_str) < 4:
+            type_str = "x+y+"
+        position_ratio = math.tan(self.CameraViewAngle / 200.0 * math.pi)
+        camera_move = (xdelta + ydelta) / float(2) / position_ratio / math.sqrt(3)
+        # reset camera
+        self.CameraViewUp = [0.0, 0.0, 1.0]
+        self.CameraFocalPoint = [xmid, ymid, zmid]
+        self.CameraPosition = [xmid, ymid, zmid + camera_move]
+        # x
+        if type_str[1] == "+":
+            self.CameraPosition[0] = xmid + camera_move
+        else:
+            self.CameraPosition[0] = xmid - camera_move
+        # y
+        if type_str[3] == "+":
+            self.CameraPosition[1] = ymid + camera_move
+        else:
+            self.CameraPosition[1] = ymid - camera_move
+
 
     ## @brief set view camera to current object
     def set_camera(self, v):

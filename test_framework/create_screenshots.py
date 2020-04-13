@@ -415,19 +415,29 @@ def create_hausdorff_shot(sc):
         # standard
         std_cam = []
         co = CameraObject()
-        co.create_default_cam_angle(out0, "x+")
+        # co.create_default_cam_angle(out0, "x+")
+        # std_cam.append(co.generate_camera_str())
+        # co.create_default_cam_angle(out0, "x-")
+        # std_cam.append(co.generate_camera_str())
+        # co.create_default_cam_angle(out0, "y+")
+        # std_cam.append(co.generate_camera_str())
+        # co.create_default_cam_angle(out0, "y-")
+        # std_cam.append(co.generate_camera_str())
+        # co.create_default_cam_angle(out0, "z+")
+        # std_cam.append(co.generate_camera_str())
+        # co.create_default_cam_angle(out0, "z-")
+        # std_cam.append(co.generate_camera_str())
+
+        co.create_4_cam_angle(out0, "x+y+")
         std_cam.append(co.generate_camera_str())
-        co.create_default_cam_angle(out0, "x-")
+        co.create_4_cam_angle(out0, "x+y-")
         std_cam.append(co.generate_camera_str())
-        co.create_default_cam_angle(out0, "y+")
+        co.create_4_cam_angle(out0, "x-y+")
         std_cam.append(co.generate_camera_str())
-        co.create_default_cam_angle(out0, "y-")
+        co.create_4_cam_angle(out0, "x-y-")
         std_cam.append(co.generate_camera_str())
-        co.create_default_cam_angle(out0, "z+")
-        std_cam.append(co.generate_camera_str())
-        co.create_default_cam_angle(out0, "z-")
-        std_cam.append(co.generate_camera_str())
-        for i in range(0, 6):
+
+        for i in range(0, 4):
             ss.take_shot(v0, std_cam[i],
                          "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
             ss.take_shot(v1, std_cam[i],
