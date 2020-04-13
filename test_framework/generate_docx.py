@@ -27,6 +27,14 @@ class HausdorffSts:
         self.max_negtive = 0.0
         self.standard_deviation = 0.0
         self.in_file = ""
+        self.v_num = 0
+        self.nominal_num = 0
+        self.critical_num = 0
+        self.max_num = 0
+        self.out_num = 0
+        self.nominal_dist = 0.0
+        self.critical_dist = 0.0
+        self.max_dist = 0.0
 
     def read_from_file(self, filename):
         content = None
@@ -35,7 +43,7 @@ class HausdorffSts:
             return
         with open(filename) as f:
             content = f.readlines()
-        if len(content) < 9:
+        if len(content) < 17:
             return
         str_list = [l.strip() for l in content]
         l_rate = str_list[0].split(" ")
@@ -53,6 +61,14 @@ class HausdorffSts:
         self.max_negtive = float(str_list[6])
         self.standard_deviation = float(str_list[7])
         self.in_file = str_list[8]
+        self.v_num = int(str_list[9])
+        self.nominal_num = float(str_list[10])
+        self.critical_num = float(str_list[11])
+        self.max_num = float(str_list[12])
+        self.out_num = float(str_list[13])
+        self.nominal_dist = float(str_list[14])
+        self.critical_dist = float(str_list[15])
+        self.max_dist = float(str_list[16])
 
 
 ## end hausdorff relative#######################
@@ -232,6 +248,28 @@ class DocxGenerator:
         self.fill_row(table, 4, ["mean_negtive", a2b.mean_negtive])
         self.fill_row(table, 5, ["max_positive", a2b.max_positive])
         self.fill_row(table, 6, ["max_negtive", a2b.max_negtive])
+
+        self._doc.add_paragraph("")
+        self._doc.add_paragraph("Distance Percentage Statistics A to B")
+        t_rate = self._doc.add_table(rows = 5, cols = 3)
+        t_rate.style = 'Table Grid'
+        self.fill_row(t_rate, 0, ["", "A to B"])
+        shade_cell(t_rate.rows[0].cells[1])
+        shade_cell(t_rate.rows[0].cells[2])
+        nominal_num = int(a2b.nominal_num)
+        critical_num = int(nominal_num + a2b.critical_num)
+        max_num = int(critical_num + a2b.max_num)
+        out_num = int(a2b.out_num)
+        v_num = float(a2b.v_num)
+        self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
+        self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist), nominal_num,
+                                  "{:.2f}%".format(float(nominal_num) / v_num * 100)])
+        self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist), critical_num,
+                                  "{:.2f}%".format(float(critical_num) / v_num * 100)])
+        self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
+                                  "{:.2f}%".format(float(max_num) / v_num * 100)])
+        self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
+                                  "{:.2f}%".format(float(out_num) / v_num * 100)])
 
         self._doc.add_paragraph("")
         self._doc.add_paragraph("6-SIGMA Statistics A to B")

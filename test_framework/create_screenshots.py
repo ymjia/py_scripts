@@ -106,7 +106,7 @@ def set_legend_prop(lgd):
 def show_hausdorff_dist(s_name_list, sc):
     #get parameter
     nominal_dist = float(sc.config_val("hd_nominal_dist", "0.03"))
-    critical_dist = float(sc.config_val("hd_critical_dist", "0.5"))
+    critical_dist = float(sc.config_val("hd_critical_dist", "0.05"))
     max_dist = float(sc.config_val("hd_max_dist", "0.3"))
     view_height = int(sc.config_val("view_height", "768"))
     view_width = int(sc.config_val("view_width", "1024"))
@@ -180,7 +180,11 @@ def show_hausdorff_dist(s_name_list, sc):
     set_legend_prop(lgd_v1)
     return (v0, v1, hd)
 
-def write_dist_statistics(sd, filename, in_file):
+def write_dist_statistics(sd, filename, in_file, sc):
+    nominal_dist = float(sc.config_val("hd_nominal_dist", "0.03"))
+    critical_dist = float(sc.config_val("hd_critical_dist", "0.05"))
+    max_dist = float(sc.config_val("hd_max_dist", "0.3"))
+
     fd = sd.GetFieldData()
     sigma_rate = fd.GetArray("six_sigma_rate")
     if sigma_rate is None or sigma_rate.GetDataSize() != 6:
@@ -194,23 +198,26 @@ def write_dist_statistics(sd, filename, in_file):
     max_negative = fd.GetArray("max_negative").GetTuple1(0)
     standard_deviation = fd.GetArray("standard_deviation").GetTuple1(0)
 
+    # calculate dist rate
+    d_arr = sd.GetPointData().GetArray("Distance")
+    v_num = d_arr.GetNumberOfTuples();
+    nominal_num = 0
+    critical_num = 0
+    max_num = 0
+    out_num = 0
+    for vi in range(0, v_num):
+        val = abs(d_arr.GetTuple1(vi))
+        if val < nominal_dist:
+            nominal_num += 1
+        elif val < critical_dist:
+            critical_num += 1
+        elif val < max_dist:
+            max_num += 1
+        else:
+            out_num += 1
     # sigma_rate = vtk.vtkDoubleArray()
     # sigma_rate.SetNumberOfComponents(1)
     # sigma_rate.SetNumberOfTuples(6)
-    # sigma_num = vtk.vtkDoubleArray()
-    # sigma_num.SetNumberOfComponents(1)
-    # sigma_num.SetNumberOfTuples(6)
-    # l_sigma_rate = [0.01, 0.02, 0.23, 0.38, 0.21, 0.1]
-    # l_sigma_num = [10, 20, 230, 380, 210, 100]
-    # for i in range(0, 6):
-    #     sigma_rate.SetTuple1(i, l_sigma_rate[i])
-    #     sigma_num.SetTuple1(i, l_sigma_num[i])
-    # mean_total = 0.01
-    # mean_positive = 0.02
-    # mean_negative = -0.01
-    # max_positive = 0.1
-    # max_negative = -0.1
-    # standard_deviation = 0.11
     f_sts = open(filename, "w", encoding='utf-8')
     f_sts.write("{}\n".format(" ".join(map(str, [sigma_rate.GetTuple1(i) for i in range(0, 6)]))))
     f_sts.write("{}\n".format(" ".join(map(str, [sigma_num.GetTuple1(i) for i in range(0, 6)]))))
@@ -221,6 +228,14 @@ def write_dist_statistics(sd, filename, in_file):
     f_sts.write("{}\n".format(max_negative))
     f_sts.write("{}\n".format(standard_deviation))
     f_sts.write("{}\n".format(in_file))
+    f_sts.write("{}\n".format(v_num))
+    f_sts.write("{}\n".format(nominal_num))
+    f_sts.write("{}\n".format(critical_num))
+    f_sts.write("{}\n".format(max_num))
+    f_sts.write("{}\n".format(out_num))
+    f_sts.write("{}\n".format(nominal_dist))
+    f_sts.write("{}\n".format(critical_dist))
+    f_sts.write("{}\n".format(max_dist))
     f_sts.close()
 ## end=================hausdorff distance ======================
 
@@ -373,6 +388,11 @@ def create_hausdorff_shot(sc):
 
     dir_input = sc.config_map["dir_i"]
     dir_output = sc.config_map["dir_o"]
+
+    nominal_dist = float(sc.config_val("hd_nominal_dist", "0.03"))
+    critical_dist = float(sc.config_val("hd_critical_dist", "0.05"))
+    max_dist = float(sc.config_val("hd_max_dist", "0.3"))
+
     total_num = 0
     for case in sc.list_case:
         i_list = get_file(dir_input, case)
@@ -387,8 +407,8 @@ def create_hausdorff_shot(sc):
         out1 = OutputPort(hd, 1)
         sd0 = servermanager.Fetch(hd, idx=0)
         sd1 = servermanager.Fetch(hd, idx=1)
-        write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), i_list[0])
-        write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), i_list[1])
+        write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), i_list[0], sc)
+        write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), i_list[1], sc)
         if v0 is None:
             continue
         ss = ScreenShotHelper(sc)
