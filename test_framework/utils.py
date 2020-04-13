@@ -377,8 +377,8 @@ class SessionConfig:
         self.list_alg = []
         self.config_map = {}
         # parameter for hausdorff
-        self.config_map["hd_critical_dist"] = "0.03"
-        self.config_map["hd_nominal_dist"] = "0.05"
+        self.config_map["hd_critical_dist"] = "0.05"
+        self.config_map["hd_nominal_dist"] = "0.03"
         self.config_map["hd_max_dist"] = "0.3"
         self.config_map["hd_single_color"] = "True"
         # parameter for screenshot
