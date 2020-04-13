@@ -33,6 +33,7 @@ def deviation_report(dir_input, exe_pvpython):
     sc.config_map["dir_i"] = dir_in
     sc.config_map["dir_o"] = dir_out
     sc.config_map["view_height"] = "600"
+    sc.config_map["hd_max_dist"] = "0.2"
     total_num = ui_logic.call_pvpython(exe_pvpython, sc)
 
     # generate docx

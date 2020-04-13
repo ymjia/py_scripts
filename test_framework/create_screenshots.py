@@ -95,12 +95,18 @@ def generate_vn(s_in, s_name):
     RenameSource("{}_vn".format(s_name), sn)
     return sn
 
-def set_legend_prop(lgd):
-    lgd.Orientation = "Horizontal"
-    lgd.WindowLocation = "LowerCenter"
-    lgd.ScalarBarLength = 0.33
+def set_legend_prop(lgd, nominal_dist, critical_dist, max_dist):
+    if False:
+        lgd.Orientation = "Vertical"
+        lgd.WindowLocation = "LowerRightCorner"
+    else:
+        lgd.Orientation = "Horizontal"
+        lgd.WindowLocation = "LowerCenter"
+    lgd.ScalarBarLength = 0.66
     lgd.TitleColor = [0, 0, 0]
     lgd.LabelColor = [0, 0, 0]
+    lgd.UseCustomLabels = 1
+    lgd.CustomLabels = [-max_dist, -critical_dist, -nominal_dist, nominal_dist, critical_dist, max_dist]
     
 
 def show_hausdorff_dist(s_name_list, sc):
@@ -166,18 +172,18 @@ def show_hausdorff_dist(s_name_list, sc):
     distanceLUT.ColorSpace = 'RGB'
     eps = 1e-8
     max_eps = max_dist * 1.05
-    distanceLUT.RGBPoints = [-max_eps, 0, 0, 1, -max_dist, 0, 0, 1, 
+    distanceLUT.RGBPoints = [-max_dist, 0, 0, 1, 
                              -critical_dist, 0, 1, 1, -nominal_dist - eps, 0, 1, 1, 
                              -nominal_dist, 0, 1, 0, nominal_dist, 0, 1, 0,
                              nominal_dist + eps, 1, 1, 0, critical_dist, 1, 1, 0,
-                              max_dist, 1, 0, 0, max_eps, 1, 0, 0]
-    distancePWF.Points = [-max_eps, 1.0, 0.5, 0, max_eps, 1.0, 0.5, 0]
+                              max_dist, 1, 0, 0]
+    distancePWF.Points = [-max_dist, 1.0, 0.5, 0, max_dist, 1.0, 0.5, 0]
     
     # legend position
     lgd_v0 = GetScalarBar(distanceLUT, v0)
     lgd_v1 = GetScalarBar(distanceLUT, v1)
-    set_legend_prop(lgd_v0)
-    set_legend_prop(lgd_v1)
+    set_legend_prop(lgd_v0, nominal_dist, critical_dist, max_dist)
+    set_legend_prop(lgd_v1, nominal_dist, critical_dist, max_dist)
     return (v0, v1, hd)
 
 def write_dist_statistics(sd, filename, in_file, sc):
