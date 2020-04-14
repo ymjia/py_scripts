@@ -194,7 +194,7 @@ def generate_hausdorf_docx(ui):
     sc.list_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     sc.list_ver = ['__hausdorff']
     sc.list_alg.clear()
-    total_num = call_pvpython(exe_pvpython, sc)
+    total_num = utils.call_pvpython(exe_pvpython, sc)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     print(total_num)
@@ -261,33 +261,10 @@ def slot_create_screenshots(ui):
         ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
         if ret == qm.Cancel:
             return
-    total_num = call_pvpython(exe_pvpython, sc)
+    total_num = utils.call_pvpython(exe_pvpython, sc)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
-
-
-# call pvpython to take screenshot return screenshot number
-def call_pvpython(exe_pvpython, sc):
-    # write to file
-    filename = os.path.join(sc.config_map["dir_o"], "ss_config.txt")
-    sc.write_config(filename)
-    # run pvpython.exe
-    dir_pv_wd = os.path.dirname(exe_pvpython)
-    py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
-    proc_ss = subprocess.Popen(
-        [exe_pvpython, py_ss, filename], cwd=dir_pv_wd)
-    proc_ss.wait()
-    # read statistics number
-    total_num = int(0)
-    if os.path.exists(filename):
-        with open(filename, encoding='utf-8') as f:
-            content = f.readlines()
-        str_list = [l.strip() for l in content]
-        if len(str_list) == 1:
-            total_num = int(str_list[0])
-    return total_num
-
 
 
 def get_default_path(in_path):

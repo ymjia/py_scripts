@@ -8,9 +8,10 @@ import os
 import datetime
 from pathlib import Path
 sys.path.insert(0, os.getcwd())
-from test_framework import ui_logic
 from test_framework import generate_docx
 from test_framework.utils import SessionConfig
+from test_framework.utils import call_pvpython
+
 def create_screenshots(file_config):
     total_num = call_pvpython(exe_pvpython, l_case, ['__hausdorff'], [], dir_i, dir_o)
 
@@ -26,7 +27,7 @@ def deviation_report(dir_input, exe_pvpython):
     sc.list_alg = []
     print(sc.list_case)
     dir_in = str(Path(dir_input).parent)
-    dir_out = os.path.join(dir_in, "__output")
+    dir_out = os.path.join(dir_input, "__output")
     if not os.path.exists(dir_out):
         os.makedirs(dir_out)
 
@@ -36,7 +37,7 @@ def deviation_report(dir_input, exe_pvpython):
     sc.config_map["hd_nominal_dist"] = "0.03"
     sc.config_map["hd_critical_dist"] = "0.05"
     sc.config_map["hd_max_dist"] = "0.1"
-    total_num = ui_logic.call_pvpython(exe_pvpython, sc)
+    total_num = call_pvpython(exe_pvpython, sc)
 
     # generate docx
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
