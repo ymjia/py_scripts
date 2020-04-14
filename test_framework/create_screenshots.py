@@ -389,7 +389,13 @@ def create_screenshots(sc):
 def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
     print("Case: {}".format(sc.list_case))
-
+    std_cam_num = 4
+    camera_angle = sc.config_val("hd_camera_angle", "4")
+    try:
+        std_cam_num = int(camera_angle)
+    except ValueError:
+        pass
+    
     dir_input = sc.config_map["dir_i"]
     dir_output = sc.config_map["dir_o"]
 
@@ -419,29 +425,30 @@ def create_hausdorff_shot(sc):
         # standard
         std_cam = []
         co = CameraObject()
-        # co.create_default_cam_angle(out0, "x+")
-        # std_cam.append(co.generate_camera_str())
-        # co.create_default_cam_angle(out0, "x-")
-        # std_cam.append(co.generate_camera_str())
-        # co.create_default_cam_angle(out0, "y+")
-        # std_cam.append(co.generate_camera_str())
-        # co.create_default_cam_angle(out0, "y-")
-        # std_cam.append(co.generate_camera_str())
-        # co.create_default_cam_angle(out0, "z+")
-        # std_cam.append(co.generate_camera_str())
-        # co.create_default_cam_angle(out0, "z-")
-        # std_cam.append(co.generate_camera_str())
+        if std_cam_num == 6:
+            co.create_default_cam_angle(out0, "x+")
+            std_cam.append(co.generate_camera_str())
+            co.create_default_cam_angle(out0, "x-")
+            std_cam.append(co.generate_camera_str())
+            co.create_default_cam_angle(out0, "y+")
+            std_cam.append(co.generate_camera_str())
+            co.create_default_cam_angle(out0, "y-")
+            std_cam.append(co.generate_camera_str())
+            co.create_default_cam_angle(out0, "z+")
+            std_cam.append(co.generate_camera_str())
+            co.create_default_cam_angle(out0, "z-")
+            std_cam.append(co.generate_camera_str())
+        else:
+            co.create_4_cam_angle(out0, "x+y+")
+            std_cam.append(co.generate_camera_str())
+            co.create_4_cam_angle(out0, "x+y-")
+            std_cam.append(co.generate_camera_str())
+            co.create_4_cam_angle(out0, "x-y+")
+            std_cam.append(co.generate_camera_str())
+            co.create_4_cam_angle(out0, "x-y-")
+            std_cam.append(co.generate_camera_str())
 
-        co.create_4_cam_angle(out0, "x+y+")
-        std_cam.append(co.generate_camera_str())
-        co.create_4_cam_angle(out0, "x+y-")
-        std_cam.append(co.generate_camera_str())
-        co.create_4_cam_angle(out0, "x-y+")
-        std_cam.append(co.generate_camera_str())
-        co.create_4_cam_angle(out0, "x-y-")
-        std_cam.append(co.generate_camera_str())
-
-        for i in range(0, 4):
+        for i in range(0, std_cam_num):
             ss.take_shot(v0, std_cam[i],
                          "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
             ss.take_shot(v1, std_cam[i],
@@ -454,9 +461,9 @@ def create_hausdorff_shot(sc):
         cam_list = read_cam(cam_file)
         for i in range(0, len(cam_list)):
             ss.take_shot(v0, cam_list[i],
-                         "{}/ss___hd_v{}.png".format(out_dir, i + 6).replace("\\", "/"))
+                         "{}/ss___hd_v{}.png".format(out_dir, i + std_cam_num).replace("\\", "/"))
             ss.take_shot(v1, cam_list[i],
-                         "{}/ss___hd_v{}.png".format(out_dir2, i + 6).replace("\\", "/"))
+                         "{}/ss___hd_v{}.png".format(out_dir2, i + std_cam_num).replace("\\", "/"))
         total_num = total_num + len(cam_list) * 2
     return total_num
 

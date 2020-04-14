@@ -1,12 +1,13 @@
 <project>
-  <input path="c:/data/test_framework/management/project1/input/" />
-  <output path="c:/data/test_framework/management/project1/output/" />
+  <input path="C:/data/test_framework/management/project1/&#20013;/input" />
+  <output path="c:/data/test_framework/management/project1/&#20013;/output/" />
   <exe_demo path="C:/dev/py_scripts/tmp.py" />
   <exe_pv path="D:/tools/ParaView_r/bin/pvpython.exe" />
   <all>
     <case>
       <item check="1" name="case1" />
       <item check="1" name="case2" />
+      <item check="1" name="&#20013;" />
     </case>
     <version>
       <item check="1" name="input" />
@@ -22,8 +23,9 @@
   </all>
   <exe>
     <case>
-      <item check="1" name="case1" />
-      <item check="1" name="case2" />
+      <item check="0" name="case1" />
+      <item check="0" name="case2" />
+      <item check="0" name="&#20013;" />
     </case>
     <version str="input" />
     <param str="1 2" />
@@ -32,12 +34,13 @@
     <case>
       <item check="0" name="case1" />
       <item check="0" name="case2" />
+      <item check="1" name="&#20013;" />
     </case>
     <version>
-      <item check="0" name="input" />
+      <item check="1" name="input" />
       <item check="0" name="v12" />
       <item check="0" name="v11" />
-      <item check="1" name="v13" />
+      <item check="0" name="v13" />
       <item check="0" name="test" />
     </version>
     <algorithm>
@@ -47,8 +50,9 @@
   </screenshot>
   <docx>
     <case>
-      <item check="1" name="case1" />
+      <item check="0" name="case1" />
       <item check="0" name="case2" />
+      <item check="0" name="&#20013;" />
     </case>
     <version>
       <item check="0" name="input" />

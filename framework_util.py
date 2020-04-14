@@ -228,6 +228,7 @@ class SessionConfig:
         self.config_map["hd_critical_dist"] = "0.05"
         self.config_map["hd_max_dist"] = "0.3"
         self.config_map["hd_single_color"] = "True"
+        self.config_map["hd_camera_angle"] = "4"
         # parameter for screenshot
         self.config_map["ss_force_update"] = "False"
         self.config_map["rep_specular"] = "True"
