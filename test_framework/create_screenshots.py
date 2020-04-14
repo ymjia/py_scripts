@@ -10,8 +10,6 @@ import time
 import datetime
 from shutil import move
 from paraview.simple import *
-from paraview import vtk
-from paraview.simple import _active_objects
 from paraview.simple import GetDisplayProperties
 dir_py_module = os.path.join(os.getcwd(), "..", "Sn3D_plugins", "scripts", "pv_module")
 sys.path.append(dir_py_module)
