@@ -106,6 +106,7 @@ def set_legend_prop(lgd, nominal_dist, critical_dist, max_dist):
     lgd.TitleColor = [0, 0, 0]
     lgd.LabelColor = [0, 0, 0]
     lgd.UseCustomLabels = 1
+    lgd.AddRangeLabels = 0
     lgd.CustomLabels = [-max_dist, -critical_dist, -nominal_dist, nominal_dist, critical_dist, max_dist]
     
 
@@ -172,11 +173,10 @@ def show_hausdorff_dist(s_name_list, sc):
     distanceLUT.ColorSpace = 'RGB'
     eps = 1e-8
     max_eps = max_dist * 1.05
-    distanceLUT.RGBPoints = [-max_dist, 0, 0, 1, 
-                             -critical_dist, 0, 1, 1, -nominal_dist - eps, 0, 1, 1, 
-                             -nominal_dist, 0, 1, 0, nominal_dist, 0, 1, 0,
-                             nominal_dist + eps, 1, 1, 0, critical_dist, 1, 1, 0,
-                              max_dist, 1, 0, 0]
+    distanceLUT.RGBPoints = [-max_dist, 0, 0, 1, -critical_dist, 0, 1, 1,
+                             -nominal_dist - eps, 0, 1, 1, -nominal_dist, 0, 1, 0,
+                             nominal_dist, 0, 1, 0, nominal_dist + eps, 1, 1, 0,
+                             critical_dist, 1, 1, 0, max_dist, 1, 0, 0]
     distancePWF.Points = [-max_dist, 1.0, 0.5, 0, max_dist, 1.0, 0.5, 0]
     
     # legend position
