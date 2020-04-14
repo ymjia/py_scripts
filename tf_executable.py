@@ -8,7 +8,7 @@ import os
 import datetime
 from pathlib import Path
 sys.path.insert(0, os.getcwd())
-from test_framework import generate_docx
+from test_framework.generate_docx import DocxGenerator
 from test_framework.utils import SessionConfig
 from test_framework.utils import call_pvpython
 
@@ -48,7 +48,7 @@ def deviation_report(dir_input, exe_pvpython):
     file_save = os.path.join(dir_doc, doc_name_final)
     l_ver = ["hausdorff_A2B"]
     l_alg = ["__hd"] # reserved alg_name for hausdorff dist
-    gd = generate_docx.DocxGenerator(dir_in, dir_out, sc.list_case, l_ver, l_alg)
+    gd = DocxGenerator(dir_in, dir_out, sc.list_case, l_ver, l_alg)
     gd.generate_docx(file_save, "")
 
 
