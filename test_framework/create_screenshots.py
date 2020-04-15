@@ -491,6 +491,8 @@ def create_hausdorff_shot(sc):
         (v0, v1, hd) = show_hausdorff_dist(i_list, sc)
         if v0 is None:
             continue
+        set_default_view_display(v0)
+        set_default_view_display(v1)
         out0 = OutputPort(hd, 0)
         out1 = OutputPort(hd, 1)
         sd0 = servermanager.Fetch(hd, idx=0)
@@ -531,16 +533,18 @@ def create_hausdorff_shot(sc):
                          "{}/ss___hd_v{}.png".format(out_dir2, i).replace("\\", "/"))
         total_num = total_num + 12
         cam_file = os.path.join(dir_input, case, "config.txt")
-        if not os.path.exists(cam_file):
-            print("Camera config file {} does not exist!".format(cam_file))
-            continue
         cam_list = read_cam(cam_file)
-        for i in range(0, len(cam_list)):
-            ss.take_shot(v0, cam_list[i],
-                         "{}/ss___hd_v{}.png".format(out_dir, i + std_cam_num).replace("\\", "/"))
-            ss.take_shot(v1, cam_list[i],
-                         "{}/ss___hd_v{}.png".format(out_dir2, i + std_cam_num).replace("\\", "/"))
+        if len(cam_list) > 0:
+            for i in range(0, len(cam_list)):
+                ss.take_shot(v0, cam_list[i],
+                             "{}/ss___hd_v{}.png".format(out_dir, i + std_cam_num).replace("\\", "/"))
+                ss.take_shot(v1, cam_list[i],
+                             "{}/ss___hd_v{}.png".format(out_dir2, i + std_cam_num).replace("\\", "/"))
         total_num = total_num + len(cam_list) * 2
+        Delete(v0)
+        Delete(v1)
+        del v0
+        del v1
     return total_num
 
 

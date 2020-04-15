@@ -52,8 +52,8 @@
   </screenshot>
   <docx>
     <case>
-      <item check="1" name="case1" />
-      <item check="0" name="case2" />
+      <item check="0" name="case1" />
+      <item check="1" name="case2" />
       <item check="0" name="&#20013;" />
     </case>
     <version>
