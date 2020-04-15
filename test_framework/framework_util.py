@@ -357,3 +357,33 @@ class CameraObject:
                 return False
         except ValueError:
             return False
+
+def set_default_view_display(v):
+    v.UseGradientBackground = 1
+    v.Background = [0.941, 0.941, 0.941]
+    v.Background2 = [0.659, 0.659, 0.659]
+
+def set_default_display(dp, d_type="vtkPolyData"):
+    dp.Representation = "Surface"
+    dp.BackfaceRepresentation = "Surface"
+
+    #colors
+    dp.ColorArrayName = [None, '']
+    dp.DiffuseColor = [0.0, 0.604, 0.863]
+    dp.AmbientColor = [0.0, 0.0, 0.5]
+    dp.EdgeColor = [0.0, 0.0, 0.5]
+
+    dp.BackfaceAmbientColor = [1.0, 1.0, 1.0]
+    dp.BackfaceDiffuseColor = [0.9, 0.9, 0.443]
+    #color map
+    dp.MapScalars = 1
+    #Opacity
+    dp.Opacity = 1.0
+    dp.BackfaceOpacity = 1.0
+    #lightning
+    dp.Interpolation = "Flat"
+    dp.Specular = 0.5
+    dp.SpecularColor = [0.91, 0.91, 0.91]
+    dp.SpecularPower = 5.0
+    dp.Ambient = 0.1
+    dp.Diffuse = 1.0

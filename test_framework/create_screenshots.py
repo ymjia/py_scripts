@@ -282,7 +282,8 @@ class ScreenShotHelper:
             print("Warning! ss_helper:read_and_render {} cannot read".format(file_list))
             return None
         reader_display = Show(reader, v)
-        reader_display.ColorArrayName = [None, '']
+        set_default_view_display(v)
+        set_default_display(reader_display)
         if specular == "True":
             reader_display.Specular = 0.5
         else:
