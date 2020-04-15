@@ -47,7 +47,6 @@ class TFWindow(QWidget):
         self._qle_conf_file = QLineEdit()
         self._qle_dir_in = QLineEdit()
         self._qle_dir_out = QLineEdit()
-        self._qle_exe_pv = QLineEdit()
         self._qle_exe_demo = QLineEdit()
         self._qcb_cur_ver = QComboBox()
         self._qcb_cur_ver.setEditable(True)
@@ -115,10 +114,6 @@ class TFWindow(QWidget):
             m.appendRow(qsi)
         self._qlv_all_proj.setModel(m)
 
-    def get_pv_path(self):
-        tr = self._pTree.getroot()
-        return tr.find(pv_default).attrib["path"]
-
     # load information from TFobject to ui
     def fill_ui_info(self, in_obj):
         self._p = in_obj
@@ -126,7 +121,6 @@ class TFWindow(QWidget):
         self._qle_conf_file.setText(cur_obj._configFile)
         self._qle_dir_in.setText(cur_obj._dirInput)
         self._qle_dir_out.setText(cur_obj._dirOutput)
-        self._qle_exe_pv.setText(cur_obj._exePV)
         self._qle_exe_demo.setText(cur_obj._exeDemo)
         self._qle_doc_name.setText(cur_obj._docName)
         self._qcb_cur_ver.clear()
@@ -150,7 +144,6 @@ class TFWindow(QWidget):
         out_obj._configFile = self._qle_conf_file.text()
         out_obj._dirInput = self._qle_dir_in.text()
         out_obj._dirOutput = self._qle_dir_out.text()
-        out_obj._exePV = self._qle_exe_pv.text()
         out_obj._exeDemo = self._qle_exe_demo.text()
         out_obj._docName = self._qle_doc_name.text()
         out_obj._eVer = self._qcb_cur_ver.currentText()
@@ -229,7 +222,6 @@ class TFWindow(QWidget):
         qpb_set_dir_in.clicked.connect(lambda: ui_logic.slot_open_input_path(self))
         qpb_open_dir_in.clicked.connect(lambda: ui_logic.slot_open_path(self._qle_dir_in))
         self.get_f_bsw(self._qle_dir_out, grid, 2, "Output Directory")
-        self.get_f_bsw(self._qle_exe_pv, grid, 3, "PVPython Interpreter", "exe")
         self.get_f_bsw(self._qle_exe_demo, grid, 4, "Demo Executable", "exe")
         info.setLayout(grid)
         return info

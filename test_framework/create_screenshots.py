@@ -119,7 +119,7 @@ def show_hausdorff_dist(s_name_list, sc):
     if s_num != 2:
         print("Error! 2 source need to be selected, current source:")
         print(s_name_list)
-        return (None, None, None, None)
+        return (None, None, None)
     s_list = []
     for name in s_name_list:
         reader = read_files([name])
@@ -127,7 +127,7 @@ def show_hausdorff_dist(s_name_list, sc):
             s_list.append(reader)
     if len(s_list) != 2:
         print("2 poly mesh needed, now got {}".format(len(s_list)))
-        return (None, None, None, None)
+        return (None, None, None)
 
     if not "HausdorffDistance" in globals():
         if os.path.exists("./paraview-5.8/plugins/Utils/Utils.dll"):

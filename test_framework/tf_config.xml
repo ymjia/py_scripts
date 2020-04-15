@@ -52,24 +52,24 @@
   </screenshot>
   <docx>
     <case>
-      <item check="0" name="case1" />
+      <item check="1" name="case1" />
       <item check="0" name="case2" />
       <item check="0" name="&#20013;" />
     </case>
     <version>
-      <item check="0" name="input" />
-      <item check="0" name="v12" />
-      <item check="0" name="v11" />
-      <item check="0" name="v13" />
+      <item check="1" name="input" />
+      <item check="1" name="v12" />
+      <item check="1" name="v11" />
+      <item check="1" name="v13" />
       <item check="0" name="test" />
     </version>
     <algorithm>
       <item check="0" name="smooth" />
       <item check="0" name="merge" />
-      <item check="0" name="LowerJawScan" />
+      <item check="1" name="LowerJawScan" />
     </algorithm>
     <doc_name name="test_doc" />
     <current_name name="" />
-    <current_type name="Hausdorf_dist" />
+    <current_type name="Screenshots" />
   </docx>
 </project>
