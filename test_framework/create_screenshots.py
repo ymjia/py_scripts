@@ -12,9 +12,7 @@ from shutil import move
 from paraview.simple import *
 from paraview.simple import GetDisplayProperties
 
-
-#dir_py_module = os.path.join(os.getcwd(), "..", "Sn3D_plugins", "scripts", "pv_module")
-#sys.path.append(dir_py_module)
+from test_framework.utils import SessionConfig
 from test_framework.framework_util import *
 
 ## ====================texture =================================

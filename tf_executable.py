@@ -10,13 +10,10 @@ from pathlib import Path
 sys.path.insert(0, os.getcwd())
 from test_framework.generate_docx import DocxGenerator
 from test_framework.utils import SessionConfig
-from test_framework.utils import call_pvpython
-
-def create_screenshots(file_config):
-    total_num = call_pvpython(exe_pvpython, l_case, ['__hausdorff'], [], dir_i, dir_o)
+from test_framework import create_screenshots
 
 
-def deviation_report(dir_input, exe_pvpython):
+def deviation_report(dir_input):
     if not os.path.isdir(dir_input):
         print("Error! Input Argument {} is not a directory".format(dir_input))
     case_name = str(Path(dir_input).name)
@@ -37,7 +34,7 @@ def deviation_report(dir_input, exe_pvpython):
     sc.config_map["hd_nominal_dist"] = "0.03"
     sc.config_map["hd_critical_dist"] = "0.05"
     sc.config_map["hd_max_dist"] = "0.1"
-    total_num = call_pvpython(exe_pvpython, sc)
+    total_num = create_screenshots.create_hausdorff_shot(sc)
 
     # generate docx
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
@@ -57,10 +54,5 @@ if __name__ == "__main__":
         print("Usage: tf_executable dir_in")
         exit(0)
     dir_test = str(os.fsdecode(sys.argv[1]))
-    cwd = os.getcwd()
-    exe_pvpython = os.path.join(cwd, "pv", "bin", "pvpython.exe")
-    if len(sys.argv) > 2:
-        exe_pvpython = str(os.fsdecode(sys.argv[2]))
     print("dir_input: {}".format(dir_test))
-    print("screenshot tool: {}".format(exe_pvpython))
-    deviation_report(dir_test, exe_pvpython)
+    deviation_report(dir_test)

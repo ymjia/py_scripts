@@ -16,7 +16,6 @@ from openpyxl.chart import LineChart, Reference
 from openpyxl.chart.axis import DateAxis
 if sys.platform == "win32":
     import winreg as wr
-from test_framework import create_screenshots
 
 def get_py_in_reg():
     exe_py = ""
@@ -377,8 +376,8 @@ class SessionConfig:
         self.list_alg = []
         self.config_map = {}
         # parameter for hausdorff
-        self.config_map["hd_critical_dist"] = "0.05"
         self.config_map["hd_nominal_dist"] = "0.03"
+        self.config_map["hd_critical_dist"] = "0.05"
         self.config_map["hd_max_dist"] = "0.3"
         self.config_map["hd_single_color"] = "True"
         self.config_map["hd_camera_angle"] = "4"
@@ -429,31 +428,12 @@ class SessionConfig:
             f_config.writelines("{} {}\n".format(key, val))
         f_config.close()
 
-
-# call pvpython to take screenshot return screenshot number
-def call_pvpython(exe_pvpython, sc):
-    # write to file
-    filename = os.path.join(sc.config_map["dir_o"], "ss_config.txt")
-    sc.write_config(filename)
-    # run pvpython.exe
-    if 0:
-        dir_pv_wd = os.path.dirname(exe_pvpython)
-        py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
-        proc_ss = subprocess.Popen(
-            [exe_pvpython, py_ss, filename], cwd=dir_pv_wd)
-        proc_ss.wait()
-    else:
-        #create_screenshots.create_screenshots(sc)
-        create_screenshots.create_hausdorff_shot(sc)
-    # read statistics number
-    total_num = int(0)
-    if os.path.exists(filename):
-        with open(filename, encoding='utf-8') as f:
-            content = f.readlines()
-        str_list = [l.strip() for l in content]
-        if len(str_list) == 1:
-            total_num = int(str_list[0])
-    return total_num
+    def print_config(self):
+        print("cas {}".format(" ".join(map(str, self.list_case))))
+        print("ver {}".format(" ".join(map(str, self.list_ver))))
+        print("alg {}".format(" ".join(map(str, self.list_alg))))
+        for key, val in self.config_map.items():
+            print("{} {}".format(key, val))
 
 
 # indent xml ElementTree.root

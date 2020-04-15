@@ -20,6 +20,7 @@ from test_framework.project_io import get_checked_items
 from test_framework import generate_docx
 from test_framework import utils
 from test_framework import thread_module
+from test_framework import create_screenshots
 
 FILEBROWSER = "explorer"
 if sys.platform != "win32":
@@ -28,6 +29,8 @@ if sys.platform != "win32":
 
 # open file for mac
 def open_file(filename):
+    if not os.path.exists(filename):
+        print("Warning! {} not exists!".format(filename))
     if sys.platform == "win32":
         os.startfile(filename)
     else:
@@ -194,7 +197,7 @@ def generate_hausdorf_docx(ui):
     sc.list_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     sc.list_ver = ['__hausdorff']
     sc.list_alg.clear()
-    total_num = utils.call_pvpython(exe_pvpython, sc)
+    total_num = create_screenshots.create_hausdorff_shot(sc)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     print(total_num)
@@ -261,7 +264,7 @@ def slot_create_screenshots(ui):
         ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
         if ret == qm.Cancel:
             return
-    total_num = utils.call_pvpython(exe_pvpython, sc)
+    total_num = create_screenshots.create_screenshots(sc)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
