@@ -16,7 +16,7 @@ from openpyxl.chart import LineChart, Reference
 from openpyxl.chart.axis import DateAxis
 if sys.platform == "win32":
     import winreg as wr
-
+from test_framework import create_screenshots
 
 def get_py_in_reg():
     exe_py = ""
@@ -436,11 +436,15 @@ def call_pvpython(exe_pvpython, sc):
     filename = os.path.join(sc.config_map["dir_o"], "ss_config.txt")
     sc.write_config(filename)
     # run pvpython.exe
-    dir_pv_wd = os.path.dirname(exe_pvpython)
-    py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
-    proc_ss = subprocess.Popen(
-        [exe_pvpython, py_ss, filename], cwd=dir_pv_wd)
-    proc_ss.wait()
+    if 0:
+        dir_pv_wd = os.path.dirname(exe_pvpython)
+        py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
+        proc_ss = subprocess.Popen(
+            [exe_pvpython, py_ss, filename], cwd=dir_pv_wd)
+        proc_ss.wait()
+    else:
+        #create_screenshots.create_screenshots(sc)
+        create_screenshots.create_hausdorff_shot(sc)
     # read statistics number
     total_num = int(0)
     if os.path.exists(filename):
