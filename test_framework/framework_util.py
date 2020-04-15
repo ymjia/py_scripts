@@ -73,7 +73,10 @@ def read_files(file_list):
         return None
     if len(file_list) < 1:
         return None
-    reader = OpenDataFile(file_list)
+    try:
+        reader = OpenDataFile(file_list)
+    except RuntimeError:
+        return None
     if reader is None:
         return None
     pxm = servermanager.ProxyManager()

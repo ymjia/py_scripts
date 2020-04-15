@@ -278,6 +278,9 @@ class ScreenShotHelper:
         specular = self._sc.config_val("rep_specular", "True")
         HideAll(v)
         reader = read_files(file_list)
+        if reader is None:
+            print("Warning! ss_helper:read_and_render {} cannot read".format(file_list))
+            return None
         reader_display = Show(reader, v)
         reader_display.ColorArrayName = [None, '']
         if specular == "True":
@@ -305,15 +308,19 @@ class ScreenShotHelper:
         v_h = int(self._sc.config_val("view_height", 768))
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
-        cur_view = GetActiveViewOrCreate("RenderView")
+        cur_view = CreateView("RenderView")
         cur_view.ViewSize = [v_w, v_h]
         cur_view.CenterAxesVisibility = 0
         cur_source = self.read_and_render(file_list, cur_view)
+        if cur_source is None:
+            return 0
         for i in range(0, len(cam_list)):
             self.take_shot(cur_view, cam_list[i],
                          "{}/ss_{}_v{}.png".format(out_dir, pattern, i).replace("\\", "/"))
         Delete(cur_source)
         del cur_source
+        Delete(cur_view)
+        del cur_view
         return len(cam_list)
 
     # if data_file newer than ss_file, need update
@@ -420,14 +427,14 @@ def create_hausdorff_shot(sc):
         if not os.path.exists(out_dir2):
             os.makedirs(out_dir2)
         (v0, v1, hd) = show_hausdorff_dist(i_list, sc)
+        if v0 is None:
+            continue
         out0 = OutputPort(hd, 0)
         out1 = OutputPort(hd, 1)
         sd0 = servermanager.Fetch(hd, idx=0)
         sd1 = servermanager.Fetch(hd, idx=1)
         write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), i_list[0], sc)
         write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), i_list[1], sc)
-        if v0 is None:
-            continue
         ss = ScreenShotHelper(sc)
         # standard
         std_cam = []
