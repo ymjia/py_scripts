@@ -187,10 +187,6 @@ def generate_hausdorf_docx(ui):
     # create hausdorff shot
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
-    exe_pvpython = p_obj._exePV
-    if not os.path.exists(exe_pvpython):
-        QMessageBox.about(ui, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
-        return
     sc = utils.SessionConfig()
     sc.config_map["dir_i"] = p_obj._dirInput
     sc.config_map["dir_o"] = p_obj._dirOutput
@@ -241,10 +237,6 @@ def slot_create_screenshots(ui):
     qm = QMessageBox
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
-    exe_pvpython = p_obj._exePV
-    if not os.path.exists(exe_pvpython):
-        QMessageBox.about(ui, "Error", "python module {} doesnot Exist!".format(exe_pvpython))
-        return
     # create session config object
     sc = utils.SessionConfig()
     sc.list_case = get_checked_items(p_obj._case, p_obj._sCaseCheck)
@@ -610,25 +602,16 @@ def slot_ss_preview(ui):
         QMessageBox.about(None, "Tip:", "No Selected Item in CASE LIST to Manage!")
         return
     case_name = sl[0].data()
+    sc = utils.SessionConfig()
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
+    sc.config_map["dir_i"] = dir_i
+    sc.config_map["dir_o"] = dir_o
+    sc.list_case = [case_name]
+    sc.list_ver = ["input"]
+    sc.list_alg = ["tmp"]
+    total_num = create_screenshots.create_screenshots(sc)
     # write to file
-    filename = os.path.join(dir_o, "ss_config.txt")
-    line_str = "cas {}\n".format(case_name) + "ver input\n" + "alg tmp"
-    f_config = open(filename, "w")
-    f_config.write(line_str + "\n")
-    f_config.close()
-    # run pvpython.exe
-    exe_pvpython = p_obj._exePV
-    if not os.path.exists(exe_pvpython):
-        QMessageBox.about(None, "Error:", "PV interpator {} dose not exist!".format(exe_pvpython))
-        return
-    dir_pv_wd = os.path.dirname(exe_pvpython)
-    py_ss = os.path.join(os.path.dirname(os.path.realpath(__file__)), "create_screenshots.py")
-    proc_ss = subprocess.Popen(
-        [exe_pvpython, py_ss,
-         dir_i, dir_o, filename], cwd=dir_pv_wd)
-    proc_ss.wait()
     first_pic = os.path.join(dir_o, case_name, "input")
     if os.path.exists(first_pic):
         open_file(first_pic)
