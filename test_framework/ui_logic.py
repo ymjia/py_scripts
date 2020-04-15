@@ -21,6 +21,7 @@ from test_framework import generate_docx
 from test_framework import utils
 from test_framework import thread_module
 from test_framework import create_screenshots
+from paraview.simple import Interact, CreateView, Render, Delete
 
 FILEBROWSER = "explorer"
 if sys.platform != "win32":
@@ -578,6 +579,19 @@ def slot_qlv_double_click(ui, qlv, qle):
 
 
 def slot_ss_manage(ui):
+    # popup a window to select file,
+    # if not exist or not readable, use old version
+    # else read file and render window
+    cur_view = CreateView("RenderView")
+    cur_view.ViewSize = [1024, 768]
+    it = cur_view.GetInteractor()
+    #it.AddObserver("KeyPressEvent", create_screenshots.CameraKey)
+    it.AddObserver("KeyPressEvent",
+                   lambda o, e, f_list=['a','b'], conf = "conf": create_screenshots.CameraKey(o,e,f_list, conf))
+    #Render()
+    Interact(cur_view)
+    Delete(cur_view)
+    del cur_view
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     # get dir

@@ -320,12 +320,12 @@ class CameraObject:
 
     ## @brief fill camera info from view
     def get_camera(self, v):
-        self.CameraFocalPoint = v.CameraFocalPoint.copy()
+        self.CameraFocalPoint = v.CameraFocalPoint.GetData().copy()
         self.CameraParallelProjection = v.CameraParallelProjection
         self.CameraParallelScale = v.CameraParallelScale
-        self.CameraPosition = v.CameraPosition.copy()
+        self.CameraPosition = v.CameraPosition.GetData().copy()
         self.CameraViewAngle = v.CameraViewAngle
-        self.CameraViewUp = v.CameraViewUp.copy()
+        self.CameraViewUp = v.CameraViewUp.GetData().copy()
 
     def generate_camera_str(self):
         camera_pos = []

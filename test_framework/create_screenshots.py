@@ -249,6 +249,27 @@ def write_dist_statistics(sd, filename, in_file, sc):
     f_sts.close()
 ## end=================hausdorff distance ======================
 
+## ==================Camera position Setting =================
+
+
+def CameraKey(obj, event, f_list, conf):
+    k = obj.GetKeySym()
+    if k != "c":
+        if k == "q":
+            return
+        print("{} is not defined, press 'c' to record current camera position".format(k))
+        return
+    print(f_list)
+    print(conf)
+    # get camera
+    v = GetActiveView()
+    co = CameraObject()
+    co.get_camera(v)
+    cam_str = co.generate_camera_str()
+    print(cam_str)
+
+## end===============Camera position Setting =================
+
 
 # class for screenshots with config
 class ScreenShotHelper:

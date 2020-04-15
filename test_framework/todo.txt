@@ -15,3 +15,20 @@ is needed in  the python interpreter directory. (e.g. c:/python37/Lib/site-packa
    * vtkmodules
    needed to be moved to directory created by pyinstaller
 3. paraview plugins can be loaded dynamically by LoadPlugin() from a relative path, to findout whether plugin is loaded, use: "XXX" in globals(), in which XXX is name of Filter/Reader... in your plugin
+
+=== note 0415=======
+==data object in pv python
+view.CameraFocalPoint is type of VectorProperty, GetData() is needed to get a list object
+
+==add interactor with RenderView:
+# define slot
+def CameraKey(obj, event):
+    k = obj.GetKeySym()
+	print(k)
+
+# register slot
+cur_view = CreateView("RenderView")
+it = cur_view.GetInteractor()
+it.AddObserver("KeyPressEvent", CameraKey)
+it.AddObserver("KeyPressEvent", lambda o, e, my_obj=XXX:CameraKey(o, e, my_obj))
+Interact(cur_view) # start iteraction
