@@ -1,0 +1,17 @@
+load user settings as pvpython.exe does
+
+
+ReadME
+====To import paraview python modules:
+site-packages
+*paraview
+*vtk
+is needed in  the python interpreter directory. (e.g. c:/python37/Lib/site-packates)
+
+====To use pyinstaller create standalone executables:
+1. paraview.vtk need to be imported to your .py scripts
+2. modules
+   * paraview/modules
+   * vtkmodules
+   needed to be moved to directory created by pyinstaller
+3. paraview plugins can be loaded dynamically by LoadPlugin() from a relative path, to findout whether plugin is loaded, use: "XXX" in globals(), in which XXX is name of Filter/Reader... in your plugin
