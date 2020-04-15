@@ -150,6 +150,7 @@ def add_annotation(view, text, size):
     dis.Color = [1.0, 1.0, 0.498]
     dis.Interactivity = 0
     dis.Shadow = 1
+    return annot
 
 
 ## @brief add time annotitions at right-bottom

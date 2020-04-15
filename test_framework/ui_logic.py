@@ -579,31 +579,31 @@ def slot_qlv_double_click(ui, qlv, qle):
 
 
 def slot_ss_manage(ui):
-    # popup a window to select file,
-    # if not exist or not readable, use old version
-    # else read file and render window
-    cur_view = CreateView("RenderView")
-    cur_view.ViewSize = [1024, 768]
-    it = cur_view.GetInteractor()
-    #it.AddObserver("KeyPressEvent", create_screenshots.CameraKey)
-    it.AddObserver("KeyPressEvent",
-                   lambda o, e, f_list=['a','b'], conf = "conf": create_screenshots.CameraKey(o,e,f_list, conf))
-    #Render()
-    Interact(cur_view)
-    Delete(cur_view)
-    del cur_view
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
-    # get dir
     sl = ui._qlv_ss_case.selectedIndexes()
     if len(sl) < 1:
         QMessageBox.about(None, "Tip:", "No Selected Item in CASE LIST to Manage!")
         return
-    dir_case = os.path.join(p_obj._dirInput, sl[0].data())
+    case_name = sl[0].data()
+    dir_case = os.path.join(p_obj._dirInput, case_name)
     file_config = os.path.join(dir_case, "config.txt")
     if not os.path.exists(file_config):
         f= open(file_config, "w+")
         f.close()
+
+    # popup a window to select file,
+    # if not exist or not readable, use old version
+    # else read file and render window
+    type_filter = "Models (*.stl *.ply *.obj *.rge *.tb)"
+    fo = QFileDialog()
+    fo.setFileMode(QFileDialog.ExistingFiles)
+    names, _ = fo.getOpenFileNames(ui, "Select Model", dir_case, type_filter)
+    # camera already set
+    if len(names) > 0:
+        create_screenshots.start_camera_set_session(names, file_config)
+        return
+
     open_file(dir_case)
 
 

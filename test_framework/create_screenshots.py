@@ -250,23 +250,54 @@ def write_dist_statistics(sd, filename, in_file, sc):
 ## end=================hausdorff distance ======================
 
 ## ==================Camera position Setting =================
+def start_camera_set_session(names, f_config):
+    cn = len(read_cam(f_config))
+    s = read_files(names)
+    if s is None:
+        print("Error! Fail to open file {}".format(names))
+        return
+    v = CreateView("RenderView")
+    v.ViewSize = [1024, 768]
+    v.OrientationAxesVisibility = 1
+    # set default camera
+
+    it = v.GetInteractor()
+    ant = add_annotation(v, "Press 'C' to Record Current Camera\nPress 'Q' to Finish and quit\nTotal: {}".format(cn), 16)
+    it.AddObserver("KeyPressEvent",
+                   lambda o, e, f_list=names, conf = f_config, txt = ant: CameraKey(o, e, f_list, conf, txt))
+    dp = Show(s, v)
+    set_default_view_display(v)
+    set_default_display(dp)
+    # set initial view point
+    co = CameraObject()
+    co.create_default_cam_angle(s, "x+")
+    co.set_camera(v)
+    v.Update()
+    Interact(v)
+    Delete(v)
+    del v
 
 
-def CameraKey(obj, event, f_list, conf):
+def CameraKey(obj, event, f_list, conf, txt):
     k = obj.GetKeySym()
     if k != "c":
         if k == "q":
             return
         print("{} is not defined, press 'c' to record current camera position".format(k))
         return
-    print(f_list)
-    print(conf)
     # get camera
     v = GetActiveView()
     co = CameraObject()
     co.get_camera(v)
     cam_str = co.generate_camera_str()
-    print(cam_str)
+    f = open(conf, "a")
+    f.writelines("\n" + cam_str)
+    f.close()
+    cn = len(read_cam(conf))
+    txt.Text = "Press 'C' to Record Current Camera\nPress 'Q' to Finish and quit\nTotal: {}".format(cn)
+    v.Update()
+    Render()
+
 
 ## end===============Camera position Setting =================
 
@@ -365,10 +396,12 @@ class ScreenShotHelper:
 # read cam position from config file
 def read_cam(case_file):
     if not os.path.exists(case_file):
-        return None
+        return []
     content = None
     with open(case_file) as f:
         content = f.readlines()
+    if content is None:
+        return []
     return [l.strip() for l in content if len(l) > 20]
 
 
