@@ -94,12 +94,14 @@ def generate_vn(s_in, s_name):
     return sn
 
 def set_legend_prop(lgd, nominal_dist, critical_dist, max_dist):
-    if False:
+    if True:
         lgd.Orientation = "Vertical"
         lgd.WindowLocation = "LowerRightCorner"
+        lgd.TextPosition = 'Ticks left/bottom, annotations right/top'
     else:
         lgd.Orientation = "Horizontal"
         lgd.WindowLocation = "LowerCenter"
+    lgd.LabelFontSize = 12
     lgd.ScalarBarLength = 0.66
     lgd.TitleColor = [0, 0, 0]
     lgd.LabelColor = [0, 0, 0]

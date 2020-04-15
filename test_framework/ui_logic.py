@@ -191,6 +191,7 @@ def generate_hausdorf_docx(ui):
     sc = utils.SessionConfig()
     sc.config_map["dir_i"] = p_obj._dirInput
     sc.config_map["dir_o"] = p_obj._dirOutput
+    sc.config_map["hd_max_dist"] = 0.3
     sc.list_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     sc.list_ver = ['__hausdorff']
     sc.list_alg.clear()
