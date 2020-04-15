@@ -262,9 +262,9 @@ def start_camera_set_session(names, f_config):
     # set default camera
 
     it = v.GetInteractor()
-    ant = add_annotation(v, "Press 'C' to Record Current Camera\nPress 'Q' to Finish and quit\nTotal: {}".format(cn), 16)
+    ant = add_annotation(v, "'C': Record Current Camera\n'Q': Finish and quit\n'Space': Reset Camera\nTotal: {}".format(cn), 16)
     it.AddObserver("KeyPressEvent",
-                   lambda o, e, f_list=names, conf = f_config, txt = ant: CameraKey(o, e, f_list, conf, txt))
+                   lambda o, e, source=s, conf = f_config, txt = ant: CameraKey(o, e, source, conf, txt))
     dp = Show(s, v)
     set_default_view_display(v)
     set_default_display(dp)
@@ -278,25 +278,32 @@ def start_camera_set_session(names, f_config):
     del v
 
 
-def CameraKey(obj, event, f_list, conf, txt):
+def CameraKey(obj, event, s, conf, txt):
     k = obj.GetKeySym()
-    if k != "c":
-        if k == "q":
-            return
+    if k == "q":
+        return
+    elif k == "c":
+        v = GetActiveView()
+        co = CameraObject()
+        co.get_camera(v)
+        cam_str = co.generate_camera_str()
+        f = open(conf, "a")
+        f.writelines("\n" + cam_str)
+        f.close()
+        cn = len(read_cam(conf))
+        txt.Text = "'C': Record Current Camera\n'Q': Finish and quit\n'Space': Reset Camera\nTotal: {}".format(cn)
+        v.Update()
+        Render()
+    elif k == "space":
+        v = GetActiveView()
+        co = CameraObject()
+        co.create_default_cam_angle(s, "x+")
+        co.set_camera(v)
+        v.Update()
+        Render()
+    else:
         print("{} is not defined, press 'c' to record current camera position".format(k))
         return
-    # get camera
-    v = GetActiveView()
-    co = CameraObject()
-    co.get_camera(v)
-    cam_str = co.generate_camera_str()
-    f = open(conf, "a")
-    f.writelines("\n" + cam_str)
-    f.close()
-    cn = len(read_cam(conf))
-    txt.Text = "Press 'C' to Record Current Camera\nPress 'Q' to Finish and quit\nTotal: {}".format(cn)
-    v.Update()
-    Render()
 
 
 ## end===============Camera position Setting =================
