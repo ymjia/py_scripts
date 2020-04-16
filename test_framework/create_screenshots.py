@@ -266,6 +266,7 @@ def start_camera_set_session(names, f_config):
     co = CameraObject()
     co.create_default_cam_angle(s, "x+")
     co.set_camera(v)
+    v.CenterOfRotation = v.CameraFocalPoint
     v.Update()
     Interact(v)
     Delete(v)
@@ -296,7 +297,6 @@ def CameraKey(obj, event, s, conf, txt):
         v.Update()
         Render()
     else:
-        print("{} is not defined, press 'c' to record current camera position".format(k))
         return
 
 
@@ -379,7 +379,6 @@ class ScreenShotHelper:
 
     # if data_file newer than ss_file, need update
     def ss_need_update(self, file_list, file_cam, out_dir, pattern):
-        return True
         if self._sc.config_val("ss_force_update", "False") == "True":
             return True
         file_pic = os.path.join("{}/ss_{}_v0.png".format(out_dir, pattern)).replace("\\", "/")
