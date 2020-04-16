@@ -533,7 +533,6 @@ class GeneralConfiguration():
         with open(self.config_file, 'w') as f:
             tmp_str = json.dumps(self._config, indent = 4)
             f.write(tmp_str)
-            
 
     def read_from_file(self):
         if os.path.exists(self.config_file):
@@ -551,9 +550,12 @@ class GeneralConfiguration():
         if not os.path.exists(f_default):
             print("Fatal Error! Default config file {} cannot be found!".format(f_default))
             return
-        with open(f_default) as f:
-            self._config = json.load(f)        
-
+        try:
+            with open(f_default) as f:
+                self._config = json.load(f)
+        except json.decoder.JSONDecodeError:
+            print("Fatal Error! Default config file {} is Broken!".format(f_default))
+            return
 
 
 # define global object
