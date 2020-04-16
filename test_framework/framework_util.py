@@ -12,7 +12,7 @@ import datetime
 import paraview.vtk # for installer find vtk module
 from paraview.simple import *
 from paraview.simple import _active_objects
-
+from test_framework.utils import g_config
 
 # string operations===============
 # remove number from string tail
@@ -398,7 +398,11 @@ def set_default_display(dp, d_type="vtkPolyData"):
     dp.BackfaceOpacity = 1.0
     #lightning
     dp.Interpolation = "Flat"
-    dp.Specular = 0.5
+    specular = g_config.config_val("specular", True)
+    if specular:
+        dp.Specular = 0.5
+    else:
+        dp.Specular = 0.0
     dp.SpecularColor = [0.91, 0.91, 0.91]
     dp.SpecularPower = 5.0
     dp.Ambient = 0.1

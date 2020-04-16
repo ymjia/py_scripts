@@ -47,6 +47,8 @@ class GeneralConfigurationUI(QWidget):
         # other object
         qpb_save = QPushButton("Save")
         qpb_save.clicked.connect(self.slot_save_config)
+        qpb_default = QPushButton("Reset To Default")
+        qpb_default.clicked.connect(self.slot_load_default)
 
         # general
         qgb_ss = QGroupBox("Generate ScreenShot Settings")
@@ -77,9 +79,10 @@ class GeneralConfigurationUI(QWidget):
         qgb_hd.setLayout(qgl_hd)
         
         qgl_conf = QGridLayout()
-        qgl_conf.addWidget(qgb_ss)
-        qgl_conf.addWidget(qgb_hd)
-        qgl_conf.addWidget(qpb_save)
+        qgl_conf.addWidget(qgb_ss, 0, 0, 1, 2)
+        qgl_conf.addWidget(qgb_hd, 1, 0, 1, 2)
+        qgl_conf.addWidget(qpb_save, 2, 0)
+        qgl_conf.addWidget(qpb_default, 2, 1)
         self.setLayout(qgl_conf)
         # fill in current config
         self.fill_info(g_config)
