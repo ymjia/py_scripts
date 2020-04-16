@@ -1,1 +1,1 @@
-{"force_update": false, "specular": false, "enable_color": false, "enable_texture": false, "trans_bd": false, "view_width": "1024", "view_height": "768", "hd_6_sigma": false, "hd_legend_type": "Horizontal", "hd_nominal_dist": "0.03", "hd_critical_dist": "0.05", "hd_max_dist": "0.1"}
+{"force_update": false, "specular": true, "enable_color": false, "enable_texture": false, "trans_bd": false, "view_width": "1024", "view_height": "768", "hd_6_sigma": true, "hd_legend_type": "Horizontal", "hd_nominal_dist": "0.03", "hd_critical_dist": "0.05", "hd_max_dist": "0.3"}

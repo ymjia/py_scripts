@@ -13,7 +13,9 @@ from paraview.simple import *
 from paraview.simple import GetDisplayProperties
 
 from test_framework.utils import SessionConfig
+from test_framework.utils import g_config
 from test_framework.framework_util import *
+
 
 ## ====================texture =================================
 pxm = servermanager.ProxyManager()
@@ -94,7 +96,8 @@ def generate_vn(s_in, s_name):
     return sn
 
 def set_legend_prop(lgd, nominal_dist, critical_dist, max_dist):
-    if True:
+    
+    if g_config.config_val("hd_legend_type", "Vertical") == "Vertical":
         lgd.Orientation = "Vertical"
         lgd.WindowLocation = "LowerRightCorner"
         lgd.TextPosition = 'Ticks left/bottom, annotations right/top'
@@ -112,11 +115,11 @@ def set_legend_prop(lgd, nominal_dist, critical_dist, max_dist):
 
 def show_hausdorff_dist(s_name_list, sc):
     #get parameter
-    nominal_dist = float(sc.config_val("hd_nominal_dist", "0.03"))
-    critical_dist = float(sc.config_val("hd_critical_dist", "0.05"))
-    max_dist = float(sc.config_val("hd_max_dist", "0.3"))
-    view_height = int(sc.config_val("view_height", "768"))
-    view_width = int(sc.config_val("view_width", "1024"))
+    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
+    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
+    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
+    view_height = int(g_config.config_val("view_height", "768"))
+    view_width = int(g_config.config_val("view_width", "1024"))
     s_num = len(s_name_list)
     if s_num != 2:
         print("Error! 2 source need to be selected, current source:")
@@ -185,9 +188,9 @@ def show_hausdorff_dist(s_name_list, sc):
     return (v0, v1, hd)
 
 def write_dist_statistics(sd, filename, in_file, sc):
-    nominal_dist = float(sc.config_val("hd_nominal_dist", "0.03"))
-    critical_dist = float(sc.config_val("hd_critical_dist", "0.05"))
-    max_dist = float(sc.config_val("hd_max_dist", "0.3"))
+    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
+    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
+    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
 
     fd = sd.GetFieldData()
     sigma_rate = fd.GetArray("six_sigma_rate")
@@ -245,13 +248,16 @@ def write_dist_statistics(sd, filename, in_file, sc):
 
 ## ==================Camera position Setting =================
 def start_camera_set_session(names, f_config):
+    view_height = int(g_config.config_val("view_height", "768"))
+    view_width = int(g_config.config_val("view_width", "1024"))
+
     cn = len(read_cam(f_config))
     s = read_files(names)
     if s is None:
         print("Error! Fail to open file {}".format(names))
         return
     v = CreateView("RenderView")
-    v.ViewSize = [1024, 768]
+    v.ViewSize = [view_width, view_height]
     v.OrientationAxesVisibility = 1
     # set default camera
 
@@ -310,7 +316,7 @@ class ScreenShotHelper:
         self._sc = sc
 
     def take_shot(self, view, cam, filename):
-        trans_bg = self._sc.config_val("transparent_background", "False") == "True"
+        trans_bg = g_config.config_val("trans_bg", "False") == "True"
         co = CameraObject()
         if not co.read_camera_from_str(cam):
             print("Warning! cannot decode camera from string {}".format(cam))
@@ -328,7 +334,7 @@ class ScreenShotHelper:
 
     # read file or file list and render in given view
     def read_and_render(self, file_list, v):
-        specular = self._sc.config_val("rep_specular", "True")
+        specular = g_config.config_val("specular", True)
         HideAll(v)
         reader = read_files(file_list)
         if reader is None:
@@ -337,11 +343,12 @@ class ScreenShotHelper:
         reader_display = Show(reader, v)
         set_default_view_display(v)
         set_default_display(reader_display)
-        if specular == "True":
+        if specular:
             reader_display.Specular = 0.5
         else:
             reader_display.Specular = 0.0
-        show_texture(reader, v)
+        if g_config.config_val("enable_texture", True):
+            show_texture(reader, v)
         v.ResetCamera()
         # add anotation
         f = file_list[0]
@@ -358,8 +365,8 @@ class ScreenShotHelper:
 
     # create screenshots for given file from given cam_list    
     def create_shot(self, file_list, cam_list, out_dir, pattern):
-        v_w = int(self._sc.config_val("view_width", 1024))
-        v_h = int(self._sc.config_val("view_height", 768))
+        v_w = int(g_config.config_val("view_width", 1024))
+        v_h = int(g_config.config_val("view_height", 768))
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
         cur_view = CreateView("RenderView")
@@ -379,7 +386,7 @@ class ScreenShotHelper:
 
     # if data_file newer than ss_file, need update
     def ss_need_update(self, file_list, file_cam, out_dir, pattern):
-        if self._sc.config_val("ss_force_update", "False") == "True":
+        if g_config.config_val("force_update", False) == True:
             return True
         file_pic = os.path.join("{}/ss_{}_v0.png".format(out_dir, pattern)).replace("\\", "/")
         if not os.path.exists(file_pic):
@@ -411,8 +418,8 @@ def read_cam(case_file):
 # general operation, case/version/filanem all have their effects
 def create_screenshots(sc):
     total_num = 0
-    dir_input = sc.config_map["dir_i"]
-    dir_output = sc.config_map["dir_o"]
+    dir_input = sc.dir_i
+    dir_output = sc.dir_o
     # case/version/alg
     ss = ScreenShotHelper(sc)
     file_dir = []
@@ -459,18 +466,18 @@ def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
     print("Case: {}".format(sc.list_case))
     std_cam_num = 4
-    camera_angle = sc.config_val("hd_camera_angle", "4")
+    camera_angle = g_config.config_val("hd_camera_angle", "4")
     try:
         std_cam_num = int(camera_angle)
     except ValueError:
         pass
     
-    dir_input = sc.config_map["dir_i"]
-    dir_output = sc.config_map["dir_o"]
+    dir_input = sc.dir_i
+    dir_output = sc.dir_o
 
-    nominal_dist = float(sc.config_val("hd_nominal_dist", "0.03"))
-    critical_dist = float(sc.config_val("hd_critical_dist", "0.05"))
-    max_dist = float(sc.config_val("hd_max_dist", "0.3"))
+    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
+    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
+    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
 
     total_num = 0
     for case in sc.list_case:

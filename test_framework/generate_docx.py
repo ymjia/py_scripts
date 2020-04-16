@@ -13,7 +13,7 @@ from docx.shared import Inches
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from docx.shared import Mm
-
+from test_framework.utils import g_config
 
 ## hausdorff relative#########################
 class HausdorffSts:
@@ -194,32 +194,33 @@ class DocxGenerator:
         self.fill_row(table, 4, ["mean_negtive", a2b.mean_negtive, b2a.mean_negtive])
         self.fill_row(table, 5, ["max_positive", a2b.max_positive, b2a.max_positive])
         self.fill_row(table, 6, ["max_negtive", a2b.max_negtive, b2a.max_negtive])
+        
+        if g_config.config_val("hd_6_sigma", True):
+            self._doc.add_paragraph("")
+            self._doc.add_paragraph("6-SIGMA Statistics A to B")
+            ts_a2b = self._doc.add_table(rows = 7, cols = 4)
+            ts_a2b.style = 'Table Grid'
+            self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
+            shade_cell(ts_a2b.rows[0].cells[1])
+            shade_cell(ts_a2b.rows[0].cells[2])
+            sigma_map = [-3, -2, -1, 1, 2, 3]
+            for ri in range(0, 6):
+                self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
+                                               a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
+            # histogram
+            ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
 
-        self._doc.add_paragraph("")
-        self._doc.add_paragraph("6-SIGMA Statistics A to B")
-        ts_a2b = self._doc.add_table(rows = 7, cols = 4)
-        ts_a2b.style = 'Table Grid'
-        self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
-        shade_cell(ts_a2b.rows[0].cells[1])
-        shade_cell(ts_a2b.rows[0].cells[2])
-        sigma_map = [-3, -2, -1, 1, 2, 3]
-        for ri in range(0, 6):
-            self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                           a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
-        # histogram
-        ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
-
-        self._doc.add_paragraph("")
-        self._doc.add_paragraph("6-SIGMA Statistics B to A")
-        ts_b2a = self._doc.add_table(rows = 7, cols = 4)
-        ts_b2a.style = 'Table Grid'
-        self.fill_row(ts_b2a, 0, ["", "Point Number", "Point Percentage"])
-        shade_cell(ts_b2a.rows[0].cells[1])
-        shade_cell(ts_b2a.rows[0].cells[2])
-        for ri in range(0, 6):
-            self.fill_row(ts_b2a, ri + 1, ["{} sigma".format(sigma_map[ri]),
+            self._doc.add_paragraph("")
+            self._doc.add_paragraph("6-SIGMA Statistics B to A")
+            ts_b2a = self._doc.add_table(rows = 7, cols = 4)
+            ts_b2a.style = 'Table Grid'
+            self.fill_row(ts_b2a, 0, ["", "Point Number", "Point Percentage"])
+            shade_cell(ts_b2a.rows[0].cells[1])
+            shade_cell(ts_b2a.rows[0].cells[2])
+            for ri in range(0, 6):
+                self.fill_row(ts_b2a, ri + 1, ["{} sigma".format(sigma_map[ri]),
                                            b2a.sigma_num[ri], "{:.2f}%".format(b2a.sigma_rate[ri] * 100.0)])
-        ts_b2a.rows[0].cells[3].merge(ts_b2a.rows[6].cells[3])        
+            ts_b2a.rows[0].cells[3].merge(ts_b2a.rows[6].cells[3])        
 
     def add_hausdorff_statistic_table_single(self, case):
         if len(self._listVer) != 1:
@@ -271,19 +272,20 @@ class DocxGenerator:
         self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
                                   "{:.2f}%".format(float(out_num) / v_num * 100)])
 
-        self._doc.add_paragraph("")
-        self._doc.add_paragraph("6-SIGMA Statistics A to B")
-        ts_a2b = self._doc.add_table(rows = 7, cols = 4)
-        ts_a2b.style = 'Table Grid'
-        self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
-        shade_cell(ts_a2b.rows[0].cells[1])
-        shade_cell(ts_a2b.rows[0].cells[2])
-        sigma_map = [-3, -2, -1, 1, 2, 3]
-        for ri in range(0, 6):
-            self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                           a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
-        # histogram
-        ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
+        if g_config.config_val("hd_6_sigma", True):
+            self._doc.add_paragraph("")
+            self._doc.add_paragraph("6-SIGMA Statistics A to B")
+            ts_a2b = self._doc.add_table(rows = 7, cols = 4)
+            ts_a2b.style = 'Table Grid'
+            self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
+            shade_cell(ts_a2b.rows[0].cells[1])
+            shade_cell(ts_a2b.rows[0].cells[2])
+            sigma_map = [-3, -2, -1, 1, 2, 3]
+            for ri in range(0, 6):
+                self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
+                                               a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
+            # histogram
+            ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
 
 
     ## @brief generate docx file from given algorithm output dir, and config

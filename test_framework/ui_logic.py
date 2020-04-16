@@ -189,9 +189,8 @@ def generate_hausdorf_docx(ui):
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     sc = utils.SessionConfig()
-    sc.config_map["dir_i"] = p_obj._dirInput
-    sc.config_map["dir_o"] = p_obj._dirOutput
-    sc.config_map["hd_max_dist"] = 0.3
+    sc.dir_i = p_obj._dirInput
+    sc.dir_o = p_obj._dirOutput
     sc.list_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     sc.list_ver = ['__hausdorff']
     sc.list_alg.clear()
@@ -244,10 +243,9 @@ def slot_create_screenshots(ui):
     sc.list_case = get_checked_items(p_obj._case, p_obj._sCaseCheck)
     sc.list_alg = get_checked_items(p_obj._alg, p_obj._sAlgCheck)
     sc.list_ver = get_checked_items(p_obj._ver, p_obj._sVerCheck)
-    sc.config_map["dir_i"] = p_obj._dirInput
-    sc.config_map["dir_o"] = p_obj._dirOutput
-    sc.config_map["rep_specular"] = "True"
-    sc.config_map["ss_force_update"] = "False"
+    sc.dir_i = p_obj._dirInput
+    sc.dir_o = p_obj._dirOutput
+
     if len(sc.list_case) < 1:
         QMessageBox.about(ui, "Error", "No Case checked")
         return
@@ -620,8 +618,8 @@ def slot_ss_preview(ui):
     sc = utils.SessionConfig()
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
-    sc.config_map["dir_i"] = dir_i
-    sc.config_map["dir_o"] = dir_o
+    sc.dir_i = dir_i
+    sc.dir_o = dir_o
     sc.list_case = [case_name]
     sc.list_ver = ["input"]
     sc.list_alg = ["tmp"]

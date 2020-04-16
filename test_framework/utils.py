@@ -376,23 +376,8 @@ class SessionConfig:
         self.list_ver = []
         self.list_alg = []
         self.config_map = {}
-        # parameter for hausdorff
-        self.config_map["hd_nominal_dist"] = "0.03"
-        self.config_map["hd_critical_dist"] = "0.05"
-        self.config_map["hd_max_dist"] = "0.3"
-        self.config_map["hd_single_color"] = "True"
-        self.config_map["hd_camera_angle"] = "4"
-        # parameter for screenshot
-        self.config_map["ss_force_update"] = "False"
-        self.config_map["rep_specular"] = "True"
-        self.config_map["view_width"] = "1024"
-        self.config_map["view_height"] = "768"
-        self.config_map["transparent_background"] = "False"
-
-    def config_val(self, key_str, default_val):
-        if key_str in self.config_map:
-            return self.config_map[key_str]
-        return default_val
+        self.dir_i = ""
+        self.dir_o = ""
         
     def read_config(self, filename):
         if not os.path.exists(filename):
@@ -412,12 +397,8 @@ class SessionConfig:
         self.list_case = lines[0].split(" ")[1:].copy()
         self.list_ver = lines[1].split(" ")[1:].copy()
         self.list_alg = lines[2].split(" ")[1:].copy()
-        # optional part
-        for i in range(4, len(lines)):
-            l_couple = lines[i].split(" ")
-            if len(l_couple) != 2:
-                continue
-            self.config_map[l_couple[0]] = l_couple[1]
+        self.dir_i = lines[3].split("")[1]
+        self.dir_o = lines[4].split("")[1]
         return True
 
     def write_config(self, filename):
@@ -425,8 +406,8 @@ class SessionConfig:
         f_config.writelines("cas {}\n".format(" ".join(map(str, self.list_case))))
         f_config.writelines("ver {}\n".format(" ".join(map(str, self.list_ver))))
         f_config.writelines("alg {}\n".format(" ".join(map(str, self.list_alg))))
-        for key, val in self.config_map.items():
-            f_config.writelines("{} {}\n".format(key, val))
+        f_config.writelines("dir_i {}\n".format(self.dir_i))
+        f_config.writelines("dir_o {}\n".format(self.dir_o))
         f_config.close()
 
     def print_config(self):
@@ -546,6 +527,11 @@ class GeneralConfiguration():
         else:
             self.read_default()
 
+    def config_val(self, key_str, default_val):
+        if key_str in self._config:
+            return self._config[key_str]
+        return default_val
+
     def write_to_file(self):
         with open(self.config_file, 'w') as json_file:
             json.dump(self._config, json_file)
@@ -569,7 +555,6 @@ class GeneralConfiguration():
 
 # define global object
 g_config = GeneralConfiguration()
-
 
 if __name__ == "__main__":
     # in_list = ["c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095928.smp", "c:/data/test_framework/management/project1/output/case1/test/logs/tfl_20190820_095204.smp"]
