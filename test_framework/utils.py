@@ -11,6 +11,7 @@ import time
 import threading
 import socket
 import glob
+import json
 from openpyxl import Workbook
 from openpyxl.chart import LineChart, Reference
 from openpyxl.chart.axis import DateAxis
@@ -529,6 +530,45 @@ def create_chart(in_list, sp_list, ws):
     lc_cpu += lc_mem
     ws.add_chart(lc_cpu, "{}1".format(chr(ord('A') + f_num * 2 + 2)))
     return 0
+
+# global config
+class GeneralConfiguration():
+    def __init__(self):
+        self._config = {}
+        dir_config = os.path.join(os.getcwd(), "config")
+
+        if not os.path.exists(dir_config):
+            os.makedirs(dir_config)
+
+        self.config_file = os.path.join(dir_config, "general.json")
+        if os.path.exists(self.config_file):
+            self.read_from_file()
+        else:
+            self.read_default()
+
+    def write_to_file(self):
+        with open(self.config_file, 'w') as json_file:
+            json.dump(self._config, json_file)
+
+    def read_from_file(self):
+        if os.path.exists(self.config_file):
+            with open(self.config_file) as f:
+                self._config = json.load(f)
+        else:
+            self.read_default()
+
+    def read_default(self):
+        f_default = os.path.join(os.getcwd(), "config", "general_default.json")
+        if not os.path.exists(f_default):
+            print("Fatal Error! Default config file {} cannot be found!".format(f_default))
+            return
+        with open(f_default) as f:
+            self._config = json.load(f)        
+
+
+
+# define global object
+g_config = GeneralConfiguration()
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ from test_framework import utils
 from test_framework import ui_cmd_history
 from test_framework import ui_logic
 from test_framework.ui_logic import create_QListView
-
+from test_framework.ui_configuration import GeneralConfigurationUI
 class TFWindow(QWidget):
     # take project object as input
     def __init__(self, parent=None):
@@ -75,6 +75,7 @@ class TFWindow(QWidget):
         self._qcb_doc_type.addItems(["Screenshots", "Time_statistics", "CPU_MEM_statistics", "Hausdorf_dist"])
         # other object
         self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
+        self._configDialog = GeneralConfigurationUI(self)
         self._filenameSelector = None
         # layout
         grid = QGridLayout()
@@ -192,6 +193,8 @@ class TFWindow(QWidget):
         qpb_delete = QPushButton("Delete Project")
         qpb_save = QPushButton("Save Project")
         qpb_load = QPushButton("Load Project")
+        qpb_config = QPushButton("Global Configuration")
+        qpb_config.clicked.connect(self.slot_show_config)
         qpb_new.clicked.connect(lambda: ui_logic.slot_new_project(self))
         qpb_delete.clicked.connect(lambda: ui_logic.slot_delete_project(self))
         qpb_save.clicked.connect(lambda: ui_logic.slot_save_project(self))
@@ -203,6 +206,7 @@ class TFWindow(QWidget):
         grid.addWidget(qpb_load, 2, 1)
         grid.addWidget(qpb_delete, 3, 0)
         grid.addWidget(qpb_save, 3, 1)
+        grid.addWidget(qpb_config, 4, 0, 1, 2)
         manage.setLayout(grid)
         return manage
 
@@ -415,6 +419,10 @@ class TFWindow(QWidget):
         self._cmdDialog.resize(800, 200)
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
+
+    def slot_show_config(self):
+        #self._configDialog.resize(800, 200)
+        self._configDialog.show()
 
     def slot_add_alg_list(self):
         cand = ui_logic.get_all_filenames(self._p)
