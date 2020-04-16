@@ -520,12 +520,9 @@ class GeneralConfiguration():
 
         if not os.path.exists(dir_config):
             os.makedirs(dir_config)
-
         self.config_file = os.path.join(dir_config, "general.json")
-        if os.path.exists(self.config_file):
-            self.read_from_file()
-        else:
-            self.read_default()
+        self.read_from_file()
+
 
     def config_val(self, key_str, default_val):
         if key_str in self._config:
@@ -533,13 +530,19 @@ class GeneralConfiguration():
         return default_val
 
     def write_to_file(self):
-        with open(self.config_file, 'w') as json_file:
-            json.dump(self._config, json_file)
+        with open(self.config_file, 'w') as f:
+            tmp_str = json.dumps(self._config, indent = 4)
+            f.write(tmp_str)
+            
 
     def read_from_file(self):
         if os.path.exists(self.config_file):
-            with open(self.config_file) as f:
-                self._config = json.load(f)
+            try:
+                with open(self.config_file) as f:
+                    self._config = json.load(f)
+            except json.decoder.JSONDecodeError:
+                self.read_default()
+                return
         else:
             self.read_default()
 
