@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, os.getcwd())
 from test_framework.generate_docx import DocxGenerator
 from test_framework.utils import SessionConfig
+from test_framework.utils import g_config
 from test_framework import create_screenshots
 
 
@@ -28,12 +29,9 @@ def deviation_report(dir_input):
     if not os.path.exists(dir_out):
         os.makedirs(dir_out)
 
-    sc.config_map["dir_i"] = dir_in
-    sc.config_map["dir_o"] = dir_out
-    sc.config_map["view_height"] = "600"
-    sc.config_map["hd_nominal_dist"] = "0.03"
-    sc.config_map["hd_critical_dist"] = "0.05"
-    sc.config_map["hd_max_dist"] = "0.1"
+    sc.dir_i = dir_in
+    sc.dir_o = dir_out
+
     total_num = create_screenshots.create_hausdorff_shot(sc)
 
     # generate docx
