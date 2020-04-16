@@ -131,18 +131,10 @@ def show_hausdorff_dist(s_name_list, sc):
         print("2 poly mesh needed, now got {}".format(len(s_list)))
         return (None, None, None)
 
-    if not "HausdorffDistance" in globals():
-        if os.path.exists("./paraview-5.8/plugins/Utils/Utils.dll"):
-            LoadPlugin("./paraview-5.8/plugins/Utils/Utils.dll", remote=False, ns=globals())
-            print("load from ./paraview-5.8/plugins/Utils/Utils.dll")
-        elif os.path.exists("./plugins/Utils/Utils.dll"):
-            LoadPlugin("./plugins/Utils/Utils.dll", remote=False, ns=globals())
-            print("load from ./plugins/Utils/Utils.dll")
-        else:
-            print("Warning! Fail to load hausdorff dist plugin")
-    if not "HausdorffDistance" in globals():
+    if not load_local_plugin("Utils", "HausdorffDistance", globals()):
         print("Error! Fail to load Utils Plugin!")
         return (None, None, None)
+    print("###{}".format("HausdorffDistance" in globals()))
     # get names
     pxm = servermanager.ProxyManager();
     name0 = os.path.splitext(pxm.GetProxyName("sources", s_list[0]))[0]

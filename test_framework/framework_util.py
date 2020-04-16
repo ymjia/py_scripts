@@ -73,6 +73,8 @@ def read_files(file_list):
         return None
     if len(file_list) < 1:
         return None
+    load_local_plugin("RangeDataIO", "RGEreader", globals())
+    load_local_plugin("AscIO", "ASCreader", globals())
     try:
         reader = OpenDataFile(file_list)
     except RuntimeError:
@@ -89,6 +91,19 @@ def read_files(file_list):
 
 
 # paraview operations ==========================
+
+def load_local_plugin(name_str, module_str, load_ns):
+    if not module_str in load_ns:
+        plugin_path = "./plugins/{}/{}.dll".format(name_str, name_str)
+        if os.path.exists(plugin_path):
+            try:
+                LoadPlugin(plugin_path, remote=False, ns=load_ns)
+                print("Loaded plugin from: {}".format(plugin_path))
+            except RuntimeError:
+                print("Error! Fail to Loaded plugin from: {}".format(plugin_path))
+    return module_str in load_ns
+
+
 ## @brief generate layouted views
 ## @note call before create views
 def generate_view(l, s_num):

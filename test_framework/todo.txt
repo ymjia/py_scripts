@@ -14,7 +14,9 @@ is needed in  the python interpreter directory. (e.g. c:/python37/Lib/site-packa
    * paraview/modules
    * vtkmodules
    needed to be moved to directory created by pyinstaller
-3. paraview plugins can be loaded dynamically by LoadPlugin() from a relative path, to findout whether plugin is loaded, use: "XXX" in globals(), in which XXX is name of Filter/Reader... in your plugin
+3. paraview plugins can be loaded dynamically by LoadPlugin() from a relative path
+   3.1 to findout whether plugin is loaded, use: "XXX" in globals(), in which XXX is name of Filter/Reader... in your plugin, **watch out globals() as parameter!
+   3.2 to load plugin with 3rd party dll denpendency, ensure *correct* vtkXXX.dll and 3rd party dlls in your $ENV{path}, correct means ParaView version/ debug,release configuration are compatible between plugin and vtk used to build that plugin.
 
 === note 0415=======
 ==data object in pv python
