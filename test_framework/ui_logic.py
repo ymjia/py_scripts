@@ -594,7 +594,7 @@ def slot_ss_manage(ui):
     # popup a window to select file,
     # if not exist or not readable, use old version
     # else read file and render window
-    type_filter = "Models (*.stl *.ply *.obj *.rge *.tb)"
+    type_filter = "Models (*.stl *.ply *.obj *.asc *.rge *.tb)"
     fo = QFileDialog()
     fo.setFileMode(QFileDialog.ExistingFiles)
     names, _ = fo.getOpenFileNames(ui, "Select Model", dir_case, type_filter)

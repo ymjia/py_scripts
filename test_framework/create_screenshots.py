@@ -497,8 +497,15 @@ def create_hausdorff_shot(sc):
         out1 = OutputPort(hd, 1)
         sd0 = servermanager.Fetch(hd, idx=0)
         sd1 = servermanager.Fetch(hd, idx=1)
-        write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), i_list[0], sc)
-        write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), i_list[1], sc)
+        # findout filename str
+        f_0 = i_list[0]
+        f_1 = i_list[1]
+        if "{}_test_name".format(case) in sc.config_map:
+            f_0 = sc.config_map["{}_test_name".format(case)]
+        if "{}_ref_name".format(case) in sc.config_map:
+            f_1 = sc.config_map["{}_ref_name".format(case)]
+        write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), f_0, sc)
+        write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), f_1, sc)
         ss = ScreenShotHelper(sc)
         # standard
         std_cam = []

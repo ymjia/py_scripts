@@ -41,7 +41,7 @@ class HausdorffSts:
         if not os.path.exists(filename):
             print("Warning! no dist sts file found in {}".format(filename))
             return
-        with open(filename) as f:
+        with open(filename, "r", encoding='utf-8') as f:
             content = f.readlines()
         if len(content) < 17:
             return
