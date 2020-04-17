@@ -94,7 +94,7 @@ def read_files(file_list):
 
 def load_local_plugin(name_str, module_str, load_ns):
     if not module_str in load_ns:
-        plugin_path = "./plugins/{}/{}.dll".format(name_str, name_str)
+        plugin_path = os.path.join(g_config.dir_exe, "/plugins/{}/{}.dll".format(name_str, name_str))
         if os.path.exists(plugin_path):
             try:
                 LoadPlugin(plugin_path, remote=False, ns=load_ns)

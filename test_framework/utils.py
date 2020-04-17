@@ -516,8 +516,8 @@ def create_chart(in_list, sp_list, ws):
 class GeneralConfiguration():
     def __init__(self):
         self._config = {}
-        dir_config = os.path.join(os.getcwd(), "config")
-
+        self.dir_exe = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+        dir_config = os.path.join(self.dir_exe, "config")
         if not os.path.exists(dir_config):
             os.makedirs(dir_config)
         self.config_file = os.path.join(dir_config, "general.json")
