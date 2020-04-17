@@ -10,5 +10,6 @@
     "hd_legend_type": "Horizontal",
     "hd_nominal_dist": "0.03",
     "hd_critical_dist": "0.05",
-    "hd_max_dist": "0.3"
+    "hd_max_dist": "0.3",
+    "hd_picture_scale": "1.0"
 }

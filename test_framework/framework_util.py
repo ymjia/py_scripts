@@ -94,9 +94,10 @@ def read_files(file_list):
 
 def load_local_plugin(name_str, module_str, load_ns):
     if not module_str in load_ns:
-        plugin_path = os.path.join(g_config.dir_exe, "/plugins/{}/{}.dll".format(name_str, name_str))
+        plugin_path = os.path.join(g_config.dir_exe, "plugins", name_str, "{}.dll".format(name_str))
         if os.path.exists(plugin_path):
             try:
+                print("Loading plugin from: {}".format(plugin_path))
                 LoadPlugin(plugin_path, remote=False, ns=load_ns)
                 print("Loaded plugin from: {}".format(plugin_path))
             except RuntimeError:
@@ -255,6 +256,7 @@ class CameraObject:
     ## @brief create standard camera info from object
     ## @param type_str x+ x- y+ y- z+ z-
     def create_default_cam_angle(self, s, type_str):
+        scale = float(g_config.config_val("hd_picture_scale", "1.0"))
         (xmin, xmax, ymin, ymax, zmin, zmax) = s.GetDataInformation().GetBounds()
         xmid = (xmin + xmax) / 2
         ymid = (ymin + ymax) / 2
@@ -265,7 +267,7 @@ class CameraObject:
 
         if len(type_str) < 2:
             type_str = "x+"
-        position_ratio = math.tan(self.CameraViewAngle / 300.0 * math.pi)
+        position_ratio = math.tan(self.CameraViewAngle / 360.0 * math.pi * scale)
         # reset camera
         self.CameraViewUp = [0.0, 0.0, 0.0]
         self.CameraFocalPoint = [xmid, ymid, zmid]
@@ -297,6 +299,7 @@ class CameraObject:
     ## @brief create camera in 4 phase
     ## @param type_str x+y+, x+y-, x-y+, x-y-
     def create_4_cam_angle(self, s, type_str):
+        scale = float(g_config.config_val("hd_picture_scale", "1.0"))
         (xmin, xmax, ymin, ymax, zmin, zmax) = s.GetDataInformation().GetBounds()
         xmid = (xmin + xmax) / 2
         ymid = (ymin + ymax) / 2
@@ -306,7 +309,7 @@ class CameraObject:
         zdelta = zmax - zmin
         if len(type_str) < 4:
             type_str = "x+y+"
-        position_ratio = math.tan(self.CameraViewAngle / 200.0 * math.pi)
+        position_ratio = math.tan(self.CameraViewAngle / 360.0 * math.pi * scale)
         camera_move = (xdelta + ydelta) / float(2) / position_ratio / math.sqrt(3)
         # reset camera
         self.CameraViewUp = [0.0, 0.0, 1.0]

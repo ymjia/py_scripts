@@ -12,6 +12,7 @@ import threading
 import socket
 import glob
 import json
+from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.chart import LineChart, Reference
 from openpyxl.chart.axis import DateAxis
@@ -516,7 +517,7 @@ def create_chart(in_list, sp_list, ws):
 class GeneralConfiguration():
     def __init__(self):
         self._config = {}
-        self.dir_exe = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+        self.dir_exe = str(Path(os.path.dirname(os.path.realpath(__file__))).parent)
         dir_config = os.path.join(self.dir_exe, "config")
         if not os.path.exists(dir_config):
             os.makedirs(dir_config)
@@ -546,7 +547,7 @@ class GeneralConfiguration():
             self.read_default()
 
     def read_default(self):
-        f_default = os.path.join(os.getcwd(), "config", "general_default.json")
+        f_default = os.path.join(self.dir_exe, "config", "general_default.json")
         if not os.path.exists(f_default):
             print("Fatal Error! Default config file {} cannot be found!".format(f_default))
             return
