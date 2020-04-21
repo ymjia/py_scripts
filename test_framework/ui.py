@@ -53,6 +53,7 @@ class TFWindow(QWidget):
         self._qcb_cur_ver.lineEdit().setPlaceholderText("Input or Select..")
         self._qle_doc_name = QLineEdit()
         self._qpt_exe_param = QPlainTextEdit()
+        self._qpt_exe_param.setPlaceholderText("Example: -i {i} -o {o}")
         # listview
         self._qlv_all_proj = create_QListView(self)
         self._qlv_all_proj.clicked.disconnect()
@@ -347,7 +348,7 @@ class TFWindow(QWidget):
         grid = QGridLayout()
         grid.addWidget(QLabel('Input Case'), 0, 0)
         grid.addWidget(self._qlv_exe_case, 0, 1)
-        grid.addWidget(QLabel("Parameter Line\n{i} for input\n{o} for output\n{case} for case"), 1, 0)
+        grid.addWidget(QLabel("Parameter Line\nPlace holders:\n{i} - input\n{o} - output\n{c} - case\n{v} - version name"), 1, 0)
         grid.addWidget(qpb_cmd_his, 2, 0)
         grid.addWidget(self._qpt_exe_param, 1, 1, 2, 1)
         grid.addWidget(QLabel('Use Version Name'), 3, 0)

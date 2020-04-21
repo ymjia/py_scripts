@@ -29,7 +29,7 @@
       <item check="0" name="&#20013;" />
     </case>
     <version str="input" />
-    <param str="1 2" />
+    <param str="1{i} 2{o} 3{c} 4{v}" />
   </exe>
   <screenshot>
     <case>

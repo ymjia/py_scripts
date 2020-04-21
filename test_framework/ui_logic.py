@@ -343,7 +343,7 @@ def replace_sep(in_str):
         return in_str.replace("\\", "/").replace("//", "/")
 
 
-def generate_exe_param(p_obj, case):
+def generate_exe_param(p_obj, case, ver = ""):
     dir_i = p_obj._dirInput
     dir_o = p_obj._dirOutput
     ver = p_obj._eVer
@@ -351,6 +351,7 @@ def generate_exe_param(p_obj, case):
     p_i = ""
     # find input place holder
     ph_i = "{i}" # place holder for input
+    auto_input = utils.g_config.config_val("exe_auto_input", True)
     i_pos = int(org_param.find(ph_i))
     p_len = len(org_param)
     if i_pos != -1:
@@ -365,7 +366,7 @@ def generate_exe_param(p_obj, case):
             print("Error! input {} does not Exist!".format(p_i))
             return ""
         # use file name if only one file in case dir
-        if not os.path.isfile(p_i):
+        if auto_input and not os.path.isfile(p_i):
             i_list = utils.get_file_list(p_i)
             if len(i_list) == 1:
                 p_i = i_list[0]
@@ -376,7 +377,7 @@ def generate_exe_param(p_obj, case):
         p_o = os.path.join(dir_o, case, ver) + "/"
         p_o = replace_sep(p_o)
     # replace
-    param = org_param.replace(ph_i, p_i).replace("{o}", p_o).replace("{case}", case)
+    param = org_param.replace(ph_i, p_i).replace("{o}", p_o).replace("{c}", case).replace("{v}", ver)
     return param
 
 
