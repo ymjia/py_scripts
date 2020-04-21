@@ -6,6 +6,7 @@ import sys
 import cv2
 import math
 import openpyxl
+import threading
 import numpy as np
 from PIL import Image
 from operator import itemgetter
@@ -229,16 +230,11 @@ def copy_sheet(path_from, path_to, sheet_name):
 # ws_out.cell(row=1, column = 1).value = txt
 # t_out.save("d:/tmp/tmp_out.xlsx")
 
-print(sys.getdefaultencoding())
-print(sys.stdout.encoding)
-s = "中"
-print(type(s))
-s_utf = s.encode('utf-8')
-print("type u.encode:")
-print(type(s_utf))
-print("s_utf: {}".format(s_utf))
-s_gbk = s.encode('gbk')
-print("type a.decode: {}".format(type(s_gbk)))
-print("s_gbk: {}".format(s_gbk))
-#print(a.encode('gbk'))
-print("中")
+#thread test
+def seg_fault():
+    print("a".decode('utf-8'))
+    
+t = threading.Thread(target = seg_fault, daemon=False)
+t.start()
+print("after thread")
+tmp = input()
