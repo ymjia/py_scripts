@@ -79,7 +79,7 @@ def read_cam(case_file):
     if not os.path.exists(case_file):
         return None
     content = None
-    with open(case_file) as f:
+    with open(case_file, encoding="utf-8") as f:
         content = f.readlines()
     str_list = [l.strip() for l in content if len(l) > 20]
     str_lines = [line.split(", ") for line in str_list]
@@ -117,7 +117,7 @@ class DocxGenerator:
             str_list_v = str_list_v + "\"{}\",".format(v)
         str_list_v = str_list_v[:-1] + "]"
         file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files(r\"{}\", r\"{}\", \"{}\", \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, alg, str_list_v)
-        with open(filename, "w") as text_file:
+        with open(filename, "w", encoding="utf-8") as text_file:
             text_file.write(file_content)
 
     def add_case_table(self, case, cam_num):

@@ -9,7 +9,7 @@ import time
 import os.path
 import datetime
 import sys
-
+import locale # get subprocess encoding
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QThread, pyqtSignal
 
@@ -49,6 +49,7 @@ class ExeRunThread(QThread):
         pg = 95 / len(list_case)
         cur_pg = 5
         sys_info = utils.get_sys_info()
+        encoding = locale.getpreferredencoding()
         for case in list_case:
             print("## Start {} =====================".format(case))
             self._sigProgress.emit(cur_pg)
@@ -62,9 +63,9 @@ class ExeRunThread(QThread):
             file_sts = os.path.join(dir_log, "tfl_{}.sts".format(st))
             file_smp = os.path.join(dir_log, "tfl_{}.smp".format(st))
             try:
-                self._fLog = open(file_log, "w")
-                self._fSts = open(file_sts, "a")
-                self._fSmp = open(file_smp, "a")
+                self._fLog = open(file_log, "w", encoding="utf-8")
+                self._fSts = open(file_sts, "a", encoding="utf-8")
+                self._fSmp = open(file_smp, "a", encoding="utf-8")
                 # write machine info
                 for line in sys_info:
                     self._fSts.write(line)
@@ -87,7 +88,7 @@ class ExeRunThread(QThread):
                     continue
                 self._demoProc.monite_execution()
                 for line in iter(self._demoProc.p.stdout.readline, b''):
-                    lined = line.decode('utf-8', errors='ignore')
+                    lined = line.decode(encoding, errors="ignore")
                     sys.stdout.write(lined)
                     self._fLog.write(lined)
                 self._demoProc.p.wait()

@@ -1,7 +1,7 @@
 <project>
   <input path="D:/tmp/tf_test/input" />
   <output path="D:/tmp/tf_test/output/" />
-  <exe_demo path="C:/dev/py_scripts/tmp.py" />
+  <exe_demo path="D:/dev/compiler_test/build/Release/ct.exe" />
   <exe_pv path="D:/tools/ParaView_r/bin/pvpython.exe" />
   <all>
     <case>
@@ -24,7 +24,7 @@
   </all>
   <exe>
     <case>
-      <item check="0" name="case1" />
+      <item check="1" name="case1" />
       <item check="0" name="case2" />
       <item check="0" name="&#20013;" />
     </case>

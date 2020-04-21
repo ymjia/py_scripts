@@ -98,7 +98,7 @@ def get_sys_table(dir_o, case, ver):
     if not os.path.exists(file_sys):
         print("No log file in {}".format(dir_log))
         return None
-    with open(file_sys) as f:
+    with open(file_sys, encoding="utf-8") as f:
         content = f.readlines()
     str_list = [l.strip() for l in content if len(l) > 4]
     for line in str_list:
@@ -115,7 +115,7 @@ def get_time_table(dir_o, case, ver):
     if not os.path.exists(file_time):
         print("{} does not exist".format(file_time))
         return None
-    with open(file_time) as f:
+    with open(file_time, encoding="utf-8") as f:
         content = f.readlines()
     str_list = [l.strip() for l in content if len(l) > 4]
     for line in str_list:
@@ -457,7 +457,7 @@ def create_chart(in_list, sp_list, ws):
     mem_smp = []
     cpu_smp = []
     for f_in in in_list:
-        with open(f_in) as f:
+        with open(f_in, encoding="utf-8") as f:
             content = f.readlines()
         cur_mem = []
         cur_cpu = []
@@ -531,14 +531,14 @@ class GeneralConfiguration():
         return default_val
 
     def write_to_file(self):
-        with open(self.config_file, 'w') as f:
+        with open(self.config_file, 'w', encoding="utf-8") as f:
             tmp_str = json.dumps(self._config, indent = 4)
             f.write(tmp_str)
 
     def read_from_file(self):
         if os.path.exists(self.config_file):
             try:
-                with open(self.config_file) as f:
+                with open(self.config_file, encoding="utf-8") as f:
                     self._config = json.load(f)
             except json.decoder.JSONDecodeError:
                 self.read_default()
@@ -552,7 +552,7 @@ class GeneralConfiguration():
             print("Fatal Error! Default config file {} cannot be found!".format(f_default))
             return
         try:
-            with open(f_default) as f:
+            with open(f_default, encoding="utf-8") as f:
                 self._config = json.load(f)
         except json.decoder.JSONDecodeError:
             print("Fatal Error! Default config file {} is Broken!".format(f_default))

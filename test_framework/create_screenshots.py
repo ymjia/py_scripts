@@ -462,6 +462,7 @@ def create_screenshots(sc):
 
 # screen shot for customized application
 # only case list is needed
+# 
 def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
     print("Case: {}".format(sc.list_case))
