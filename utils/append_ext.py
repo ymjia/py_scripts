@@ -3,7 +3,6 @@
 ## @brief append extension to all files with no extension in given dir
 ## @author jiayanming
 
-from pyunpack import Archive
 import os.path
 import sys
 from shutil import move
@@ -11,12 +10,14 @@ import pathlib
 
 def append_ext(in_path, ext):
     for f in os.listdir(in_path):
-        if not os.path.isfile(f):
+        f_full = os.path.join(in_path, f)
+        if not os.path.isfile(f_full):
             continue
-        _, ext = os.path.splitext(f)
+        _, ext = os.path.splitext(f_full)
         if ext != "":
             continue
         f_full = os.path.join(in_path, f)
+        print("find file {}".format(f_full))
         move(f_full, f_full + ".tb")
 
 

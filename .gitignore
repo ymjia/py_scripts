@@ -4,3 +4,7 @@ __pycache__
 *.xml
 *.spec
 *.rar
+*input/
+*output/
+*.zip
+*.rar
