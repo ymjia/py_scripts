@@ -62,6 +62,7 @@ class GeneralConfigurationUI(QWidget):
         qgb_exe = QGroupBox("Exe Batch Settings")
         qgl_exe = QGridLayout()
         qgl_exe.addWidget(self._qcb_exe_auto_input)
+        qgl_exe.addWidget(QLabel("Max Depth When Scan Input Dir"))
         qgl_exe.addWidget(self._qcb_exe_input_depth)
         qgb_exe.setLayout(qgl_exe)
 

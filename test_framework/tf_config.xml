@@ -34,15 +34,15 @@
   </exe>
   <screenshot>
     <case>
-      <item check="0" name="case1/tmp" />
+      <item check="1" name="case1/tmp" />
       <item check="1" name="case2/tmp" />
       <item check="0" name="&#20013;/output" />
     </case>
     <version>
       <item check="0" name="input" />
-      <item check="0" name="v12" />
+      <item check="1" name="v12" />
       <item check="1" name="v11" />
-      <item check="0" name="v13" />
+      <item check="1" name="v13" />
       <item check="0" name="test" />
     </version>
     <algorithm>

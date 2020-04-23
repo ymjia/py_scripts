@@ -314,7 +314,13 @@ class ScreenShotHelper:
     def __init__(self, sc):
         paraview.simple._DisableFirstRenderCameraReset()
         self._sc = sc
+        self._v = None
 
+    def __del__(self):
+        if self._v is not None:
+            Delete(self._v)
+
+    # static methed, view need not be associated to self._v
     def take_shot(self, view, cam, filename):
         trans_bg = g_config.config_val("trans_bg", "False") == "True"
         co = CameraObject()
@@ -371,7 +377,10 @@ class ScreenShotHelper:
         v_h = int(g_config.config_val("view_height", 768))
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
-        cur_view = CreateView("RenderView")
+        if self._v is None:
+            self._v = CreateView("RenderView")
+        #cur_view = CreateView("RenderView")
+        cur_view = self._v
         cur_view.ViewSize = [v_w, v_h]
         cur_view.CenterAxesVisibility = 0
         cur_source = self.read_and_render(file_list, cur_view, case, ver)
@@ -382,8 +391,6 @@ class ScreenShotHelper:
                          "{}/ss_{}_v{}.png".format(out_dir, pattern, i).replace("\\", "/"))
         Delete(cur_source)
         del cur_source
-        Delete(cur_view)
-        del cur_view
         return len(cam_list)
 
     # if data_file newer than ss_file, need update
