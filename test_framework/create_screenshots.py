@@ -353,6 +353,7 @@ class ScreenShotHelper:
             reader_display.Specular = 0.5
         else:
             reader_display.Specular = 0.0
+        #if g_config.config_val("ss_enable_color", False):
         if g_config.config_val("ss_enable_texture", True):
             show_texture(reader, v)
         v.ResetCamera()

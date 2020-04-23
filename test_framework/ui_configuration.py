@@ -43,6 +43,10 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_ss_default_camera = QComboBox() # type of document to be generated
         self._qcb_ss_default_camera.setEditable(False)
         self._qcb_ss_default_camera.addItems(["4_quadrant", "6_axis"])
+        self._qcb_ss_default_ref_dir = QComboBox() # type of document to be generated
+        self._qcb_ss_default_ref_dir.setEditable(False)
+        self._qcb_ss_default_ref_dir.addItems(["Input", "Output"])
+
 
         self._qcb_hd_std_sts = QCheckBox("Generate Standard Statistics Table", self)
         self._qcb_hd_dist_rate = QCheckBox("Generate Distance Rate Table", self)
@@ -81,6 +85,8 @@ class GeneralConfigurationUI(QWidget):
         qgl_ss.addWidget(self._qcb_ss_enable_color)
         qgl_ss.addWidget(self._qcb_ss_enable_texture)
         qgl_ss.addWidget(self._qcb_ss_trans_bd)
+        qgl_ss.addWidget(QLabel("Default Directory for Camera Setting Referencing Object"))
+        qgl_ss.addWidget(self._qcb_ss_default_ref_dir)
         qgl_ss.addWidget(QLabel("Default Camera Angle Type"))
         qgl_ss.addWidget(self._qcb_ss_default_camera)
         qgb_ss.setLayout(qgl_ss)
@@ -134,6 +140,7 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config["ss_transparent_bg"] = self._qcb_ss_trans_bd.isChecked()
         cfg_obj._config["ss_view_width"] = self._qle_ss_view_width.text()
         cfg_obj._config["ss_view_height"] = self._qle_ss_view_height.text()
+        cfg_obj._config["ss_default_reference_directory"] = self._qcb_ss_default_ref_dir.currentText()
         cfg_obj._config["ss_default_camera_type"] = self._qcb_ss_default_camera.currentText()
 
         cfg_obj._config["hd_standard_statistics"] = self._qcb_hd_std_sts.isChecked()
@@ -157,6 +164,7 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_ss_trans_bd.setChecked(cfg_obj.config_val("ss_transparent_bg", False))
         self._qle_ss_view_width.setText(cfg_obj.config_val("ss_view_width", "1024"))
         self._qle_ss_view_height.setText(cfg_obj.config_val("ss_view_height", "768"))
+        self._qcb_ss_default_ref_dir.setCurrentText(cfg_obj.config_val("ss_default_reference_directory", "Input"))
         self._qcb_ss_default_camera.setCurrentText(cfg_obj.config_val("ss_default_camera_type", "4_quadrant"))
 
         self._qcb_hd_std_sts.setChecked(cfg_obj.config_val("hd_standard_statistics", True))

@@ -591,6 +591,14 @@ def slot_ss_manage(ui):
         return
     case_name = sl[0].data()
     dir_case = os.path.join(p_obj._dirInput, case_name)
+    dir_case_out= os.path.join(p_obj._dirOutput, case_name)
+    if not os.path.exists(dir_case_out):
+        os.makedirs(dir_case_out)
+    # default directory show in file dialog
+    dir_default = dir_case
+    if utils.g_config.config_val("ss_default_reference_directory", "Input") == "Output":
+        dir_default = dir_case_out
+
     file_config = os.path.join(dir_case, "config.txt")
     if not os.path.exists(file_config):
         f= open(file_config, "w+")
@@ -601,13 +609,14 @@ def slot_ss_manage(ui):
     # else read file and render window
     type_filter = "Models (*.stl *.ply *.obj *.asc *.rge *.tb)"
     fo = QFileDialog()
+    #fo.setOption(QFileDialog.DontUseNativeDialog, False)
+    #fo.setHistory([dir_case, dir_case_out])
     fo.setFileMode(QFileDialog.ExistingFiles)
-    names, _ = fo.getOpenFileNames(ui, "Select Model", dir_case, type_filter)
+    names, _ = fo.getOpenFileNames(ui, "Select Model", dir_default, type_filter)
     # camera already set
     if len(names) > 0:
         create_screenshots.start_camera_set_session(names, file_config)
         return
-
     open_file(dir_case)
 
 
