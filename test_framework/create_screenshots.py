@@ -480,12 +480,7 @@ def create_screenshots(sc):
 def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
     print("Case: {}".format(sc.list_case))
-    std_cam_num = 4
-    camera_angle = g_config.config_val("hd_camera_angle", "4")
-    try:
-        std_cam_num = int(camera_angle)
-    except ValueError:
-        pass
+    camera_type = g_config.config_val("ss_default_camera_type", "4_quadrant")
     
     dir_input = sc.dir_i
     dir_output = sc.dir_o
@@ -525,7 +520,7 @@ def create_hausdorff_shot(sc):
         # standard
         std_cam = []
         co = CameraObject()
-        if std_cam_num == 6:
+        if camera_type == "6_axis":
             co.create_default_cam_angle(out0, "x+")
             std_cam.append(co.generate_camera_str())
             co.create_default_cam_angle(out0, "x-")
@@ -548,12 +543,13 @@ def create_hausdorff_shot(sc):
             co.create_4_cam_angle(out0, "x-y-")
             std_cam.append(co.generate_camera_str())
 
+        std_cam_num = len(std_cam)
         for i in range(0, std_cam_num):
             ss.take_shot(v0, std_cam[i],
                          "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
             ss.take_shot(v1, std_cam[i],
                          "{}/ss___hd_v{}.png".format(out_dir2, i).replace("\\", "/"))
-        total_num = total_num + 12
+        total_num = total_num + std_cam_num * 2
         cam_file = os.path.join(dir_input, case, "config.txt")
         cam_list = read_cam(cam_file)
         if len(cam_list) > 0:

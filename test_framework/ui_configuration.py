@@ -40,6 +40,9 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_ss_trans_bd = QCheckBox("Transparent Background", self)
         self._qle_ss_view_width = QLineEdit("1024")
         self._qle_ss_view_height = QLineEdit("768")
+        self._qcb_ss_default_camera = QComboBox() # type of document to be generated
+        self._qcb_ss_default_camera.setEditable(False)
+        self._qcb_ss_default_camera.addItems(["4_quadrant", "6_axis"])
 
         self._qcb_hd_std_sts = QCheckBox("Generate Standard Statistics Table", self)
         self._qcb_hd_dist_rate = QCheckBox("Generate Distance Rate Table", self)
@@ -78,11 +81,13 @@ class GeneralConfigurationUI(QWidget):
         qgl_ss.addWidget(self._qcb_ss_enable_color)
         qgl_ss.addWidget(self._qcb_ss_enable_texture)
         qgl_ss.addWidget(self._qcb_ss_trans_bd)
+        qgl_ss.addWidget(QLabel("Default Camera Angle Type"))
+        qgl_ss.addWidget(self._qcb_ss_default_camera)
         qgb_ss.setLayout(qgl_ss)
+
         # hausdorff doc
         qgb_hd = QGroupBox("Hausdorff Distance Report Configuration")
         qgl_hd = QGridLayout()
-
         qgl_hd.addWidget(self._qcb_hd_std_sts)
         qgl_hd.addWidget(self._qcb_hd_dist_rate)
         qgl_hd.addWidget(self._qcb_hd_6_sigma)
@@ -129,6 +134,7 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config["ss_transparent_bg"] = self._qcb_ss_trans_bd.isChecked()
         cfg_obj._config["ss_view_width"] = self._qle_ss_view_width.text()
         cfg_obj._config["ss_view_height"] = self._qle_ss_view_height.text()
+        cfg_obj._config["ss_default_camera_type"] = self._qcb_ss_default_camera.currentText()
 
         cfg_obj._config["hd_standard_statistics"] = self._qcb_hd_std_sts.isChecked()
         cfg_obj._config["hd_distance_rate"] = self._qcb_hd_dist_rate.isChecked()
@@ -151,6 +157,7 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_ss_trans_bd.setChecked(cfg_obj.config_val("ss_transparent_bg", False))
         self._qle_ss_view_width.setText(cfg_obj.config_val("ss_view_width", "1024"))
         self._qle_ss_view_height.setText(cfg_obj.config_val("ss_view_height", "768"))
+        self._qcb_ss_default_camera.setCurrentText(cfg_obj.config_val("ss_default_camera_type", "4_quadrant"))
 
         self._qcb_hd_std_sts.setChecked(cfg_obj.config_val("hd_standard_statistics", True))
         self._qcb_hd_dist_rate.setChecked(cfg_obj.config_val("hd_distance_rate", True))

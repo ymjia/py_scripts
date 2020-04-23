@@ -145,7 +145,10 @@ class DocxGenerator:
             shade_cell(row2[0])
             self.get_paraview_project(file_state, case, alg)
             if (alg == "__hd"):
-                cam_num = cam_num + 4
+                if g_config.config_val("ss_default_camera_type", "4_quadrant") == "4_quadrant":
+                    cam_num = cam_num + 4
+                else:
+                    cam_num = cam_num + 6
             for cam in range(0, cam_num):
                 row_cells = table.add_row().cells
                 for vi in range(0, col_num):
@@ -364,7 +367,7 @@ class DocxGenerator:
                     self.add_hausdorff_statistic_table(case)
                 else:
                     self.add_hausdorff_statistic_table_single(case)
-                if g_config.config_val("hd_screenshot_table", True):
+                if not g_config.config_val("hd_screenshot_table", True):
                     continue
             doc.add_paragraph("")
             doc.add_paragraph("ScreenShots Compare Tables")
