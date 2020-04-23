@@ -545,6 +545,7 @@ class GeneralConfiguration():
     def config_val(self, key_str, default_val):
         if key_str in self._config:
             return self._config[key_str]
+        print("Warning! No Key {} in current Configuration".format(key_str))
         return default_val
 
     def write_to_file(self):

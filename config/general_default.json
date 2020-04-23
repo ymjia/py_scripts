@@ -1,15 +1,20 @@
 {
-    "force_update": false,
-    "specular": true,
-    "enable_color": false,
-    "enable_texture": false,
-    "trans_bd": false,
-    "view_width": "1024",
-    "view_height": "768",
+    "exe_auto_input": true,
+    "exe_input_depth": "2",
+    "ss_force_update": false,
+    "ss_specular": true,
+    "ss_enable_color": false,
+    "ss_enable_texture": false,
+    "ss_transparent_bg": false,
+    "ss_view_width": "1024",
+    "ss_view_height": "768",
+    "hd_standard_statistics": true,
+    "hd_distance_rate": true,
     "hd_6_sigma": true,
+    "hd_screenshot_table": true,
     "hd_legend_type": "Horizontal",
     "hd_nominal_dist": "0.03",
     "hd_critical_dist": "0.05",
     "hd_max_dist": "0.3",
-    "hd_picture_scale": "1.0"
+    "hd_picture_scale": "2.0"
 }

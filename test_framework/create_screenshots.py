@@ -118,8 +118,8 @@ def show_hausdorff_dist(s_name_list, sc):
     nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
     critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
     max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
-    view_height = int(g_config.config_val("view_height", "768"))
-    view_width = int(g_config.config_val("view_width", "1024"))
+    view_height = int(g_config.config_val("ss_view_height", "768"))
+    view_width = int(g_config.config_val("ss_view_width", "1024"))
     s_num = len(s_name_list)
     if s_num != 2:
         print("Error! 2 source need to be selected, current source:")
@@ -248,8 +248,8 @@ def write_dist_statistics(sd, filename, in_file, sc):
 
 ## ==================Camera position Setting =================
 def start_camera_set_session(names, f_config):
-    view_height = int(g_config.config_val("view_height", "768"))
-    view_width = int(g_config.config_val("view_width", "1024"))
+    view_height = int(g_config.config_val("ss_view_height", "768"))
+    view_width = int(g_config.config_val("ss_view_width", "1024"))
 
     cn = len(read_cam(f_config))
     s = read_files(names)
@@ -322,7 +322,7 @@ class ScreenShotHelper:
 
     # static methed, view need not be associated to self._v
     def take_shot(self, view, cam, filename):
-        trans_bg = g_config.config_val("trans_bg", "False") == "True"
+        trans_bg = g_config.config_val("ss_transparent_bg", "False") == "True"
         co = CameraObject()
         if not co.read_camera_from_str(cam):
             print("Warning! cannot decode camera from string {}".format(cam))
@@ -340,7 +340,7 @@ class ScreenShotHelper:
 
     # read file or file list and render in given view
     def read_and_render(self, file_list, v, case=None, ver=None):
-        specular = g_config.config_val("specular", True)
+        specular = g_config.config_val("ss_specular", True)
         HideAll(v)
         reader = read_files(file_list)
         if reader is None:
@@ -353,7 +353,7 @@ class ScreenShotHelper:
             reader_display.Specular = 0.5
         else:
             reader_display.Specular = 0.0
-        if g_config.config_val("enable_texture", True):
+        if g_config.config_val("ss_enable_texture", True):
             show_texture(reader, v)
         v.ResetCamera()
         # add anotation
@@ -373,8 +373,8 @@ class ScreenShotHelper:
 
     # create screenshots for given file from given cam_list    
     def create_shot(self, file_list, cam_list, out_dir, pattern, case=None, ver=None):
-        v_w = int(g_config.config_val("view_width", 1024))
-        v_h = int(g_config.config_val("view_height", 768))
+        v_w = int(g_config.config_val("ss_view_width", 1024))
+        v_h = int(g_config.config_val("ss_view_height", 768))
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
         if self._v is None:
@@ -395,7 +395,7 @@ class ScreenShotHelper:
 
     # if data_file newer than ss_file, need update
     def ss_need_update(self, file_list, file_cam, out_dir, pattern):
-        if g_config.config_val("force_update", False) == True:
+        if g_config.config_val("ss_force_update", False) == True:
             return True
         file_pic = os.path.join("{}/ss_{}_v0.png".format(out_dir, pattern)).replace("\\", "/")
         if not os.path.exists(file_pic):

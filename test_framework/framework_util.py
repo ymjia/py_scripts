@@ -405,7 +405,7 @@ def set_default_display(dp, d_type="vtkPolyData"):
     dp.BackfaceOpacity = 1.0
     #lightning
     dp.Interpolation = "Flat"
-    specular = g_config.config_val("specular", True)
+    specular = g_config.config_val("ss_specular", True)
     if specular:
         dp.Specular = 0.5
     else:
