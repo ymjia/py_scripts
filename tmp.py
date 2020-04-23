@@ -13,6 +13,7 @@ from operator import itemgetter
 import docx
 import pathlib
 import codecs
+from PyQt5.QtWidgets import QProgressDialog, QApplication, QWidget
 
 def read_config_list(config_str, pattern):
     lc = len(config_str)
@@ -231,10 +232,13 @@ def copy_sheet(path_from, path_to, sheet_name):
 # t_out.save("d:/tmp/tmp_out.xlsx")
 
 #thread test
-def seg_fault():
-    print("a".decode('utf-8'))
-    
-t = threading.Thread(target = seg_fault, daemon=False)
-t.start()
-print("after thread")
-tmp = input()
+app = QApplication(sys.argv)
+app.setStyleSheet("QMessageBox { messagebox-text-interaction-flags: 5; }")
+w = QWidget()
+w.show()
+pg = QProgressDialog("Creating Screenshot...", "Stop", 0, 2, w)
+for i in range(0, 3):
+    #sp
+    pg.setValue(i)
+
+sys.exit(app.exec_())
