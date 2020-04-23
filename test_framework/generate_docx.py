@@ -180,21 +180,71 @@ class DocxGenerator:
         self._doc.add_paragraph("Deviation Report between two mesh A and B")
         self._doc.add_paragraph("A: {}".format(a2b.in_file))
         self._doc.add_paragraph("B: {}".format(b2a.in_file))
-        self._doc.add_paragraph("")
-        self._doc.add_paragraph("General Statistics")
         # build table
-        table = self._doc.add_table(rows = 7, cols = 3)
-        table.style = 'Table Grid'
-        self.fill_row(table, 0, ["", "A to B", "B to A"])
-        shade_cell(table.rows[0].cells[1])
-        shade_cell(table.rows[0].cells[2])
-        self.fill_row(table, 1, ["mean_total", a2b.mean_total, b2a.mean_total])
-        self.fill_row(table, 2, ["standard_deviation", a2b.standard_deviation, b2a.standard_deviation])
-        self.fill_row(table, 3, ["mean_positive", a2b.mean_positive, b2a.mean_positive])
-        self.fill_row(table, 4, ["mean_negtive", a2b.mean_negtive, b2a.mean_negtive])
-        self.fill_row(table, 5, ["max_positive", a2b.max_positive, b2a.max_positive])
-        self.fill_row(table, 6, ["max_negtive", a2b.max_negtive, b2a.max_negtive])
+        if g_config.config_val("hd_standard_statistics", True):
+            self._doc.add_paragraph("")
+            self._doc.add_paragraph("General Statistics")
+            table = self._doc.add_table(rows = 7, cols = 3)
+            table.style = 'Table Grid'
+            self.fill_row(table, 0, ["", "A to B", "B to A"])
+            shade_cell(table.rows[0].cells[1])
+            shade_cell(table.rows[0].cells[2])
+            self.fill_row(table, 1, ["mean_total", a2b.mean_total, b2a.mean_total])
+            self.fill_row(table, 2, ["standard_deviation", a2b.standard_deviation, b2a.standard_deviation])
+            self.fill_row(table, 3, ["mean_positive", a2b.mean_positive, b2a.mean_positive])
+            self.fill_row(table, 4, ["mean_negtive", a2b.mean_negtive, b2a.mean_negtive])
+            self.fill_row(table, 5, ["max_positive", a2b.max_positive, b2a.max_positive])
+            self.fill_row(table, 6, ["max_negtive", a2b.max_negtive, b2a.max_negtive])
         
+        if g_config.config_val("hd_distance_rate", True):
+            self._doc.add_paragraph("")
+            self._doc.add_paragraph("Distance Percentage Statistics A to B")
+            t_rate = self._doc.add_table(rows = 5, cols = 3)
+            t_rate.style = 'Table Grid'
+            self.fill_row(t_rate, 0, ["", "A to B"])
+            shade_cell(t_rate.rows[0].cells[1])
+            shade_cell(t_rate.rows[0].cells[2])
+            nominal_num = int(a2b.nominal_num)
+            critical_num = int(nominal_num + a2b.critical_num)
+            max_num = int(critical_num + a2b.max_num)
+            out_num = int(a2b.out_num)
+            v_num = float(a2b.v_num)
+            self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
+            self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist),
+                                      nominal_num,
+                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
+            self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist),
+                                      critical_num,
+                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
+            self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
+                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
+            self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
+                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
+
+            self._doc.add_paragraph("")
+            self._doc.add_paragraph("Distance Percentage Statistics B to A")
+            t_rate_b2a = self._doc.add_table(rows = 5, cols = 3)
+            t_rate_b2a.style = 'Table Grid'
+            self.fill_row(t_rate_b2a, 0, ["", "B to A"])
+            shade_cell(t_rate_b2a.rows[0].cells[1])
+            shade_cell(t_rate_b2a.rows[0].cells[2])
+            nominal_num = int(b2a.nominal_num)
+            critical_num = int(nominal_num + b2a.critical_num)
+            max_num = int(critical_num + b2a.max_num)
+            out_num = int(b2a.out_num)
+            v_num = float(b2a.v_num)
+            self.fill_row(t_rate_b2a, 0, ["", "Point Number", "Point Percentage"])
+            self.fill_row(t_rate_b2a, 1, ["Nominal(<{})".format(b2a.nominal_dist),
+                                          nominal_num,
+                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
+            self.fill_row(t_rate_b2a, 2, ["Critical(<{})".format(b2a.critical_dist),
+                                          critical_num,
+                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
+            self.fill_row(t_rate_b2a, 3, ["Max(<{})".format(b2a.max_dist), max_num,
+                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
+            self.fill_row(t_rate_b2a, 4, ["Out(>={})".format(b2a.max_dist), out_num,
+                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
+
         if g_config.config_val("hd_6_sigma", True):
             self._doc.add_paragraph("")
             self._doc.add_paragraph("6-SIGMA Statistics A to B")
@@ -236,41 +286,43 @@ class DocxGenerator:
         self._doc.add_paragraph("Deviation Report between two mesh A and B")
         self._doc.add_paragraph("A: {}".format(a2b.in_file))
         self._doc.add_paragraph("B: {}".format(b2a.in_file))
-        self._doc.add_paragraph("")
-        self._doc.add_paragraph("General Statistics")
-        # build table
-        table = self._doc.add_table(rows = 7, cols = 2)
-        table.style = 'Table Grid'
-        self.fill_row(table, 0, ["", "A to B"])
-        shade_cell(table.rows[0].cells[1])
-        self.fill_row(table, 1, ["mean_total", a2b.mean_total])
-        self.fill_row(table, 2, ["standard_deviation", a2b.standard_deviation])
-        self.fill_row(table, 3, ["mean_positive", a2b.mean_positive])
-        self.fill_row(table, 4, ["mean_negtive", a2b.mean_negtive])
-        self.fill_row(table, 5, ["max_positive", a2b.max_positive])
-        self.fill_row(table, 6, ["max_negtive", a2b.max_negtive])
+        if g_config.config_val("hd_standard_statistics", True):
+            self._doc.add_paragraph("")
+            self._doc.add_paragraph("General Statistics")
+            # build table
+            table = self._doc.add_table(rows = 7, cols = 2)
+            table.style = 'Table Grid'
+            self.fill_row(table, 0, ["", "A to B"])
+            shade_cell(table.rows[0].cells[1])
+            self.fill_row(table, 1, ["mean_total", a2b.mean_total])
+            self.fill_row(table, 2, ["standard_deviation", a2b.standard_deviation])
+            self.fill_row(table, 3, ["mean_positive", a2b.mean_positive])
+            self.fill_row(table, 4, ["mean_negtive", a2b.mean_negtive])
+            self.fill_row(table, 5, ["max_positive", a2b.max_positive])
+            self.fill_row(table, 6, ["max_negtive", a2b.max_negtive])
 
-        self._doc.add_paragraph("")
-        self._doc.add_paragraph("Distance Percentage Statistics A to B")
-        t_rate = self._doc.add_table(rows = 5, cols = 3)
-        t_rate.style = 'Table Grid'
-        self.fill_row(t_rate, 0, ["", "A to B"])
-        shade_cell(t_rate.rows[0].cells[1])
-        shade_cell(t_rate.rows[0].cells[2])
-        nominal_num = int(a2b.nominal_num)
-        critical_num = int(nominal_num + a2b.critical_num)
-        max_num = int(critical_num + a2b.max_num)
-        out_num = int(a2b.out_num)
-        v_num = float(a2b.v_num)
-        self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
-        self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist), nominal_num,
-                                  "{:.2f}%".format(float(nominal_num) / v_num * 100)])
-        self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist), critical_num,
-                                  "{:.2f}%".format(float(critical_num) / v_num * 100)])
-        self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
-                                  "{:.2f}%".format(float(max_num) / v_num * 100)])
-        self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
-                                  "{:.2f}%".format(float(out_num) / v_num * 100)])
+        if g_config.config_val("hd_distance_rate", True):
+            self._doc.add_paragraph("")
+            self._doc.add_paragraph("Distance Percentage Statistics A to B")
+            t_rate = self._doc.add_table(rows = 5, cols = 3)
+            t_rate.style = 'Table Grid'
+            self.fill_row(t_rate, 0, ["", "A to B"])
+            shade_cell(t_rate.rows[0].cells[1])
+            shade_cell(t_rate.rows[0].cells[2])
+            nominal_num = int(a2b.nominal_num)
+            critical_num = int(nominal_num + a2b.critical_num)
+            max_num = int(critical_num + a2b.max_num)
+            out_num = int(a2b.out_num)
+            v_num = float(a2b.v_num)
+            self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
+            self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist), nominal_num,
+                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
+            self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist), critical_num,
+                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
+            self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
+                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
+            self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
+                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
 
         if g_config.config_val("hd_6_sigma", True):
             self._doc.add_paragraph("")
@@ -311,9 +363,11 @@ class DocxGenerator:
                     self.add_hausdorff_statistic_table(case)
                 else:
                     self.add_hausdorff_statistic_table_single(case)
+            if g_config.config_val("hd_screenshot_table", True):
+                doc.add_paragraph("")
                 doc.add_paragraph("ScreenShots Compare Tables")
-            if self.add_case_table(case, len(list_cam)) != 0:
-                print("Case Table Error for case: {}".format(case))
+                if self.add_case_table(case, len(list_cam)) != 0:
+                    print("Case Table Error for case: {}".format(case))
         doc.save(file_save)
 
 
