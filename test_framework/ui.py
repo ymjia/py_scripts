@@ -251,8 +251,6 @@ class TFWindow(QWidget):
             lambda: ui_logic.slot_add_list(self, self._p._case, "Case"))
         qpb_add_ver.clicked.connect(
             lambda: ui_logic.slot_add_list(self, self._p._ver, "Version"))
-        #qpb_add_alg.clicked.connect(
-        #    lambda: ui_logic.slot_add_list(self, self._p._alg, "Algorithm"))
         qpb_add_alg.clicked.connect(self.slot_add_alg_list)
         qpb_del_case.clicked.connect(
             lambda: ui_logic.slot_del_list(self, self._qlv_ss_case, self._p._case))

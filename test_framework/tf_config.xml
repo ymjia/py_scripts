@@ -5,9 +5,9 @@
   <exe_pv path="D:/tools/ParaView_r/bin/pvpython.exe" />
   <all>
     <case>
-      <item check="1" name="case1" />
-      <item check="1" name="case2" />
-      <item check="1" name="&#20013;" />
+      <item check="1" name="case1/tmp" />
+      <item check="1" name="case2/tmp" />
+      <item check="1" name="&#20013;/output" />
     </case>
     <version>
       <item check="1" name="input" />
@@ -20,56 +20,59 @@
       <item check="1" name="smooth" />
       <item check="1" name="merge" />
       <item check="1" name="LowerJawScan" />
+      <item check="1" name="MIX_comb" />
     </algorithm>
   </all>
   <exe>
     <case>
-      <item check="1" name="case1" />
-      <item check="0" name="case2" />
-      <item check="0" name="&#20013;" />
+      <item check="0" name="case1/tmp" />
+      <item check="0" name="case2/tmp" />
+      <item check="0" name="&#20013;/output" />
     </case>
     <version str="input" />
     <param str="1{i} 2{o} 3{c} 4{v}" />
   </exe>
   <screenshot>
     <case>
-      <item check="1" name="case1" />
-      <item check="1" name="case2" />
-      <item check="0" name="&#20013;" />
+      <item check="0" name="case1/tmp" />
+      <item check="1" name="case2/tmp" />
+      <item check="0" name="&#20013;/output" />
     </case>
     <version>
       <item check="0" name="input" />
-      <item check="1" name="v12" />
+      <item check="0" name="v12" />
       <item check="1" name="v11" />
-      <item check="1" name="v13" />
+      <item check="0" name="v13" />
       <item check="0" name="test" />
     </version>
     <algorithm>
       <item check="0" name="smooth" />
       <item check="0" name="merge" />
-      <item check="1" name="LowerJawScan" />
+      <item check="0" name="LowerJawScan" />
+      <item check="1" name="MIX_comb" />
     </algorithm>
   </screenshot>
   <docx>
     <case>
-      <item check="0" name="case1" />
-      <item check="1" name="case2" />
-      <item check="0" name="&#20013;" />
+      <item check="0" name="case1/tmp" />
+      <item check="1" name="case2/tmp" />
+      <item check="0" name="&#20013;/output" />
     </case>
     <version>
-      <item check="1" name="input" />
-      <item check="1" name="v12" />
+      <item check="0" name="input" />
+      <item check="0" name="v12" />
       <item check="1" name="v11" />
-      <item check="1" name="v13" />
+      <item check="0" name="v13" />
       <item check="0" name="test" />
     </version>
     <algorithm>
       <item check="0" name="smooth" />
       <item check="0" name="merge" />
-      <item check="1" name="LowerJawScan" />
+      <item check="0" name="LowerJawScan" />
+      <item check="1" name="MIX_comb" />
     </algorithm>
     <doc_name name="test_doc" />
-    <current_name name="test_doc_20200415_234303.docx" />
-    <current_type name="Hausdorf_dist" />
+    <current_name name="test_doc_20200423_133005.docx" />
+    <current_type name="Screenshots" />
   </docx>
 </project>

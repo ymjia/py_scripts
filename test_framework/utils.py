@@ -4,6 +4,7 @@
 ## @author jiayanming
 
 import os.path
+from os.path import join, isdir, exists
 import sys
 import subprocess
 import psutil
@@ -29,7 +30,7 @@ def get_py_in_reg():
                 key = wr.OpenKey(reg_table, rp, 0, wr.KEY_READ)
                 try:
                     exe_py, _ = wr.QueryValueEx(key, "ExecutablePath")
-                    if exe_py is not None and os.path.exists(exe_py):
+                    if exe_py is not None and exists(exe_py):
                         wr.CloseKey(key)
                         return exe_py
                 finally:
@@ -75,7 +76,7 @@ def get_py_interpretor():
         exe_py = get_py_in_reg()
     else:
         exe_rt = os.__file__.split("lib")[0]
-        exe_py = os.path.join(exe_rt, "bin", "python3")
+        exe_py = join(exe_rt, "bin", "python3")
     return exe_py
 
 
@@ -93,9 +94,9 @@ def get_latest_file(folder, ext):
 
 def get_sys_table(dir_o, case, ver):
     sys = {}
-    dir_log = os.path.join(dir_o, case, ver, "logs")
+    dir_log = join(dir_o, case, ver, "logs")
     file_sys = get_latest_file(dir_log, "sts")
-    if not os.path.exists(file_sys):
+    if not exists(file_sys):
         print("No log file in {}".format(dir_log))
         return None
     with open(file_sys, encoding="utf-8") as f:
@@ -111,8 +112,8 @@ def get_sys_table(dir_o, case, ver):
 # read timming info from output/case/version/
 def get_time_table(dir_o, case, ver):
     times = {}
-    file_time = os.path.join(dir_o, case, ver, "timmings.txt")
-    if not os.path.exists(file_time):
+    file_time = join(dir_o, case, ver, "timmings.txt")
+    if not exists(file_time):
         print("{} does not exist".format(file_time))
         return None
     with open(file_time, encoding="utf-8") as f:
@@ -201,20 +202,36 @@ support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin"]
 
 def get_sub_dir(folder):
     res = []
-    if not os.path.exists(folder):
+    if not exists(folder):
         return res
     for name in os.listdir(folder):
-        if os.path.isdir(os.path.join(folder, name)):
+        if isdir(join(folder, name)):
             res.append(name)
+    return res
+
+
+def list_subdir_with_depth(root, depth=3):
+    res_up = []
+    res = [""]
+    for d in range(0, depth):
+        res_up = res.copy() # 1/2
+        res = []
+        for r in res_up:
+            tr = join(root, r) # tmp root
+            if len(r) < 1:
+                res = res + [f for f in os.listdir(tr) if isdir(join(tr, f))]
+            else:
+                res = res + ["{}/{}".format(r, f) for f
+                             in os.listdir(tr) if isdir(join(tr, f))]
     return res
 
 
 def get_stem_list(folder):
     res = []
-    if not os.path.exists(folder):
+    if not exists(folder):
         return res
     for name in os.listdir(folder):
-        if os.path.isdir(os.path.join(folder, name)):
+        if isdir(join(folder, name)):
             continue
         stem, ext = os.path.splitext(name)
         if not any(ext in e for e in support_ext):
@@ -224,22 +241,22 @@ def get_stem_list(folder):
 
 def get_file_list(folder):
     res = []
-    if not os.path.exists(folder):
+    if not exists(folder):
         return res
     for name in os.listdir(folder):
-        if os.path.isdir(os.path.join(folder, name)):
+        if isdir(join(folder, name)):
             continue
         stem, ext = os.path.splitext(name)
         if not any(ext in e for e in support_ext):
             continue
-        res.append(os.path.join(folder, name))
+        res.append(join(folder, name))
     return res
 
 # def get_file_list(folder):
 #     stem_list = get_stem_list(folder)
 #     res = []
 #     for stem in stem_list:
-#         res.append(os.path.join(folder, stem))
+#         res.append(join(folder, stem))
 #     return res
 
 
@@ -381,7 +398,7 @@ class SessionConfig:
         self.dir_o = ""
         
     def read_config(self, filename):
-        if not os.path.exists(filename):
+        if not exists(filename):
             print("Warning! config file {} does not exists".format(filename))
             return False
         content = None
@@ -439,9 +456,9 @@ def indent_xml(elem, level=0):
 def create_f_lists(dir_o, l_case, l_ver, f_list, sp_list):
     for case in l_case:
         for ver in l_ver:
-            dir_log = os.path.join(dir_o, case, ver, "logs")
+            dir_log = join(dir_o, case, ver, "logs")
             file_sys = get_latest_file(dir_log, "smp")
-            if not os.path.exists(file_sys):
+            if not exists(file_sys):
                 continue
             f_list.append(file_sys)
             sp_list.append("{}_{}".format(case, ver))
@@ -518,10 +535,10 @@ class GeneralConfiguration():
     def __init__(self):
         self._config = {}
         self.dir_exe = str(Path(os.path.dirname(os.path.realpath(__file__))).parent)
-        dir_config = os.path.join(self.dir_exe, "config")
-        if not os.path.exists(dir_config):
+        dir_config = join(self.dir_exe, "config")
+        if not exists(dir_config):
             os.makedirs(dir_config)
-        self.config_file = os.path.join(dir_config, "general.json")
+        self.config_file = join(dir_config, "general.json")
         self.read_from_file()
 
 
@@ -536,7 +553,7 @@ class GeneralConfiguration():
             f.write(tmp_str)
 
     def read_from_file(self):
-        if os.path.exists(self.config_file):
+        if exists(self.config_file):
             try:
                 with open(self.config_file, encoding="utf-8") as f:
                     self._config = json.load(f)
@@ -547,8 +564,8 @@ class GeneralConfiguration():
             self.read_default()
 
     def read_default(self):
-        f_default = os.path.join(self.dir_exe, "config", "general_default.json")
-        if not os.path.exists(f_default):
+        f_default = join(self.dir_exe, "config", "general_default.json")
+        if not exists(f_default):
             print("Fatal Error! Default config file {} cannot be found!".format(f_default))
             return
         try:

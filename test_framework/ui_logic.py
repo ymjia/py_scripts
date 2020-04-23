@@ -321,6 +321,7 @@ def slot_get_file(qle, f_type):
 
 
 def slot_open_input_path(ui):
+    in_depth = int(utils.g_config.config_val("exe_input_depth", "1"))
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     d = get_default_path(p_obj._dirInput)
@@ -328,8 +329,9 @@ def slot_open_input_path(ui):
     if dir_in is None or dir_in == "":
         return
     p_obj._dirInput = dir_in
-    p_obj._case = [f for f in os.listdir(dir_in)
-                   if os.path.isdir(os.path.join(dir_in, f))]
+    # p_obj._case = [f for f in os.listdir(dir_in)
+    #                if os.path.isdir(os.path.join(dir_in, f))]
+    p_obj._case = utils.list_subdir_with_depth(dir_in, in_depth)
     p_obj._eCaseCheck.clear()
     p_obj._sCaseCheck.clear()
     p_obj._dCaseCheck.clear()
@@ -504,12 +506,14 @@ def slot_load_project(ui):
 
 
 def slot_scan_input(ui):
+    in_depth = int(utils.g_config.config_val("exe_input_depth", "1"))
     # update project_object
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
     dir_in = p_obj._dirInput
-    p_obj._case = [f for f in os.listdir(dir_in)
-                   if os.path.isdir(os.path.join(dir_in, f))]
+    p_obj._case = utils.list_subdir_with_depth(dir_in, in_depth)
+    # p_obj._case = [f for f in os.listdir(dir_in)
+    #                if os.path.isdir(os.path.join(dir_in, f))]
     ui.fill_ui_info(p_obj)
     return
 

@@ -14,6 +14,7 @@ import docx
 import pathlib
 import codecs
 from PyQt5.QtWidgets import QProgressDialog, QApplication, QWidget
+from os.path import join, isdir
 
 def read_config_list(config_str, pattern):
     lc = len(config_str)
@@ -232,13 +233,30 @@ def copy_sheet(path_from, path_to, sheet_name):
 # t_out.save("d:/tmp/tmp_out.xlsx")
 
 #thread test
-app = QApplication(sys.argv)
-app.setStyleSheet("QMessageBox { messagebox-text-interaction-flags: 5; }")
-w = QWidget()
-w.show()
-pg = QProgressDialog("Creating Screenshot...", "Stop", 0, 2, w)
-for i in range(0, 3):
-    #sp
-    pg.setValue(i)
+# app = QApplication(sys.argv)
+# app.setStyleSheet("QMessageBox { messagebox-text-interaction-flags: 5; }")
+# w = QWidget()
+# w.show()
+# pg = QProgressDialog("Creating Screenshot...", "Stop", 0, 2, w)
+# for i in range(0, 3):
+#     #sp
+#     pg.setValue(i)
 
-sys.exit(app.exec_())
+# sys.exit(app.exec_())
+
+def list_subdir_with_depth(root, depth=3):
+    res_up = []
+    res = [""]
+    for d in range(0, depth):
+        res_up = res.copy() # 1/2
+        res = []
+        for r in res_up:
+            tr = join(root, r) # tmp root
+            if len(r) < 1:
+                res = res + [f for f in os.listdir(tr) if isdir(join(tr, f))]
+            else:
+                res = res + ["{}/{}".format(r, f) for f in os.listdir(tr) if isdir(join(tr, f))]
+    return res
+            
+
+print(list_subdir_with_depth("d:/tmp/tb"))

@@ -333,7 +333,7 @@ class ScreenShotHelper:
         move(tmp_file, filename)
 
     # read file or file list and render in given view
-    def read_and_render(self, file_list, v):
+    def read_and_render(self, file_list, v, case=None, ver=None):
         specular = g_config.config_val("specular", True)
         HideAll(v)
         reader = read_files(file_list)
@@ -356,15 +356,17 @@ class ScreenShotHelper:
         if len(file_list) > 1: # file list, fetch parent dir
             path, filename = os.path.split(path)
         stem = trim_last_number(os.path.splitext(filename)[0])
-        path, ver = os.path.split(path)
-        path, case = os.path.split(path)
+        if ver is None and case is None:
+            path, ver = os.path.split(path)
+            path, case = os.path.split(path)
+
         add_annotation(v, "{}\n{}\n{}".format(case, ver, stem), 28)
         add_time_annotation(v, f)
         v.Update()
         return reader
 
     # create screenshots for given file from given cam_list    
-    def create_shot(self, file_list, cam_list, out_dir, pattern):
+    def create_shot(self, file_list, cam_list, out_dir, pattern, case=None, ver=None):
         v_w = int(g_config.config_val("view_width", 1024))
         v_h = int(g_config.config_val("view_height", 768))
         if not os.path.exists(out_dir):
@@ -372,7 +374,7 @@ class ScreenShotHelper:
         cur_view = CreateView("RenderView")
         cur_view.ViewSize = [v_w, v_h]
         cur_view.CenterAxesVisibility = 0
-        cur_source = self.read_and_render(file_list, cur_view)
+        cur_source = self.read_and_render(file_list, cur_view, case, ver)
         if cur_source is None:
             return 0
         for i in range(0, len(cam_list)):
@@ -417,6 +419,8 @@ def read_cam(case_file):
 # execute screenshot operation(need config information)
 # general operation, case/version/filanem all have their effects
 def create_screenshots(sc):
+    print("Creating screen shot:")
+    sc.print_config()
     total_num = 0
     dir_input = sc.dir_i
     dir_output = sc.dir_o
@@ -444,18 +448,21 @@ def create_screenshots(sc):
             if not ss.ss_need_update(i_list, cam_file, pic_out_dir , "input"):
                 print("{}/{}/{} already up-to-date".format(case_name, ver_name, "input"))
                 continue
-            total_num += ss.create_shot(i_list, cam_list, pic_out_dir, "input")
+            total_num += ss.create_shot(i_list, cam_list, pic_out_dir, "input",
+                                        case_name, ver_name)
         else:
             for alg in sc.list_alg:
                 file_list = get_file(case_files, alg)
                 if file_list is None or len(file_list) < 1:
+                    print("Warning! No file in {}".format(case_files))
                     continue
                 pic_out_dir = os.path.join(dir_output, case_name, ver_name)
                 if not ss.ss_need_update(file_list, cam_file, pic_out_dir, alg):
                     print("{}/{}/{} already up-to-date".format(case_name, ver_name, alg))
                     continue
                 print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
-                total_num += ss.create_shot(file_list, cam_list, pic_out_dir , alg)
+                total_num += ss.create_shot(file_list, cam_list, pic_out_dir , alg,
+                                            case_name, ver_name)
     return total_num
 
 

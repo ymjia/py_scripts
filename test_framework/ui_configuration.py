@@ -28,7 +28,11 @@ class GeneralConfigurationUI(QWidget):
     #
     def __init__(self, parent=None):
         QWidget.__init__(self)
-        self._qcb_auto_input = QCheckBox("Auto select file from case dir as Input", self)
+        self._qcb_exe_auto_input = QCheckBox("Auto select file from case dir as Input", self)
+        self._qcb_exe_input_depth = QComboBox() # input directory scan depth
+        self._qcb_exe_input_depth.setEditable(False)
+        self._qcb_exe_input_depth.addItems(["1", "2", "3"])
+
         self._qcb_force_update = QCheckBox("Force Update Screenshot", self)
         self._qcb_specular = QCheckBox("Specular", self)
         self._qcb_enable_color = QCheckBox("Enable RGB Color if exists", self)
@@ -56,9 +60,10 @@ class GeneralConfigurationUI(QWidget):
         qpb_default.clicked.connect(self.slot_load_default)
         
         qgb_exe = QGroupBox("Exe Batch Settings")
-        qgl_ss = QGridLayout()
-        qgl_ss.addWidget(self._qcb_auto_input)
-        qgb_exe.setLayout(qgl_ss)
+        qgl_exe = QGridLayout()
+        qgl_exe.addWidget(self._qcb_exe_auto_input)
+        qgl_exe.addWidget(self._qcb_exe_input_depth)
+        qgb_exe.setLayout(qgl_exe)
 
         # screenshot general
         qgb_ss = QGroupBox("Generate ScreenShot Settings")
@@ -112,7 +117,9 @@ class GeneralConfigurationUI(QWidget):
         self.fill_info(g_config)
 
     def collect_info(self, cfg_obj):
-        cfg_obj._config["exe_auto_input"] = self._qcb_auto_input.isChecked()
+        cfg_obj._config["exe_auto_input"] = self._qcb_exe_auto_input.isChecked()
+        cfg_obj._config["exe_input_depth"] = self._qcb_exe_input_depth.currentText()
+
         cfg_obj._config["force_update"] = self._qcb_force_update.isChecked()
         cfg_obj._config["specular"] = self._qcb_specular.isChecked()
         cfg_obj._config["enable_color"] = self._qcb_enable_color.isChecked()
@@ -120,6 +127,7 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config["trans_bd"] = self._qcb_trans_bd.isChecked()
         cfg_obj._config["view_width"] = self._qle_view_width.text()
         cfg_obj._config["view_height"] = self._qle_view_height.text()
+
         cfg_obj._config["hd_standard_statistics"] = self._qcb_hd_std_sts.isChecked()
         cfg_obj._config["hd_distance_rate"] = self._qcb_hd_dist_rate.isChecked()
         cfg_obj._config["hd_6_sigma"] = self._qcb_hd_6_sigma.isChecked()
@@ -131,7 +139,9 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config["hd_picture_scale"] = self._qle_hd_picture_scale.text()
 
     def fill_info(self, cfg_obj):
-        self._qcb_auto_input.setChecked(cfg_obj.config_val("exe_auto_input", True))
+        self._qcb_exe_auto_input.setChecked(cfg_obj.config_val("exe_auto_input", True))
+        self._qcb_exe_input_depth.setCurrentText(cfg_obj.config_val("exe_input_depth", "1"))
+
         self._qcb_force_update.setChecked(cfg_obj.config_val("force_update", False))
         self._qcb_specular.setChecked(cfg_obj.config_val("specular", True))
         self._qcb_enable_color.setChecked(cfg_obj.config_val("enable_color", False))
@@ -139,6 +149,7 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_trans_bd.setChecked(cfg_obj.config_val("trans_bd", False))
         self._qle_view_width.setText(cfg_obj.config_val("view_width", "1024"))
         self._qle_view_height.setText(cfg_obj.config_val("view_height", "768"))
+
         self._qcb_hd_std_sts.setChecked(cfg_obj.config_val("hd_standard_statistics", True))
         self._qcb_hd_dist_rate.setChecked(cfg_obj.config_val("hd_distance_rate", True))
         self._qcb_hd_6_sigma.setChecked(cfg_obj.config_val("hd_6_sigma", True))

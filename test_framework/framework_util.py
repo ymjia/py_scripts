@@ -8,7 +8,7 @@ import os.path
 import math
 import time
 import datetime
-
+from pathlib import Path
 import paraview.vtk # for installer find vtk module
 from paraview.simple import *
 from paraview.simple import _active_objects
@@ -55,13 +55,15 @@ def get_file_list(folder):
 def get_file(folder, stem):
     if not os.path.exists(folder):
         return None
-    for f in os.listdir(folder):
+    full_path = os.path.join(folder, stem)
+    if os.path.isdir(full_path):
+        return get_file_list(full_path)
+    cur_root = str(Path(full_path).parent)
+    for f in os.listdir(cur_root):
         cur_stem, cur_ext = os.path.splitext(f)
         if cur_stem == stem:
-            find_res = os.path.join(folder, f)
-            if os.path.isdir(find_res):
-                return get_file_list(find_res)
-            elif cur_ext in support_ext:
+            find_res = os.path.join(cur_root, f)
+            if cur_ext in support_ext:
                 return [find_res]
     return None
 
@@ -111,6 +113,8 @@ def generate_view(l, s_num):
     # view positions in layout
     l_pos = []
     # split layout and store positions
+    if s_num == 1:
+        l_pos.append(0)
     if s_num == 2:
         pos = l.SplitHorizontal(0, 0.5)
         l_pos = [pos, pos + 1]

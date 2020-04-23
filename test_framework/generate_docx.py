@@ -133,7 +133,8 @@ class DocxGenerator:
             row1.cells[0].text = alg
             row2 = table.add_row().cells
             row2[0].merge(row2[col_num-1])
-            name_state = "{}_{}_{}.py".format(case, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+            case_tmp = case.replace("/", "_")
+            name_state = "{}_{}_{}.py".format(case_tmp, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
             dir_state = os.path.join(self._dirOutput, "ParaView_projects")
             if not os.path.exists(dir_state):
                 os.makedirs(dir_state)
@@ -363,11 +364,12 @@ class DocxGenerator:
                     self.add_hausdorff_statistic_table(case)
                 else:
                     self.add_hausdorff_statistic_table_single(case)
-            if g_config.config_val("hd_screenshot_table", True):
-                doc.add_paragraph("")
-                doc.add_paragraph("ScreenShots Compare Tables")
-                if self.add_case_table(case, len(list_cam)) != 0:
-                    print("Case Table Error for case: {}".format(case))
+                if g_config.config_val("hd_screenshot_table", True):
+                    continue
+            doc.add_paragraph("")
+            doc.add_paragraph("ScreenShots Compare Tables")
+            if self.add_case_table(case, len(list_cam)) != 0:
+                print("Case Table Error for case: {}".format(case))
         doc.save(file_save)
 
 
