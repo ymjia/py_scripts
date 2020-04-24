@@ -9,7 +9,8 @@ import datetime
 import sys
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QTreeView, QLabel,
-                             QCheckBox, QLineEdit, QComboBox, QGroupBox, QPushButton)
+                             QCheckBox, QLineEdit, QComboBox, QGroupBox, QPushButton,
+                             QTabWidget)
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from test_framework.utils import g_config
@@ -28,6 +29,7 @@ class GeneralConfigurationUI(QWidget):
     #
     def __init__(self, parent=None):
         QWidget.__init__(self)
+        self.setWindowTitle("General Configurations")
         self._qcb_exe_auto_input = QCheckBox("Auto select file from case dir as Input", self)
         self._qcb_exe_input_depth = QComboBox() # input directory scan depth
         self._qcb_exe_input_depth.setEditable(False)
@@ -65,7 +67,8 @@ class GeneralConfigurationUI(QWidget):
         qpb_save.clicked.connect(self.slot_save_config)
         qpb_default = QPushButton("Reset To Default")
         qpb_default.clicked.connect(self.slot_load_default)
-        
+        qpb_close = QPushButton("Close")
+        qpb_close.clicked.connect(self.close)
         qgb_exe = QGroupBox("Exe Batch Settings")
         qgl_exe = QGridLayout()
         qgl_exe.addWidget(self._qcb_exe_auto_input)
@@ -109,13 +112,29 @@ class GeneralConfigurationUI(QWidget):
         qgl_hd.addWidget(QLabel("Max Search Distance"))
         qgl_hd.addWidget(self._qle_hd_max_dist)
         qgb_hd.setLayout(qgl_hd)
-        
+
+        # tabs
+        # tab--general
+        qwg_general = QWidget()
+        qgl_general = QGridLayout()
+        qgl_general.addWidget(qgb_exe)
+        qgl_general.addWidget(qgb_ss)
+        qwg_general.setLayout(qgl_general)
+        # tab--hausdorff
+        qwg_hd = QWidget()
+        qgl_hd = QGridLayout()
+        qgl_hd.addWidget(qgb_hd)
+        qwg_hd.setLayout(qgl_hd)
+        qtb_main = QTabWidget()
+        qtb_main.addTab(qwg_general, "General")
+        qtb_main.addTab(qwg_hd, "Deviation Report")
+
+        # main
         qgl_conf = QGridLayout()
-        qgl_conf.addWidget(qgb_exe, 0, 0, 1, 2)
-        qgl_conf.addWidget(qgb_ss, 1, 0, 1, 2)
-        qgl_conf.addWidget(qgb_hd, 2, 0, 1, 2)
-        qgl_conf.addWidget(qpb_save, 3, 0)
-        qgl_conf.addWidget(qpb_default, 3, 1)
+        qgl_conf.addWidget(qtb_main, 0, 0, 1, 2)
+        qgl_conf.addWidget(qpb_save, 1, 0)
+        qgl_conf.addWidget(qpb_default, 1, 1)
+        qgl_conf.addWidget(qpb_close, 2, 0, 1, 2)
         self.setLayout(qgl_conf)
         # fill in current config
         self.fill_info(g_config)

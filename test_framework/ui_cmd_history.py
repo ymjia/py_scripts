@@ -17,6 +17,7 @@ from test_framework.utils import indent_xml
 class CMDHistory(QWidget):
     def __init__(self, qpt):
         QWidget.__init__(self)
+        self.setWindowTitle("Command Line History")
         self._qlv_demo = create_QListView(self)
         self._qlv_demo.clicked.connect(self.slot_switch_demo)
         self._qtv_cmd = QTreeView(self)
