@@ -75,7 +75,7 @@ class TFWindow(QWidget):
         self._qcb_doc_type.addItems(["Screenshots", "Time_statistics", "CPU_MEM_statistics", "Hausdorf_dist"])
         # other object
         self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
-        self._filenameSelector = None
+        #self._filenameSelector = None
         # layout
         grid = QGridLayout()
         grid.addWidget(self.create_history(), 0, 0)
@@ -244,10 +244,8 @@ class TFWindow(QWidget):
         qpb_build_output.clicked.connect(lambda: ui_logic.slot_build_output(self))
         qpb_add_case.clicked.connect(
             lambda: ui_logic.slot_add_list(self, self._p._case, "Case"))
-        qpb_add_ver.clicked.connect(
-            lambda: ui_logic.slot_add_list(self, self._p._ver, "Version"))
-        #qpb_add_alg.clicked.connect(
-        #    lambda: ui_logic.slot_add_list(self, self._p._alg, "Algorithm"))
+        #qpb_add_ver.clicked.connect(lambda: ui_logic.slot_add_list(self, self._p._ver, "Version"))
+        qpb_add_ver.clicked.connect(self.slot_add_ver_list)
         qpb_add_alg.clicked.connect(self.slot_add_alg_list)
         qpb_del_case.clicked.connect(
             lambda: ui_logic.slot_del_list(self, self._qlv_ss_case, self._p._case))
@@ -416,10 +414,16 @@ class TFWindow(QWidget):
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
 
+    def slot_add_ver_list(self):
+        cand = ui_logic.get_all_ver_names(self._p)
+        alg_sel = FileNameSelector(cand, self._p._ver)
+        alg_sel.exec_()
+        self.fill_ui_info(self._p)
+
     def slot_add_alg_list(self):
         cand = ui_logic.get_all_filenames(self._p)
-        self._filenameSelector = FileNameSelector(self, cand)
-        self._filenameSelector.exec_()
+        alg_sel = FileNameSelector(cand, self._p._alg)
+        alg_sel.exec_()
         self.fill_ui_info(self._p)
 
     # button status switch
@@ -442,9 +446,9 @@ class TFWindow(QWidget):
 
 
 class FileNameSelector(QDialog):
-    def __init__(self, parent, l_name):
+    def __init__(self, l_name, l_target):
         QDialog.__init__(self)
-        self._mainWindow = parent
+        self._listToAdd = l_target
         self._qlv_cand = create_QListView(self)
         self._qle_add = QLineEdit()
         self._qpb_add = QPushButton("Add")
@@ -453,9 +457,9 @@ class FileNameSelector(QDialog):
         self._qpb_cancel.clicked.connect(self.close)
         self.fill_cand_list(l_name)
         grid = QGridLayout()
-        grid.addWidget(QLabel("Check existing FileNames in Output Directory:"))
+        grid.addWidget(QLabel("Check existing Items in Output Directory:"))
         grid.addWidget(self._qlv_cand, 1, 0, 1, 2)
-        grid.addWidget(QLabel("or Input New FileName(seperate by ','):"))
+        grid.addWidget(QLabel("\nor\n\nInput Itmes FileName(seperate by ','):"))
         grid.addWidget(self._qle_add, 3, 0, 1, 2)
         grid.addWidget(self._qpb_add, 4, 0)
         grid.addWidget(self._qpb_cancel, 4, 1)
@@ -487,10 +491,9 @@ class FileNameSelector(QDialog):
             for i in text_list:
                 if i not in l_item:
                     l_item.append(i)
-        p_obj = self._mainWindow._p
         for item in l_item:
-            if item not in p_obj._alg:
-                p_obj._alg.append(item)
+            if item not in self._listToAdd:
+                self._listToAdd.append(item)
         self.close()
 
 if __name__ == "__main__":

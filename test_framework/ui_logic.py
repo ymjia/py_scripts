@@ -826,3 +826,14 @@ def get_all_filenames(p_obj):
             fill_dict(d_name, sub)
             fill_dict(d_name, stem)
     return list(d_name.keys())
+
+
+def get_all_ver_names(p_obj):
+    l_case = p_obj._case
+    dir_out = p_obj._dirOutput
+    d_name = {}
+    for case in l_case:
+        cur_dir = os.path.join(dir_out, case)
+        sub = utils.get_sub_dir(cur_dir)
+        fill_dict(d_name, sub)
+    return list(d_name.keys())
