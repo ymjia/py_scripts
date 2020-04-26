@@ -453,10 +453,12 @@ class FileNameSelector(QDialog):
         self._qpb_cancel.clicked.connect(self.close)
         self.fill_cand_list(l_name)
         grid = QGridLayout()
-        grid.addWidget(self._qlv_cand, 0, 0, 1, 2)
-        grid.addWidget(self._qle_add, 1, 0, 1, 2)
-        grid.addWidget(self._qpb_add, 2, 0)
-        grid.addWidget(self._qpb_cancel, 2, 1)
+        grid.addWidget(QLabel("Check existing FileNames in Output Directory:"))
+        grid.addWidget(self._qlv_cand, 1, 0, 1, 2)
+        grid.addWidget(QLabel("or Input New FileName(seperate by ','):"))
+        grid.addWidget(self._qle_add, 3, 0, 1, 2)
+        grid.addWidget(self._qpb_add, 4, 0)
+        grid.addWidget(self._qpb_cancel, 4, 1)
         self.setLayout(grid)
 
     def fill_cand_list(self, l_name):

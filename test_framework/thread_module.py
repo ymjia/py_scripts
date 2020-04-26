@@ -18,7 +18,7 @@ from test_framework import utils
 
 
 class ExeRunThread(QThread):
-    _sigProgress = pyqtSignal(float)
+    _sigProgress = pyqtSignal(float) # signal connect to mainwindow progress bar
 
     def __init__(self, w_main):
         QThread.__init__(self)
