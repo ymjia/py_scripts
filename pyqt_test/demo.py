@@ -4,6 +4,8 @@
 
 import os
 import sys
+sys.path.insert(0, os.getcwd())
+from test_framework import ui_batch_exe
 from PyQt5.QtWidgets import QApplication
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
@@ -45,6 +47,7 @@ class TestWindow(QWidget):
 
 app = QApplication(sys.argv)
 app.setStyleSheet("QMessageBox { messagebox-text-interaction-flags: 5; }")
-w = TestWindow()
+#w = TestWindow()
+w = ui_batch_exe.BatchManage()
 w.show()
 sys.exit(app.exec_())
