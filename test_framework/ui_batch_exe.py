@@ -170,7 +170,9 @@ class BatchManage(QWidget):
         if len(sl) < 1:
             QMessageBox.about(self, "Message", "No Selected Item!")
             return
-        
+        self.collect_batch_list()
+        for s in sl:
+            print(s.row())
 
 
     def add_cmd(self, exe, param):
