@@ -82,6 +82,14 @@ class Project:
         self._docName = root_doc.find("doc_name").attrib["name"]
         self._curDocName = root_doc.find("current_name").attrib["name"]
         self._curDocType = xml_find_or_def(root_doc,"current_type","name", "Screenshots")
+        # batch
+        root_batch = root.find("batch")
+        try:
+            if root_batch is not None:
+                for item in root_batch.find("batch_item"):
+                    self._batchList.append([item.attrib["exe"], item.attrib["cmd"], item.attrib["ver"]])
+        except ET.ParseError:
+            return
 
     def load_list(self):
         branch = self._tree.getroot().find("all")
@@ -179,10 +187,17 @@ class Project:
 
         # batch
         batch_root = ET.Element("batch")
+        batch_items = ET.Element("batch_item")
+        batch_root.append(batch_items)
+        for b_item in self._batchList:
+            if len(b_item) != 3:
+                continue
+            batch_items.append(ET.Elelemnt("item", {"exe": b_item[0], "cmd": b_item[1], "ver": b_item[2]}))
         
         root.append(exe_root)
         root.append(ss_root)
         root.append(doc_root)
+        root.append(batch_root)
         return ET.ElementTree(root)
 
     def save_xml(self, filename=""):
