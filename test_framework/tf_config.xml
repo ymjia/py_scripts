@@ -42,7 +42,7 @@
       <item check="0" name="input" />
       <item check="1" name="v12" />
       <item check="1" name="v11" />
-      <item check="1" name="v13" />
+      <item check="0" name="v13" />
       <item check="0" name="test" />
     </version>
     <algorithm>

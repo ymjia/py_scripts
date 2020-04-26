@@ -92,6 +92,10 @@ class TFWindow(QWidget):
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
 
+    def closeEvent(self, event):
+        self.collect_ui_info()
+        self._p.save_xml(self._p._configFile)
+
     def fill_proj_list(self, flt = ""):
         m = QStandardItemModel()
         flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
@@ -417,6 +421,9 @@ class TFWindow(QWidget):
         self._cmdDialog.resize(800, 200)
         self._cmdDialog.fill_list()
         self._cmdDialog.show()
+
+    def slot_show_config(self):
+        self._configDialog.show()
 
     def slot_add_ver_list(self):
         cand = ui_logic.get_all_ver_names(self._p)

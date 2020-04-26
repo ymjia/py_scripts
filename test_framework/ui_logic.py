@@ -385,6 +385,7 @@ def generate_exe_param(p_obj, case, ver = ""):
 
 def slot_exe_run(ui):
     ui._p = ui.collect_ui_info()
+    ui._p.save_xml(ui._p._configFile)
     p_obj = ui._p
     exe = p_obj._exeDemo
     param_text = p_obj._exeParam

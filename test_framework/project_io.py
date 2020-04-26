@@ -50,6 +50,8 @@ class Project:
         self._docName = ""
         self._curDocName = ""
         self._curDocType = "Screenshots"
+        # batch
+        self._batchList = []
 
     # load functions
     def load_xml(self, filename):
@@ -174,6 +176,10 @@ class Project:
         doc_root.append(ET.Element("doc_name", {"name": self._docName}))
         doc_root.append(ET.Element("current_name", {"name": self._curDocName}))
         doc_root.append(ET.Element("current_type", {"name": self._curDocType}))
+
+        # batch
+        batch_root = ET.Element("batch")
+        
         root.append(exe_root)
         root.append(ss_root)
         root.append(doc_root)
