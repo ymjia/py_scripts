@@ -331,10 +331,14 @@ class TFWindow(QWidget):
         qpb_exe_run = QPushButton('Run Demo')
         qpb_exe_stop = QPushButton('中断')
         qpb_exe_param = QPushButton("命令预览", self)
+        qpb_batch_config = QPushButton("Edit Batch")
+        qpb_batch_run = QPushButton("Run Batch")
         qpb_exe_stop.setStyleSheet("background-color: red")
         qpb_exe_run.clicked.connect(lambda: ui_logic.slot_exe_run(self))
         qpb_exe_stop.clicked.connect(lambda: ui_logic.slot_exe_stop(self))
         qpb_exe_param.clicked.connect(lambda: ui_logic.slot_exe_param(self))
+        qpb_batch_config.clicked.connect(self.slot_batch_config)
+        qpb_batch_run.clicked.connect(self.slot_batch_run)
         # initial stack widget
         # 1st group
         self._qst_exe_param.addWidget(qpb_exe_param)
@@ -356,6 +360,8 @@ class TFWindow(QWidget):
         grid.addWidget(self._qcb_cur_ver, 3, 1)
         grid.addWidget(self._qst_exe_param, 4, 0)
         grid.addWidget(self._qst_exe_button, 4, 1)
+        grid.addWidget(qpb_batch_config, 5, 0)
+        grid.addWidget(qpb_batch_run, 5, 1)
         exe_region.setLayout(grid)
         return exe_region
 
@@ -455,6 +461,13 @@ class TFWindow(QWidget):
         self.new_run_button()
         self._qlv_all_proj.setEnabled(True)
 
+    def slot_batch_config(self):
+        self._p._batchList.append(["c:/tmp/a.exe", "-i -o 1", "v1"])
+        self._p._batchList.append(["c:/tmp/a.exe", "-i -o 2", "v2"])
+    
+    def slot_batch_run(self):
+        for item in self._p._batchList:
+            print(item)
 
 class FileNameSelector(QDialog):
     def __init__(self, l_name, l_target):

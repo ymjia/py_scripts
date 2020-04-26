@@ -75,4 +75,10 @@
     <current_name name="test_doc_20200423_133005.docx" />
     <current_type name="Hausdorf_dist" />
   </docx>
+  <batch>
+    <batch_item>
+      <item cmd="-i -o 1" exe="c:/tmp/a.exe" ver="v1" />
+      <item cmd="-i -o 2" exe="c:/tmp/a.exe" ver="v2" />
+    </batch_item>
+  </batch>
 </project>

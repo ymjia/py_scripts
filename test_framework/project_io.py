@@ -160,6 +160,7 @@ class Project:
             else:
                 root.append(ET.Element("item", {"name": item, "check": "0"}))
 
+    # build xml object from self
     def collect_xml(self):
         root = ET.Element("project")
         # directories
@@ -192,7 +193,7 @@ class Project:
         for b_item in self._batchList:
             if len(b_item) != 3:
                 continue
-            batch_items.append(ET.Elelemnt("item", {"exe": b_item[0], "cmd": b_item[1], "ver": b_item[2]}))
+            batch_items.append(ET.Element("item", {"exe": b_item[0], "cmd": b_item[1], "ver": b_item[2]}))
         
         root.append(exe_root)
         root.append(ss_root)
