@@ -336,6 +336,12 @@ class ScreenShotHelper:
         tmp_file = "c:/tf_tmp/ss.png"
         SaveScreenshot(tmp_file, view,
                        ImageResolution=v_size, TransparentBackground=trans_bg)
+        #in case view bug happenned in savescreenshot
+        if view.CameraPosition.GetData() != co.CameraPosition:
+            co.set_camera(view)
+            view.Update()
+            SaveScreenshot(tmp_file, view,
+                           ImageResolution=v_size, TransparentBackground=trans_bg)
         move(tmp_file, filename)
 
     # read file or file list and render in given view
