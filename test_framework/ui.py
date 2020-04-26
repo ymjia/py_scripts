@@ -77,7 +77,6 @@ class TFWindow(QWidget):
         # other object
         self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
         self._configDialog = GeneralConfigurationUI(self)
-        self._filenameSelector = None
         # layout
         grid = QGridLayout()
         grid.addWidget(self.create_history(), 0, 0)
