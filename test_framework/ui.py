@@ -339,7 +339,7 @@ class TFWindow(QWidget):
         qpb_batch_run.clicked.connect(self.slot_batch_run)
         # initial stack widget
         # 1st group
-        self._qst_exe_param.addWidget(qpb_exe_param)
+        self._qst_exe_param.addWidget(qpb_batch_run)
         self._qst_exe_button.addWidget(qpb_exe_run)
         # 2nd group
         self._qst_exe_param.addWidget(self._qpr_exe_progress)
@@ -356,10 +356,10 @@ class TFWindow(QWidget):
         grid.addWidget(self._qpt_exe_param, 1, 1, 2, 1)
         grid.addWidget(QLabel('Use Version Name'), 3, 0)
         grid.addWidget(self._qcb_cur_ver, 3, 1)
-        grid.addWidget(self._qst_exe_param, 4, 0)
-        grid.addWidget(self._qst_exe_button, 4, 1)
-        grid.addWidget(qpb_batch_config, 5, 0)
-        grid.addWidget(qpb_batch_run, 5, 1)
+        grid.addWidget(qpb_batch_config, 4, 0)
+        grid.addWidget(qpb_exe_param, 4, 1)
+        grid.addWidget(self._qst_exe_param, 5, 0)
+        grid.addWidget(self._qst_exe_button, 5, 1)
         exe_region.setLayout(grid)
         return exe_region
 

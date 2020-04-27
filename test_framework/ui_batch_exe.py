@@ -9,7 +9,7 @@ import datetime
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QTreeView, QLabel, QLineEdit, QGroupBox,
                              QPlainTextEdit, QPushButton, QVBoxLayout, QHBoxLayout,
-                             QMessageBox, QComboBox, QDialog)
+                             QMessageBox, QComboBox, QDialog, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from test_framework.ui_cmd_history import CMDHistory
@@ -25,6 +25,8 @@ class BatchManage(QDialog):
         self._batchList = p_obj._batchList
         self._qtv_item = QTreeView(self)
         self._qtv_item.doubleClicked.connect(self.slot_fill_info)
+        self._qtv_item.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
         self._qle_exe = QLineEdit()
         self._qpt_cmd = QPlainTextEdit()
         self._qcb_ver = QComboBox()
@@ -82,12 +84,6 @@ class BatchManage(QDialog):
         l_main.addWidget(qgb_edit)
         l_main.addWidget(qwg_btn)
         self.setLayout(l_main)
-        #grid.setColumnStretch(0, 1)
-        #grid.setColumnStretch(1, 4)
-
-        #self._file = os.path.join(
-        #    os.path.dirname(os.path.realpath(__file__)), "cmd_history.xml")
-        #self._cmdTree = ET.ElementTree()
         self.fill_batch_list()
 
     # update cmd view
@@ -148,8 +144,10 @@ class BatchManage(QDialog):
             QMessageBox.about(self, "Message", "No Selected Item!")
             return
         self.collect_batch_list()
-        for s in sl:
-            print(s.row())
+        sel_row = sl[0].row()
+        if len(self._batchList) > sel_row:
+            del self._batchList[sel_row]
+        self.fill_batch_list()
 
     def slot_cmd_hist(self):
         cmdDialog = CMDHistory(self._qpt_cmd)

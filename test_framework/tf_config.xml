@@ -78,7 +78,6 @@
     <batch_item>
       <item cmd="-a qem_simp -i {i} -o {o}/result.ply" exe="D:/tools/JYMTest/JYMTest.exe" ver="qem" />
       <item cmd="-a smooth_mesh -i {i} -o {o}/result.ply" exe="D:/tools/JYMTest/JYMTest.exe" ver="smooth" />
-      <item cmd="-a qem_simp -i {i} -o {o}/result.ply" exe="D:/tools/JYMTest/JYMTest.exe" ver="qem2" />
       <item cmd="-a smooth_mesh -i {i} -o {o}/result.ply" exe="D:/tools/JYMTest/JYMTest.exe" ver="smooth2" />
     </batch_item>
   </batch>
