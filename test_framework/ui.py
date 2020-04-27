@@ -20,6 +20,7 @@ from test_framework import ui_cmd_history
 from test_framework import ui_logic
 from test_framework.ui_logic import create_QListView
 from test_framework.ui_configuration import GeneralConfigurationUI
+from test_framework.ui_batch_exe import BatchManage
 class TFWindow(QWidget):
     # take project object as input
     def __init__(self, parent=None):
@@ -424,9 +425,10 @@ class TFWindow(QWidget):
         return doc_region
 
     def slot_show_cmd_history(self):
-        self._cmdDialog.resize(800, 200)
-        self._cmdDialog.fill_list()
-        self._cmdDialog.show()
+        cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
+        cmdDialog.resize(800, 200)
+        cmdDialog.fill_list()
+        cmdDialog.exec_()
 
     def slot_show_config(self):
         self._configDialog.show()
@@ -462,8 +464,8 @@ class TFWindow(QWidget):
         self._qlv_all_proj.setEnabled(True)
 
     def slot_batch_config(self):
-        self._p._batchList.append(["c:/tmp/a.exe", "-i -o 1", "v1"])
-        self._p._batchList.append(["c:/tmp/a.exe", "-i -o 2", "v2"])
+        batch_dialog = BatchManage(self._p)
+        batch_dialog.exec_()
     
     def slot_batch_run(self):
         for item in self._p._batchList:

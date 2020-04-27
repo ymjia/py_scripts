@@ -30,7 +30,7 @@
       <item check="0" name="&#20013;/output" />
     </case>
     <version str="input" />
-    <param str="1{i} 2{o} 3{c} 4{v}" />
+    <param str="-a dental_desk_after_merge -i {i} -o {o} -p 12" />
   </exe>
   <screenshot>
     <case>
@@ -79,6 +79,13 @@
     <batch_item>
       <item cmd="-i -o 1" exe="c:/tmp/a.exe" ver="v1" />
       <item cmd="-i -o 2" exe="c:/tmp/a.exe" ver="v2" />
+      <item cmd="-a -i 1" exe="c:/tmp/aa.exe" ver="v1" />
+      <item cmd="-a -i 2" exe="c:/tmp/aa.exe" ver="v2" />
+      <item cmd="-a -i 1" exe="c:/tmp/bb.exe" ver="v3" />
+      <item cmd="-a dental_desk_after_merge -i {i} -o {o} -p 12" exe="D:/dev/compiler_test/build/Release/ct.exe" ver="input" />
+      <item cmd="-a -i 1" exe="c:/tmp/aa.exe" ver="v1" />
+      <item cmd="-a -i 2" exe="c:/tmp/aa.exe" ver="v2" />
+      <item cmd="-a -i 1" exe="c:/tmp/bb.exe" ver="v3" />
     </batch_item>
   </batch>
 </project>

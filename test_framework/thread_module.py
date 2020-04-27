@@ -106,7 +106,7 @@ class ExeRunThread(QThread):
                         self._demoProc._memSample[li])
                     self._fSmp.write(res_str)
             self.release_files()
-            print("## Start {} =====================".format(case))
+            print("## Finished {} =====================".format(case))
         self._sigProgress.emit(99)
         need_update = False
         case = p_obj._case

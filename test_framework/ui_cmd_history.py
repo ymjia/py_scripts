@@ -7,16 +7,16 @@ import os.path
 import datetime
 
 import xml.etree.ElementTree as ET
-from PyQt5.QtWidgets import QWidget, QGridLayout, QTreeView, QLabel
+from PyQt5.QtWidgets import QWidget, QGridLayout, QTreeView, QLabel, QDialog
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from test_framework.ui_logic import create_QListView
 from test_framework.utils import indent_xml
 
 
-class CMDHistory(QWidget):
+class CMDHistory(QDialog):
     def __init__(self, qpt):
-        QWidget.__init__(self)
+        QDialog.__init__(self)
         self.setWindowTitle("Command Line History")
         self._qlv_demo = create_QListView(self)
         self._qlv_demo.clicked.connect(self.slot_switch_demo)
