@@ -166,9 +166,7 @@ class TFWindow(QWidget):
         return out_obj
 
     def add_hist_item(self, hist_type, val):
-        cur_num = uitls.get_hist_item(hist_type)
-        new_num = str(cur_num + val)
-        utils.set_reg_item(hist_type, new_num)
+        new_num = utils.add_hist_item(hist_type, val)
         if hist_type == "exe":
             self._ql_hist_exe.setText(new_num)
         elif hist_type == "ss":
@@ -459,9 +457,13 @@ class TFWindow(QWidget):
     def exe_finish(self):
         self.new_run_button()
         self._qlv_all_proj.setEnabled(True)
+        self._ql_hist_exe.setText(str(utils.get_hist_item("exe")))
         ver = self._p._eVer
+        case = self._p._case
         need_update = False
-        if ver != "" and ver not in self._p._ver:
+        if "plain_run" in case:
+            need_update = True
+        if not need_update and ver != "" and ver not in self._p._ver:
             self._p._ver.append(ver)
             need_update = True
         if need_update:

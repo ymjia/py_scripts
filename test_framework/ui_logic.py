@@ -393,16 +393,6 @@ def slot_exe_run(ui):
     if len(list_case) < 1 and "{i}" in param_text:
         QMessageBox.about(ui, "Error", "No Input Case Checked!!")
         return
-    # plain run
-    plain_run = False
-    if len(list_case) < 1:
-        plain_run = True
-        list_case.append("plain_run")
-    need_update = False
-    case = p_obj._case
-    if plain_run and "plain_run" not in case:
-        case.append("plain_run")
-        need_update = True
 
     ui._cmdDialog.add_cmd(exe, param_text)
     ui._threadExe = thread_module.ExeRunThread(ui._p)

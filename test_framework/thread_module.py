@@ -39,6 +39,15 @@ class ExeRunThread(QThread):
         cur_ver = self.session._eVer
         cur_cmd = self.session._exeParam
         list_case = ui_logic.get_checked_items(self.session._case, self.session._eCaseCheck)
+        # plain run
+        plain_run = False
+        if len(list_case) < 1:
+            plain_run = True
+            list_case.append("plain_run")
+        case = self.session._case
+        if plain_run and "plain_run" not in case:
+            case.append("plain_run")
+
         self.run_task(exe, cur_cmd, cur_ver, list_case, dir_i, dir_o)
 
     # run single task, Parallel not supported
@@ -81,7 +90,7 @@ class ExeRunThread(QThread):
             in_param.insert(0, exe)
             if ext == ".py":
                 in_param.insert(0, exe_py)
-            #TODO change registry table
+            utils.add_hist_item("exe", 1)
             self._demoProc = utils.ProcessMonitor(in_param, self._fLog)
             try:
                 run_st = self._demoProc.execute()

@@ -75,6 +75,13 @@ def get_hist_item(hist_type):
     return int(float(get_reg_item(hist_type)) + 0.1)
 
 
+def add_hist_item(hist_type, val):
+    cur_num = get_hist_item(hist_type)
+    new_num = str(cur_num + val)
+    set_reg_item(hist_type, new_num)
+    return new_num
+
+
 def get_py_interpretor():
     exe_py = ""
     # findout python interpreter

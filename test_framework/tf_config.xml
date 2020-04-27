@@ -8,6 +8,7 @@
       <item check="1" name="case1/tmp" />
       <item check="1" name="case2/tmp" />
       <item check="1" name="&#20013;/output" />
+      <item check="1" name="plain_run" />
     </case>
     <version>
       <item check="1" name="input" />
@@ -26,18 +27,20 @@
   </all>
   <exe>
     <case>
-      <item check="1" name="case1/tmp" />
+      <item check="0" name="case1/tmp" />
       <item check="0" name="case2/tmp" />
       <item check="0" name="&#20013;/output" />
+      <item check="1" name="plain_run" />
     </case>
     <version str="v113" />
-    <param str="-a dental_desk_after_merge -i {i} -o {o} -p 12" />
+    <param str="" />
   </exe>
   <screenshot>
     <case>
       <item check="1" name="case1/tmp" />
       <item check="1" name="case2/tmp" />
       <item check="0" name="&#20013;/output" />
+      <item check="0" name="plain_run" />
     </case>
     <version>
       <item check="0" name="input" />
@@ -59,6 +62,7 @@
       <item check="0" name="case1/tmp" />
       <item check="1" name="case2/tmp" />
       <item check="0" name="&#20013;/output" />
+      <item check="0" name="plain_run" />
     </case>
     <version>
       <item check="0" name="input" />
