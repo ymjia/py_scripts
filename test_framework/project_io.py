@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 from test_framework import utils
 
 
+# parse with default value, to remain backward compatibility
 def xml_find_or_def(root, key, attrib_name, default_val):
     try:
         item = root.find(key)
@@ -29,6 +30,8 @@ class Project:
         self._configFile = ""
         self._dirInput = ""
         self._dirOutput = ""
+        self._rdirInput = ""
+        self._rdirOutput = ""
         self._exeDemo = ""
         self._exePV = ""
         # case name list
@@ -62,6 +65,8 @@ class Project:
         # directories
         self._dirInput = root.find("input").attrib["path"]
         self._dirOutput = root.find("output").attrib["path"]
+        self._rdirInput = xml_find_or_def(root, "rel_input", "path", "")
+        self._rdirOutput = xml_find_or_def(root, "rel_output", "path", "")
         self._exeDemo = root.find("exe_demo").attrib["path"]
         self._exePV = root.find("exe_pv").attrib["path"]
         self.load_list()
@@ -166,6 +171,8 @@ class Project:
         # directories
         root.append(ET.Element("input", {"path": self._dirInput}))
         root.append(ET.Element("output", {"path": self._dirOutput}))
+        root.append(ET.Element("rel_input", {"path": self._rdirInput}))
+        root.append(ET.Element("rel_output", {"path": self._rdirOutput}))
         root.append(ET.Element("exe_demo", {"path": self._exeDemo}))
         root.append(ET.Element("exe_pv", {"path": self._exePV}))
         root.append(self.save_list())

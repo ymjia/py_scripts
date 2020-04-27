@@ -34,3 +34,19 @@ it = cur_view.GetInteractor()
 it.AddObserver("KeyPressEvent", CameraKey)
 it.AddObserver("KeyPressEvent", lambda o, e, my_obj=XXX:CameraKey(o, e, my_obj))
 Interact(cur_view) # start iteraction
+
+
+========insight===============
+about PROJECT DATA
+	  1. all information needed in execution(exe, screenshot, doc) are stored in an object of class Project: _p
+	  2. GUI info of project always be filled base on _p
+	  3. all changes about to show in GUI must first change _p then from _p to GUI
+	  ===reason===
+	  1. no attention needed in GUI slots, just read from _p
+	  2. GUI is not necessary, command line tool can be made easily
+
+about PROJECT PATH -- relative path is used for exported project, absolute path is generated after load
+	  1. both relative and absolute path saved in _p
+	  2. GUI always show VALID absolute path
+	  3. in process GUI --> _p, relative path in _p must be updated
+	  4. in process _p --> GUI, absolute path is preferable to relative, unless not exists

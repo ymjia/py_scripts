@@ -259,4 +259,6 @@ def list_subdir_with_depth(root, depth=3):
     return res
             
 
-print(list_subdir_with_depth("d:/tmp/tb"))
+#print(list_subdir_with_depth("d:/tmp/tb"))
+
+print(__file__)

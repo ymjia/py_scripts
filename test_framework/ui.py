@@ -6,7 +6,7 @@
 import os.path
 import sys
 import datetime
-
+from pathlib import Path
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
                              QStackedWidget, QComboBox, QDialog,
@@ -126,8 +126,17 @@ class TFWindow(QWidget):
         self._p = in_obj
         cur_obj = self._p
         self._qle_conf_file.setText(cur_obj._configFile)
-        self._qle_dir_in.setText(cur_obj._dirInput)
-        self._qle_dir_out.setText(cur_obj._dirOutput)
+        d_in = cur_obj._dirInput
+        d_out = cur_obj._dirOutput 
+        if not os.path.exists(d_in) and cur_obj._rdirInput != "":
+            # input not exists, try relative
+            rel_root = str(Path(cur_obj._configFile).parent)
+            rel_input = os.path.join(rel_root, cur_obj._rdirInput)
+            if os.path.exists(rel_input):
+                d_in = rel_input
+                d_out = os.path.join(rel_root, cur_obj._rdirOutput)
+        self._qle_dir_in.setText(d_in)
+        self._qle_dir_out.setText(d_out)
         self._qle_exe_demo.setText(cur_obj._exeDemo)
         self._qle_doc_name.setText(cur_obj._docName)
         self._qcb_cur_ver.clear()
@@ -147,11 +156,23 @@ class TFWindow(QWidget):
 
 
     def collect_ui_info(self):
-        #out_obj = project_io.Project()
         out_obj = self._p
         out_obj._configFile = self._qle_conf_file.text()
-        out_obj._dirInput = self._qle_dir_in.text()
-        out_obj._dirOutput = self._qle_dir_out.text()
+        abs_in = self._qle_dir_in.text()
+        abs_out = self._qle_dir_out.text()
+        out_obj._dirInput = abs_in
+        out_obj._dirOutput = abs_out
+        # get valid relative path
+        try:
+            rel_root = str(Path(out_obj._configFile).parent)
+            common_in = os.path.commonpath([out_obj._configFile, abs_in])
+            common_out = os.path.commonpath([out_obj._configFile, abs_out])
+            if rel_root == common_in and rel_root == common_out:
+                out_obj._rdirInput = os.path.relpath(abs_in, rel_root)
+                out_obj._rdirOutput = os.path.relpath(abs_out, rel_root)
+        except ValueError:
+            out_obj._rdirInput = ""
+            out_obj._rdirOutput = ""
         out_obj._exeDemo = self._qle_exe_demo.text()
         out_obj._docName = self._qle_doc_name.text()
         out_obj._eVer = self._qcb_cur_ver.currentText()
