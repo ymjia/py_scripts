@@ -91,6 +91,7 @@ class TFWindow(QWidget):
         self.resize(1200, 800)
         ui_logic.load_ptree_obj(self)
         self.fill_proj_list()
+        self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
 
     def closeEvent(self, event):
         self.collect_ui_info()
@@ -142,6 +143,7 @@ class TFWindow(QWidget):
         self.fill_check_list(self._qlv_doc_case, cur_obj._case, cur_obj._dCaseCheck)
         self.fill_check_list(self._qlv_doc_ver, cur_obj._ver, cur_obj._dVerCheck)
         self.fill_check_list(self._qlv_doc_alg, cur_obj._alg, cur_obj._dAlgCheck)
+
 
     def collect_ui_info(self):
         #out_obj = project_io.Project()
@@ -421,9 +423,9 @@ class TFWindow(QWidget):
         return doc_region
 
     def slot_show_cmd_history(self):
-        cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
-        cmdDialog.fill_list()
-        cmdDialog.exec_()
+        #cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
+        self._cmdDialog.fill_list()
+        self._cmdDialog.exec_()
 
     def slot_show_config(self):
         self._configDialog.show()

@@ -72,7 +72,7 @@ def get_reg_item(type_str):
 
 
 def get_hist_item(hist_type):
-    return int(float(utils.get_reg_item(hist_type)) + 0.1)
+    return int(float(get_reg_item(hist_type)) + 0.1)
 
 
 def get_py_interpretor():

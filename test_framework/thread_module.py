@@ -38,12 +38,12 @@ class ExeRunThread(QThread):
         if ext == ".py":
             exe_py = utils.get_py_interpretor()
         # prepare exe parameters
+        dir_i = self.session._dirInput
         dir_o = self.session._dirOutput
         cur_ver = self.session._eVer
         cur_cmd = self.session._exeParam
         list_case = ui_logic.get_checked_items(self.session._case, self.session._eCaseCheck)
-        run_task(exe, cur_cmd, cur_ver, list_case, dir_o
-        return
+        run_task(exe, cur_cmd, cur_ver, list_case, dir_i, dir_o)
 
     # run single task, Parallel not supported
     def run_task(self, exe, cmd, ver, l_case, dir_i, dir_o):
@@ -51,7 +51,7 @@ class ExeRunThread(QThread):
         cur_pg = 5
         sys_info = utils.get_sys_info()
         encoding = locale.getpreferredencoding()
-        for case in list_case:
+        for case in l_case:
             print("## Start {} =====================".format(case))
             self._sigProgress.emit(cur_pg)
             cur_pg += pg
