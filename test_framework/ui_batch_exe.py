@@ -115,8 +115,6 @@ class BatchManage(QDialog):
         self._qtv_item.setColumnWidth(2, 400)
         self._qtv_item.setColumnWidth(3, 120)
 
-        #self._qtv_item.sortByColumn(0, Qt.DescendingOrder)
-
     def collect_batch_list(self):
         md = self._qtv_item.model()
         if md is None:

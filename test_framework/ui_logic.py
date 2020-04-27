@@ -345,11 +345,8 @@ def replace_sep(in_str):
         return in_str.replace("\\", "/").replace("//", "/")
 
 
-def generate_exe_param(p_obj, case, ver = ""):
-    dir_i = p_obj._dirInput
-    dir_o = p_obj._dirOutput
-    ver = p_obj._eVer
-    org_param = p_obj._exeParam
+def generate_exe_param(dir_i, dir_o, case, exe, cmd, ver):
+    org_param = cmd
     p_i = ""
     # find input place holder
     ph_i = "{i}" # place holder for input
@@ -396,6 +393,17 @@ def slot_exe_run(ui):
     if len(list_case) < 1 and "{i}" in param_text:
         QMessageBox.about(ui, "Error", "No Input Case Checked!!")
         return
+    # plain run
+    plain_run = False
+    if len(list_case) < 1:
+        plain_run = True
+        list_case.append("plain_run")
+    need_update = False
+    case = p_obj._case
+    if plain_run and "plain_run" not in case:
+        case.append("plain_run")
+        need_update = True
+
     ui._cmdDialog.add_cmd(exe, param_text)
     ui._threadExe = thread_module.ExeRunThread(ui)
     ui._threadExe.setTerminationEnabled()
@@ -419,6 +427,11 @@ def slot_exe_stop(ui):
 def slot_exe_param(ui):
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
+    dir_i = p_obj._dirInput
+    dir_o = p_obj._dirOutput
+    exe = ui._p._exeDemo
+    cmd = ui._p._exeParam
+    ver = ui._p._eVer
     list_case = get_checked_items(p_obj._case, p_obj._eCaseCheck)
     if len(list_case) < 1:
         QMessageBox.about(ui, "Error", "No CheckItem in Input Case!")
@@ -426,7 +439,7 @@ def slot_exe_param(ui):
     param_list = "ParamLine Preview:"
     for case in list_case:
         param_list += "\n\n"
-        param_list += generate_exe_param(p_obj, case)
+        param_list += generate_exe_param(dir_i, dir_o, case, exe, cmd, ver)
     QMessageBox.about(ui, "Message", param_list)
 
 

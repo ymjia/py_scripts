@@ -38,9 +38,9 @@ class TFWindow(QWidget):
         self._qpr_exe_progress.setRange(0, 100)
         # info widget for updating infomation
         # history statistics
-        self._ql_hist_exe = QLabel(str(self.get_hist_item("exe")))
-        self._ql_hist_ss = QLabel(str(self.get_hist_item("ss")))
-        self._ql_hist_doc = QLabel(str(self.get_hist_item("doc")))
+        self._ql_hist_exe = QLabel(str(utils.get_hist_item("exe")))
+        self._ql_hist_ss = QLabel(str(utils.get_hist_item("ss")))
+        self._ql_hist_doc = QLabel(str(utils.get_hist_item("doc")))
         # text
         self._qle_proj_filter = QLineEdit() # filter to project list
         self._qle_proj_filter.setPlaceholderText("Search...")
@@ -163,11 +163,8 @@ class TFWindow(QWidget):
         self.read_check_list(self._qlv_doc_alg, out_obj._alg, out_obj._dAlgCheck)
         return out_obj
 
-    def get_hist_item(self, hist_type):
-        return int(float(utils.get_reg_item(hist_type)) + 0.1)
-
     def add_hist_item(self, hist_type, val):
-        cur_num = self.get_hist_item(hist_type)
+        cur_num = uitls.get_hist_item(hist_type)
         new_num = str(cur_num + val)
         utils.set_reg_item(hist_type, new_num)
         if hist_type == "exe":
@@ -460,6 +457,13 @@ class TFWindow(QWidget):
     def exe_finish(self):
         self.new_run_button()
         self._qlv_all_proj.setEnabled(True)
+        ver = self._p._eVer
+        if ver != "" and ver not in self._p._ver:
+            self._p._ver.append(ver)
+            need_update = True
+        if need_update:
+            self.fill_ui_info(self._p)
+
 
     def slot_batch_config(self):
         batch_dialog = BatchManage(self._p)

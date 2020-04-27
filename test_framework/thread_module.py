@@ -20,9 +20,9 @@ from test_framework import utils
 class ExeRunThread(QThread):
     _sigProgress = pyqtSignal(float) # signal connect to mainwindow progress bar
 
-    def __init__(self, w_main):
+    def __init__(self, p_obj):
         QThread.__init__(self)
-        self._mainWindow = w_main
+        self.session = p_obj
         self._demoProc = None
         self._fLog = None
         self._fSts = None
@@ -32,20 +32,21 @@ class ExeRunThread(QThread):
         self.wait()
 
     def run(self):
-        p_obj = self._mainWindow._p
-        exe = p_obj._exeDemo
+        exe = self.session._exeDemo
         ext = os.path.splitext(exe)[1]
         exe_py = ""
         if ext == ".py":
             exe_py = utils.get_py_interpretor()
         # prepare exe parameters
-        dir_o = p_obj._dirOutput
-        cur_ver = p_obj._eVer
-        list_case = ui_logic.get_checked_items(p_obj._case, p_obj._eCaseCheck)
-        plain_run = False
-        if len(list_case) < 1:
-            plain_run = True
-            list_case.append("plain_run")
+        dir_o = self.session._dirOutput
+        cur_ver = self.session._eVer
+        cur_cmd = self.session._exeParam
+        list_case = ui_logic.get_checked_items(self.session._case, self.session._eCaseCheck)
+        run_task(exe, cur_cmd, cur_ver, list_case, dir_o
+        return
+
+    # run single task, Parallel not supported
+    def run_task(self, exe, cmd, ver, l_case, dir_i, dir_o):
         pg = 95 / len(list_case)
         cur_pg = 5
         sys_info = utils.get_sys_info()
@@ -75,12 +76,12 @@ class ExeRunThread(QThread):
                 self._fSmp = None
                 print("Warning! Fail to open log file {}".format(file_log))
             # run demo and collect proc info
-            param = ui_logic.generate_exe_param(p_obj, case)
+            param = ui_logic.generate_exe_param(dir_i, dir_o, case, exe, cur_cmd, cur_ver)
             in_param = param.split(" ")
             in_param.insert(0, exe)
             if ext == ".py":
                 in_param.insert(0, exe_py)
-            self._mainWindow.add_hist_item("exe", 1)
+            #TODO change registry table
             self._demoProc = utils.ProcessMonitor(in_param, self._fLog)
             try:
                 run_st = self._demoProc.execute()
@@ -108,17 +109,6 @@ class ExeRunThread(QThread):
             self.release_files()
             print("## Finished {} =====================".format(case))
         self._sigProgress.emit(99)
-        need_update = False
-        case = p_obj._case
-        if plain_run and "plain_run" not in case:
-            case.append("plain_run")
-            need_update = True
-        ver = p_obj._eVer
-        if ver != "" and ver not in p_obj._ver:
-            p_obj._ver.append(ver)
-            need_update = True
-        if need_update:
-            self._mainWindow.fill_ui_info(p_obj)
 
     def release_files(self):
         if self._fLog is not None:

@@ -51,6 +51,7 @@ def set_reg_item(type_str, val):
     wr.SetValueEx(key, type_str, 0, wr.REG_SZ, val)
     wr.CloseKey(key)
 
+# get registry table items
 def get_reg_item(type_str):
     reg = wr.ConnectRegistry(None, wr.HKEY_CURRENT_USER)
     key = None
@@ -68,6 +69,11 @@ def get_reg_item(type_str):
         wr.SetValueEx(key, type_str, 0, wr.REG_SZ, "0")
     wr.CloseKey(key)
     return ret
+
+
+def get_hist_item(hist_type):
+    return int(float(utils.get_reg_item(hist_type)) + 0.1)
+
 
 def get_py_interpretor():
     exe_py = ""
