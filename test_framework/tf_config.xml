@@ -15,6 +15,7 @@
       <item check="1" name="v11" />
       <item check="1" name="v13" />
       <item check="1" name="test" />
+      <item check="1" name="v113" />
     </version>
     <algorithm>
       <item check="1" name="smooth" />
@@ -29,7 +30,7 @@
       <item check="0" name="case2/tmp" />
       <item check="0" name="&#20013;/output" />
     </case>
-    <version str="input" />
+    <version str="v113" />
     <param str="-a dental_desk_after_merge -i {i} -o {o} -p 12" />
   </exe>
   <screenshot>
@@ -44,6 +45,7 @@
       <item check="1" name="v11" />
       <item check="0" name="v13" />
       <item check="0" name="test" />
+      <item check="0" name="v113" />
     </version>
     <algorithm>
       <item check="0" name="smooth" />
@@ -64,6 +66,7 @@
       <item check="1" name="v11" />
       <item check="0" name="v13" />
       <item check="0" name="test" />
+      <item check="0" name="v113" />
     </version>
     <algorithm>
       <item check="0" name="smooth" />

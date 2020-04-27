@@ -33,21 +33,21 @@ class ExeRunThread(QThread):
 
     def run(self):
         exe = self.session._exeDemo
-        ext = os.path.splitext(exe)[1]
-        exe_py = ""
-        if ext == ".py":
-            exe_py = utils.get_py_interpretor()
         # prepare exe parameters
         dir_i = self.session._dirInput
         dir_o = self.session._dirOutput
         cur_ver = self.session._eVer
         cur_cmd = self.session._exeParam
         list_case = ui_logic.get_checked_items(self.session._case, self.session._eCaseCheck)
-        run_task(exe, cur_cmd, cur_ver, list_case, dir_i, dir_o)
+        self.run_task(exe, cur_cmd, cur_ver, list_case, dir_i, dir_o)
 
     # run single task, Parallel not supported
     def run_task(self, exe, cmd, ver, l_case, dir_i, dir_o):
-        pg = 95 / len(list_case)
+        ext = os.path.splitext(exe)[1]
+        exe_py = ""
+        if ext == ".py":
+            exe_py = utils.get_py_interpretor()
+        pg = 95 / len(l_case)
         cur_pg = 5
         sys_info = utils.get_sys_info()
         encoding = locale.getpreferredencoding()
@@ -56,7 +56,7 @@ class ExeRunThread(QThread):
             self._sigProgress.emit(cur_pg)
             cur_pg += pg
             # write logs
-            dir_log = os.path.join(dir_o, case, cur_ver, "logs")
+            dir_log = os.path.join(dir_o, case, ver, "logs")
             if not os.path.exists(dir_log):
                 os.makedirs(dir_log)
             st = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
@@ -76,7 +76,7 @@ class ExeRunThread(QThread):
                 self._fSmp = None
                 print("Warning! Fail to open log file {}".format(file_log))
             # run demo and collect proc info
-            param = ui_logic.generate_exe_param(dir_i, dir_o, case, exe, cur_cmd, cur_ver)
+            param = ui_logic.generate_exe_param(dir_i, dir_o, case, exe, cmd, ver)
             in_param = param.split(" ")
             in_param.insert(0, exe)
             if ext == ".py":

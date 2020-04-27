@@ -460,6 +460,7 @@ class TFWindow(QWidget):
         self.new_run_button()
         self._qlv_all_proj.setEnabled(True)
         ver = self._p._eVer
+        need_update = False
         if ver != "" and ver not in self._p._ver:
             self._p._ver.append(ver)
             need_update = True

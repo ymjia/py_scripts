@@ -405,7 +405,7 @@ def slot_exe_run(ui):
         need_update = True
 
     ui._cmdDialog.add_cmd(exe, param_text)
-    ui._threadExe = thread_module.ExeRunThread(ui)
+    ui._threadExe = thread_module.ExeRunThread(ui._p)
     ui._threadExe.setTerminationEnabled()
     ui._threadExe._sigProgress.connect(ui.exe_progress)
     ui._threadExe.finished.connect(ui.exe_finish)
