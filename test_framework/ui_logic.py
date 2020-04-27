@@ -384,6 +384,7 @@ def slot_exe_run(ui):
     ui._p = ui.collect_ui_info()
     ui._p.save_xml(ui._p._configFile)
     p_obj = ui._p
+
     exe = p_obj._exeDemo
     param_text = p_obj._exeParam
     if not os.path.exists(exe):
@@ -394,11 +395,13 @@ def slot_exe_run(ui):
         QMessageBox.about(ui, "Error", "No Input Case Checked!!")
         return
 
+    ss_exe = thread_module.ExeSession(ui._p, False)
+    
     ui._cmdDialog.add_cmd(exe, param_text)
-    ui._threadExe = thread_module.ExeRunThread(ui._p)
+    ui._threadExe = thread_module.ExeRunThread(ss_exe)
     ui._threadExe.setTerminationEnabled()
     ui._threadExe._sigProgress.connect(ui.exe_progress)
-    ui._threadExe.finished.connect(ui.exe_finish)
+    ui._threadExe.finished.connect(lambda: ui.exe_finish(False))
     ui.new_stop_button()
     ui._qlv_all_proj.setDisabled(True)
     ui._threadExe.start()

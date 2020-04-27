@@ -18,6 +18,7 @@ from test_framework import project_io
 from test_framework import utils
 from test_framework import ui_cmd_history
 from test_framework import ui_logic
+from test_framework import thread_module
 from test_framework.ui_logic import create_QListView
 from test_framework.ui_configuration import GeneralConfigurationUI
 from test_framework.ui_batch_exe import BatchManage
@@ -454,18 +455,24 @@ class TFWindow(QWidget):
     def exe_progress(self, p):
         self._qpr_exe_progress.setValue(p)
 
-    def exe_finish(self):
+    def exe_finish(self, batch_mode=False):
         self.new_run_button()
         self._qlv_all_proj.setEnabled(True)
         self._ql_hist_exe.setText(str(utils.get_hist_item("exe")))
-        ver = self._p._eVer
         case = self._p._case
         need_update = False
         if "plain_run" in case:
             need_update = True
-        if not need_update and ver != "" and ver not in self._p._ver:
-            self._p._ver.append(ver)
-            need_update = True
+        ver_list = []
+        if batch_mode:
+            for batch_item in self._p._batchList:
+                ver_list.append(batch_item[2])
+        else:
+            ver_list.append(self._p._eVer)    
+        for v in ver_list:
+            if v != "" and v not in self._p._ver:
+                self._p._ver.append(v)
+                need_update = True
         if need_update:
             self.fill_ui_info(self._p)
 
@@ -475,8 +482,17 @@ class TFWindow(QWidget):
         batch_dialog.exec_()
     
     def slot_batch_run(self):
+        ss_exe = thread_module.ExeSession(self._p, True)
         for item in self._p._batchList:
-            print(item)
+            self._cmdDialog.add_cmd(item[0], item[1])
+        self._threadExe = thread_module.ExeRunThread(ss_exe)
+        self._threadExe.setTerminationEnabled()
+        self._threadExe._sigProgress.connect(self.exe_progress)
+        self._threadExe.finished.connect(lambda: self.exe_finish(True))
+        self.new_stop_button()
+        self._qlv_all_proj.setDisabled(True)
+        self._threadExe.start()
+
 
 class FileNameSelector(QDialog):
     def __init__(self, l_name, l_target):

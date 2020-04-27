@@ -32,9 +32,9 @@ class BatchManage(QDialog):
         self._qle_exe.setText(p_obj._exeDemo)
         self._qpt_cmd.setPlainText(p_obj._exeParam)
         self._qcb_ver.setEditable(True)
-        self._qcb_ver.setEditText(p_obj._eVer)
         for v in p_obj._ver:
             self._qcb_ver.addItem(v)
+        self._qcb_ver.setEditText(p_obj._eVer)
 
         qpb_exe = QPushButton("Browse...")
         qpb_cmd_his = QPushButton("CMD History")

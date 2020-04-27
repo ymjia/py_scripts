@@ -1,92 +1,85 @@
 <project>
   <input path="D:/tmp/tf_test/input" />
   <output path="D:/tmp/tf_test/output/" />
-  <exe_demo path="D:/dev/compiler_test/build/Release/ct.exe" />
+  <exe_demo path="D:/tools/JYMTest/JYMTest.exe" />
   <exe_pv path="D:/tools/ParaView_r/bin/pvpython.exe" />
   <all>
     <case>
-      <item check="1" name="case1/tmp" />
-      <item check="1" name="case2/tmp" />
-      <item check="1" name="&#20013;/output" />
-      <item check="1" name="plain_run" />
+      <item check="1" name="case1" />
+      <item check="1" name="case2" />
+      <item check="1" name="case3" />
+      <item check="1" name="case4" />
+      <item check="1" name="case5" />
     </case>
     <version>
       <item check="1" name="input" />
-      <item check="1" name="v12" />
-      <item check="1" name="v11" />
-      <item check="1" name="v13" />
-      <item check="1" name="test" />
-      <item check="1" name="v113" />
+      <item check="1" name="qem" />
+      <item check="1" name="smooth" />
+      <item check="1" name="qem2" />
+      <item check="1" name="smooth2" />
     </version>
     <algorithm>
-      <item check="1" name="smooth" />
-      <item check="1" name="merge" />
-      <item check="1" name="LowerJawScan" />
-      <item check="1" name="MIX_comb" />
+      <item check="1" name="result" />
     </algorithm>
   </all>
   <exe>
     <case>
-      <item check="0" name="case1/tmp" />
-      <item check="0" name="case2/tmp" />
-      <item check="0" name="&#20013;/output" />
-      <item check="1" name="plain_run" />
+      <item check="1" name="case1" />
+      <item check="1" name="case2" />
+      <item check="1" name="case3" />
+      <item check="1" name="case4" />
+      <item check="1" name="case5" />
     </case>
-    <version str="v113" />
-    <param str="" />
+    <version str="qem" />
+    <param str="-a qem_simp -i {i} -o {o}/result.ply" />
   </exe>
   <screenshot>
     <case>
-      <item check="1" name="case1/tmp" />
-      <item check="1" name="case2/tmp" />
-      <item check="0" name="&#20013;/output" />
-      <item check="0" name="plain_run" />
+      <item check="1" name="case1" />
+      <item check="1" name="case2" />
+      <item check="1" name="case3" />
+      <item check="1" name="case4" />
+      <item check="1" name="case5" />
     </case>
     <version>
-      <item check="0" name="input" />
-      <item check="1" name="v12" />
-      <item check="1" name="v11" />
-      <item check="0" name="v13" />
-      <item check="0" name="test" />
-      <item check="0" name="v113" />
+      <item check="1" name="input" />
+      <item check="1" name="qem" />
+      <item check="1" name="smooth" />
+      <item check="1" name="qem2" />
+      <item check="1" name="smooth2" />
     </version>
     <algorithm>
-      <item check="0" name="smooth" />
-      <item check="0" name="merge" />
-      <item check="0" name="LowerJawScan" />
-      <item check="1" name="MIX_comb" />
+      <item check="1" name="result" />
     </algorithm>
   </screenshot>
   <docx>
     <case>
-      <item check="0" name="case1/tmp" />
-      <item check="1" name="case2/tmp" />
-      <item check="0" name="&#20013;/output" />
-      <item check="0" name="plain_run" />
+      <item check="1" name="case1" />
+      <item check="1" name="case2" />
+      <item check="1" name="case3" />
+      <item check="1" name="case4" />
+      <item check="1" name="case5" />
     </case>
     <version>
-      <item check="0" name="input" />
-      <item check="0" name="v12" />
-      <item check="1" name="v11" />
-      <item check="0" name="v13" />
-      <item check="0" name="test" />
-      <item check="0" name="v113" />
+      <item check="1" name="input" />
+      <item check="0" name="qem" />
+      <item check="0" name="smooth" />
+      <item check="0" name="qem2" />
+      <item check="0" name="smooth2" />
     </version>
     <algorithm>
-      <item check="0" name="smooth" />
-      <item check="0" name="merge" />
-      <item check="0" name="LowerJawScan" />
-      <item check="1" name="MIX_comb" />
+      <item check="1" name="result" />
     </algorithm>
     <doc_name name="test_doc" />
-    <current_name name="test_doc_20200423_133005.docx" />
-    <current_type name="Hausdorf_dist" />
+    <current_name name="test_doc_20200427_142701.docx" />
+    <current_type name="Screenshots" />
   </docx>
   <batch>
     <batch_item>
-      <item cmd="-a dental_desk_after_merge -i {i} -o {o} -p 12" exe="D:/dev/compiler_test/build/Release/ct.exe" ver="input" />
-      <item cmd="-a dental_desk_after_merge -i {i} -o {o} -p 10" exe="D:/dev/compiler_test/build/Release/ct.exe" ver="input" />
-      <item cmd="-a dental_desk_after_merge -i {i} -o {o} -p 12" exe="D:/dev/compiler_test/build/Release/ct.exe" ver="input" />
+      <item cmd="-a qem_simp -i {i} -o {o}/result.ply" exe="D:/tools/JYMTest/JYMTest.exe" ver="qem" />
+      <item cmd="-a smooth_mesh -i {i} -o {o}/result.ply" exe="D:/tools/JYMTest/JYMTest.exe" ver="smooth" />
+      <item cmd="-a qem_simp -i {i} -o {o}/result.ply" exe="D:/tools/JYMTest/JYMTest.exe" ver="qem2" />
+      <item cmd="-a smooth_mesh -i {i} -o {o}/result.ply" exe="D:/tools/JYMTest/JYMTest.exe" ver="smooth2" />
     </batch_item>
   </batch>
 </project>

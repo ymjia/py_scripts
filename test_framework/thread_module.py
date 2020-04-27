@@ -16,13 +16,38 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from test_framework import ui_logic
 from test_framework import utils
 
+## @brief generate all parameters for exe session
+class ExeSession():
+    def __init__(self, p_obj, batch_mode=False):
+        self.dir_i = p_obj._dirInput
+        self.dir_o = p_obj._dirOutput
+        self.l_case = ui_logic.get_checked_items(p_obj._case, p_obj._eCaseCheck)
+        self.batch = []
+
+        # plain run
+        plain_run = False
+        if len(self.l_case) < 1:
+            plain_run = True
+            self.l_case.append("plain_run")
+        case = p_obj._case
+        if plain_run and "plain_run" not in case:
+            case.append("plain_run")
+
+        if batch_mode:
+            self.batch = p_obj._batchList
+        else:
+            exe = p_obj._exeDemo
+            ver = p_obj._eVer
+            cmd = p_obj._exeParam
+            self.batch.append([exe, cmd, ver])
+            
 
 class ExeRunThread(QThread):
     _sigProgress = pyqtSignal(float) # signal connect to mainwindow progress bar
 
-    def __init__(self, p_obj):
+    def __init__(self, ss_exe):
         QThread.__init__(self)
-        self.session = p_obj
+        self._ss = ss_exe
         self._demoProc = None
         self._fLog = None
         self._fSts = None
@@ -32,40 +57,28 @@ class ExeRunThread(QThread):
         self.wait()
 
     def run(self):
-        exe = self.session._exeDemo
-        # prepare exe parameters
-        dir_i = self.session._dirInput
-        dir_o = self.session._dirOutput
-        cur_ver = self.session._eVer
-        cur_cmd = self.session._exeParam
-        list_case = ui_logic.get_checked_items(self.session._case, self.session._eCaseCheck)
-        # plain run
-        plain_run = False
-        if len(list_case) < 1:
-            plain_run = True
-            list_case.append("plain_run")
-        case = self.session._case
-        if plain_run and "plain_run" not in case:
-            case.append("plain_run")
-
-        self.run_task(exe, cur_cmd, cur_ver, list_case, dir_i, dir_o)
+        run_num = len(self._ss.batch)
+        sep = float(95) / float(run_num)
+        for idx, item in enumerate(self._ss.batch):
+            self.run_task(item[0], item[1], item[2], [idx * sep + 5, (idx+1) * sep + 5])
 
     # run single task, Parallel not supported
-    def run_task(self, exe, cmd, ver, l_case, dir_i, dir_o):
+    def run_task(self, exe, cmd, ver, p_range):
         ext = os.path.splitext(exe)[1]
         exe_py = ""
         if ext == ".py":
             exe_py = utils.get_py_interpretor()
-        pg = 95 / len(l_case)
-        cur_pg = 5
+            
+        pg = (p_range[1] - p_range[0]) / len(self._ss.l_case)
+        cur_pg = p_range[0]
         sys_info = utils.get_sys_info()
         encoding = locale.getpreferredencoding()
-        for case in l_case:
+        for case in self._ss.l_case:
             print("## Start {} =====================".format(case))
             self._sigProgress.emit(cur_pg)
             cur_pg += pg
             # write logs
-            dir_log = os.path.join(dir_o, case, ver, "logs")
+            dir_log = os.path.join(self._ss.dir_o, case, ver, "logs")
             if not os.path.exists(dir_log):
                 os.makedirs(dir_log)
             st = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
@@ -85,7 +98,8 @@ class ExeRunThread(QThread):
                 self._fSmp = None
                 print("Warning! Fail to open log file {}".format(file_log))
             # run demo and collect proc info
-            param = ui_logic.generate_exe_param(dir_i, dir_o, case, exe, cmd, ver)
+            param = ui_logic.generate_exe_param(self._ss.dir_i, self._ss.dir_o,
+                                                case, exe, cmd, ver)
             in_param = param.split(" ")
             in_param.insert(0, exe)
             if ext == ".py":
@@ -117,7 +131,7 @@ class ExeRunThread(QThread):
                     self._fSmp.write(res_str)
             self.release_files()
             print("## Finished {} =====================".format(case))
-        self._sigProgress.emit(99)
+        self._sigProgress.emit(p_range[1])
 
     def release_files(self):
         if self._fLog is not None:
