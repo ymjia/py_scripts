@@ -18,6 +18,7 @@ class CMDHistory(QDialog):
     def __init__(self, qpt):
         QDialog.__init__(self)
         self.setWindowTitle("Command Line History")
+        self.resize(800, 200)
         self._qlv_demo = create_QListView(self)
         self._qlv_demo.clicked.connect(self.slot_switch_demo)
         self._qtv_cmd = QTreeView(self)

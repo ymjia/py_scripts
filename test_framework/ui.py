@@ -76,7 +76,6 @@ class TFWindow(QWidget):
         self._qcb_doc_type.setEditable(False)
         self._qcb_doc_type.addItems(["Screenshots", "Time_statistics", "CPU_MEM_statistics", "Hausdorf_dist"])
         # other object
-        self._cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
         self._configDialog = GeneralConfigurationUI(self)
         # layout
         grid = QGridLayout()
@@ -426,7 +425,6 @@ class TFWindow(QWidget):
 
     def slot_show_cmd_history(self):
         cmdDialog = ui_cmd_history.CMDHistory(self._qpt_exe_param)
-        cmdDialog.resize(800, 200)
         cmdDialog.fill_list()
         cmdDialog.exec_()
 

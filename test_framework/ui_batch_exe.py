@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (QWidget, QGridLayout, QTreeView, QLabel, QLineEdit,
                              QMessageBox, QComboBox, QDialog)
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from test_framework.ui_cmd_history import CMDHistory
 from test_framework.ui_logic import slot_get_file
 from test_framework.utils import indent_xml
 
@@ -19,6 +20,8 @@ from test_framework.utils import indent_xml
 class BatchManage(QDialog):
     def __init__(self, p_obj):
         QDialog.__init__(self)
+        self.setWindowTitle("Batch Exe Edit")
+        self.resize(800, 600)
         self._batchList = p_obj._batchList
         self._qtv_item = QTreeView(self)
         self._qtv_item.doubleClicked.connect(self.slot_fill_info)
@@ -28,15 +31,18 @@ class BatchManage(QDialog):
         # set initial value
         self._qle_exe.setText(p_obj._exeDemo)
         self._qpt_cmd.setPlainText(p_obj._exeParam)
+        self._qcb_ver.setEditable(True)
         self._qcb_ver.setEditText(p_obj._eVer)
         for v in p_obj._ver:
             self._qcb_ver.addItem(v)
 
         qpb_exe = QPushButton("Browse...")
+        qpb_cmd_his = QPushButton("CMD History")
         qpb_add = QPushButton("Add to List")
         qpb_del = QPushButton("Remove selected List")
         qpb_close = QPushButton("Close")
         qpb_exe.clicked.connect(lambda: slot_get_file(self._qle_exe, "exe"))
+        qpb_cmd_his.clicked.connect(self.slot_cmd_hist)
         qpb_add.clicked.connect(self.slot_add_item)
         qpb_del.clicked.connect(self.slot_del_item)
         qpb_close.clicked.connect(self.close)
@@ -46,6 +52,12 @@ class BatchManage(QDialog):
         qhb.addWidget(self._qle_exe)
         qhb.addWidget(qpb_exe)
         qwg_exe.setLayout(qhb)
+
+        qwg_cmd = QWidget()
+        qhb = QHBoxLayout()
+        qhb.addWidget(self._qpt_cmd)
+        qhb.addWidget(qpb_cmd_his)
+        qwg_cmd.setLayout(qhb)
 
         qwg_btn = QWidget()
         qhb = QHBoxLayout()
@@ -59,7 +71,7 @@ class BatchManage(QDialog):
         grid.addWidget(QLabel("Executable:"), 0, 0)
         grid.addWidget(qwg_exe, 0, 1)
         grid.addWidget(QLabel("Executable Command Line:"), 1, 0)
-        grid.addWidget(self._qpt_cmd, 1, 1)
+        grid.addWidget(qwg_cmd)
         grid.addWidget(QLabel("Use Version Name:"), 2, 0)
         grid.addWidget(self._qcb_ver, 2, 1)
         qgb_edit.setLayout(grid)
@@ -99,6 +111,10 @@ class BatchManage(QDialog):
             m.appendRow([exe_short, exe, cmd, ver])
         self._qtv_item.setModel(m)
         self._qtv_item.setColumnHidden(1, True)
+        self._qtv_item.setColumnWidth(0, 120)
+        self._qtv_item.setColumnWidth(2, 400)
+        self._qtv_item.setColumnWidth(3, 120)
+
         #self._qtv_item.sortByColumn(0, Qt.DescendingOrder)
 
     def collect_batch_list(self):
@@ -107,8 +123,7 @@ class BatchManage(QDialog):
             return
         self._batchList.clear()
         for idx in range(md.rowCount()):
-            self._batchList.append([md.index(idx, c) for c in range(1, 4)])
-
+            self._batchList.append([md.index(idx, c).data() for c in range(1, 4)])
 
     # set main window text
     def slot_fill_info(self):
@@ -138,4 +153,7 @@ class BatchManage(QDialog):
         for s in sl:
             print(s.row())
 
-
+    def slot_cmd_hist(self):
+        cmdDialog = CMDHistory(self._qpt_cmd)
+        cmdDialog.fill_list()
+        cmdDialog.exec_()
