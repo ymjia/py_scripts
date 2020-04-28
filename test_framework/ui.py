@@ -219,7 +219,6 @@ class TFWindow(QWidget):
         qpb_load = QPushButton("Load Project")
         qpb_config = QPushButton("Global Configuration")
         qpb_export = QPushButton("Export Data")
-        qpb_export.setStyleSheet("background-color:#9a9a9a")
         qpb_export.clicked.connect(self.slot_show_export)
         qpb_config.clicked.connect(self.slot_show_config)
         qpb_new.clicked.connect(lambda: ui_logic.slot_new_project(self))
@@ -233,9 +232,8 @@ class TFWindow(QWidget):
         grid.addWidget(qpb_load, 2, 1)
         grid.addWidget(qpb_delete, 3, 0)
         grid.addWidget(qpb_save, 3, 1)
-        grid.addWidget(qpb_export, 4, 0)
-        grid.addWidget(qpb_config, 4, 1)
-
+        grid.addWidget(qpb_config, 4, 0, 1, 2)
+        grid.addWidget(qpb_export, 5, 0, 1, 2)
         manage.setLayout(grid)
         return manage
 
@@ -565,7 +563,8 @@ class ProjectExporter(QDialog):
         self._qlv_alg = create_QListView(self)
         self._qle_out_dir = QLineEdit()
         self._qle_out_name = QLineEdit()
-        self._qle_out_dir.setText(p_obj._dirOutput)
+        self._qle_out_dir.setText(os.path.join(p_obj._dirOutput, "export"))
+        self._qle_out_name.setText(str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
         qpb_out_dir = QPushButton("Browse...")
         qpb_out_dir.clicked.connect(lambda: ui_logic.slot_get_path(self._qle_out_dir))
         fill_check_list(self._qlv_case, p_obj._case, {})
@@ -573,10 +572,7 @@ class ProjectExporter(QDialog):
         fill_check_list(self._qlv_alg, p_obj._alg, {})
 
         qpb_export = QPushButton("Export")
-        qpb_cancel = QPushButton("Cancel")
-        qpb_export.setStyleSheet("background-color:#9a9a9a")
         qpb_export.clicked.connect(self.slot_export_select)
-        qpb_cancel.clicked.connect(self.close)
         # out dir
         qwg_od = QWidget()
         qhb = QHBoxLayout()
@@ -588,7 +584,6 @@ class ProjectExporter(QDialog):
         qhb = QHBoxLayout()
         qhb.addWidget(QLabel('Export Name:'))
         qhb.addWidget(self._qle_out_name)
-        qhb.addWidget(qpb_export)
         qwg_exp.setLayout(qhb)
 
         # main
@@ -602,7 +597,7 @@ class ProjectExporter(QDialog):
         qvb.addWidget(QLabel('Select Export Directory:'))
         qvb.addWidget(qwg_od)
         qvb.addWidget(qwg_exp)
-        qvb.addWidget(qpb_cancel)
+        qvb.addWidget(qpb_export)
         self.setLayout(qvb)
 
     def collect_ui_info(self):
@@ -626,44 +621,38 @@ class ProjectExporter(QDialog):
             self._o._dCaseCheck[case] = 1
             self._o._sCaseCheck[case] = 1
         for ver in self._o._ver:
-            self._o._eVerCheck[ver] = 1
             self._o._dVerCheck[ver] = 1
             self._o._sVerCheck[ver] = 1
         for alg in self._o._alg:
-            self._o._eAlgCheck[alg] = 1
             self._o._dAlgCheck[alg] = 1
             self._o._sAlgCheck[alg] = 1
             
 
     def slot_export_select(self):
         out_dir = self._qle_out_dir.text()
-        if not os.path.exists(out_dir):
-            try:
-                os.makedirs(out_dir)
-            except OSError:
-                QMessageBox.about(self, "Error", "Invalid Output Dir {}!".format(out_dir))
-                return
+        if not utils.try_create_dir(out_dir):
+            QMessageBox.about(self, "Error", "Invalid Output Dir {}!".format(out_dir))
+            return
         export_name = self._qle_out_name.text()
         if export_name == "":
             QMessageBox.about(self, "Error", "Empty Export Name !")
             return
         export_dir = os.path.join(out_dir, export_name)
-        if not os.path.exists(export_dir):
-            try:
-                os.makedirs(export_dir)
-            except OSError:
-                QMessageBox.about(self, "Error", "Invalid Export Name {}!".format(export_name))
-                return
+        if not utils.try_create_dir(export_dir):
+            QMessageBox.about(self, "Error", "Invalid Export Name {}!".format(export_name))
+            return
         # start export
         # set config info
         self._o._configFile = os.path.join(export_dir, "{}.xml".format(export_name))
-        self.collect_ui_info()
         self._o._rdirInput = "input"
-        self._o._rdirInput = "output"
+        self._o._rdirOutput = "output"
         # copy data
         dir_i = os.path.join(export_dir, "input")
         dir_o = os.path.join(export_dir, "output")
-
+        utils.try_create_dir(dir_i)
+        utils.try_create_dir(dir_o)
+        self.collect_ui_info()
+        self._o.save_xml(self._o._configFile)
         return
 
 

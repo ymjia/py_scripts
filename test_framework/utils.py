@@ -105,6 +105,16 @@ def get_latest_file(folder, ext):
     return max(list_f, key=os.path.getctime)
 
 
+def try_create_dir(str_dir):
+    if os.path.exists(str_dir):
+        return True
+    try:
+        os.makedirs(str_dir)
+        return True
+    except OSError:
+        return False
+
+
 def get_sys_table(dir_o, case, ver):
     sys = {}
     dir_log = join(dir_o, case, ver, "logs")
