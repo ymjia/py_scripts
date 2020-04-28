@@ -821,6 +821,22 @@ def fill_check_list(lv, item_list, check_dict):
         model.appendRow(item)
     lv.setModel(model)
 
+
+# get project_object info from listview
+def read_check_list(lv, item_list, check_dict):
+    item_list.clear()
+    check_dict.clear()
+    model = lv.model()
+    if model is None:
+        return
+    for index in range(model.rowCount()):
+        item = model.item(index)
+        text = item.text()
+        item_list.append(text)
+        if item.checkState() == Qt.Checked:
+            check_dict[text] = 1
+
+
 def slot_qlv_check_list(ui, qlv):
     sl = qlv.selectedIndexes()
     if len(sl) < 2:

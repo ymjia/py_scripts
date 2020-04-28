@@ -19,7 +19,7 @@ from test_framework import utils
 from test_framework import ui_cmd_history
 from test_framework import ui_logic
 from test_framework import thread_module
-from test_framework.ui_logic import create_QListView
+from test_framework.ui_logic import create_QListView, fill_check_list, read_check_list
 from test_framework.ui_configuration import GeneralConfigurationUI
 from test_framework.ui_batch_exe import BatchManage
 class TFWindow(QWidget):
@@ -147,13 +147,13 @@ class TFWindow(QWidget):
             self._qcb_cur_ver.addItem(v)
         self._qcb_cur_ver.setEditText(cur_obj._eVer)
         self._qpt_exe_param.setPlainText(cur_obj._exeParam)
-        ui_logic.fill_check_list(self._qlv_exe_case, cur_obj._case, cur_obj._eCaseCheck)
-        ui_logic.fill_check_list(self._qlv_ss_case, cur_obj._case, cur_obj._sCaseCheck)
-        ui_logic.fill_check_list(self._qlv_ss_ver, cur_obj._ver, cur_obj._sVerCheck)
-        ui_logic.fill_check_list(self._qlv_ss_alg, cur_obj._alg, cur_obj._sAlgCheck)
-        ui_logic.fill_check_list(self._qlv_doc_case, cur_obj._case, cur_obj._dCaseCheck)
-        ui_logic.fill_check_list(self._qlv_doc_ver, cur_obj._ver, cur_obj._dVerCheck)
-        ui_logic.fill_check_list(self._qlv_doc_alg, cur_obj._alg, cur_obj._dAlgCheck)
+        fill_check_list(self._qlv_exe_case, cur_obj._case, cur_obj._eCaseCheck)
+        fill_check_list(self._qlv_ss_case, cur_obj._case, cur_obj._sCaseCheck)
+        fill_check_list(self._qlv_ss_ver, cur_obj._ver, cur_obj._sVerCheck)
+        fill_check_list(self._qlv_ss_alg, cur_obj._alg, cur_obj._sAlgCheck)
+        fill_check_list(self._qlv_doc_case, cur_obj._case, cur_obj._dCaseCheck)
+        fill_check_list(self._qlv_doc_ver, cur_obj._ver, cur_obj._dVerCheck)
+        fill_check_list(self._qlv_doc_alg, cur_obj._alg, cur_obj._dAlgCheck)
 
 
     def collect_ui_info(self):
@@ -179,13 +179,13 @@ class TFWindow(QWidget):
         out_obj._eVer = self._qcb_cur_ver.currentText()
         out_obj._exeParam = self._qpt_exe_param.toPlainText()
         out_obj._curDocType = self._qcb_doc_type.currentText()
-        self.read_check_list(self._qlv_exe_case, out_obj._case, out_obj._eCaseCheck)
-        self.read_check_list(self._qlv_ss_case, out_obj._case, out_obj._sCaseCheck)
-        self.read_check_list(self._qlv_ss_ver, out_obj._ver, out_obj._sVerCheck)
-        self.read_check_list(self._qlv_ss_alg, out_obj._alg, out_obj._sAlgCheck)
-        self.read_check_list(self._qlv_doc_case, out_obj._case, out_obj._dCaseCheck)
-        self.read_check_list(self._qlv_doc_ver, out_obj._ver, out_obj._dVerCheck)
-        self.read_check_list(self._qlv_doc_alg, out_obj._alg, out_obj._dAlgCheck)
+        read_check_list(self._qlv_exe_case, out_obj._case, out_obj._eCaseCheck)
+        read_check_list(self._qlv_ss_case, out_obj._case, out_obj._sCaseCheck)
+        read_check_list(self._qlv_ss_ver, out_obj._ver, out_obj._sVerCheck)
+        read_check_list(self._qlv_ss_alg, out_obj._alg, out_obj._sAlgCheck)
+        read_check_list(self._qlv_doc_case, out_obj._case, out_obj._dCaseCheck)
+        read_check_list(self._qlv_doc_ver, out_obj._ver, out_obj._dVerCheck)
+        read_check_list(self._qlv_doc_alg, out_obj._alg, out_obj._dAlgCheck)
         return out_obj
 
     def add_hist_item(self, hist_type, val):
@@ -298,19 +298,6 @@ class TFWindow(QWidget):
         return lm
 
 
-    # get project_object info from listview
-    def read_check_list(self, lv, item_list, check_dict):
-        item_list.clear()
-        check_dict.clear()
-        model = lv.model()
-        if model is None:
-            return
-        for index in range(model.rowCount()):
-            item = model.item(index)
-            text = item.text()
-            item_list.append(text)
-            if item.checkState() == Qt.Checked:
-                check_dict[text] = 1
 
     def create_control_region(self):
         control_region = QWidget()
@@ -571,11 +558,17 @@ class ProjectExporter(QDialog):
         self._in_obj = p_obj
         self._out_obj = p_obj
         self._qlv_case = create_QListView(self)
-        self._qlv_alg = create_QListView(self)
         self._qlv_ver = create_QListView(self)
+        self._qlv_alg = create_QListView(self)
+
+        fill_check_list(self._qlv_case, self._in_obj._case, self._in_obj._dCaseCheck)
+        fill_check_list(self._qlv_ver, self._in_obj._ver, self._in_obj._dVerCheck)
+        fill_check_list(self._qlv_alg, self._in_obj._alg, self._in_obj._dAlgCheck)
 
         qpb_export = QPushButton("Export")
         qpb_cancel = QPushButton("Cancel")
+        qpb_export.clicked.connect(self.slot_export_select)
+        qpb_cancel.clicked.connect(self.close)
         grid = QGridLayout()
         grid.addWidget(QLabel('Case'), 1, 0)
         grid.addWidget(self._qlv_case, 1, 1)
@@ -587,7 +580,8 @@ class ProjectExporter(QDialog):
         grid.addWidget(qpb_cancel, 4, 1)
         self.setLayout(grid)
 
-
+    def slot_export_select(self):
+        return
 
 
 if __name__ == "__main__":
