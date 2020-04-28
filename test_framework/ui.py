@@ -10,7 +10,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
                              QStackedWidget, QComboBox, QDialog,
-                             QGroupBox, QListView, QHBoxLayout, QTreeView, QProgressBar,
+                             QGroupBox, QListView, QHBoxLayout, QVBoxLayout, QTreeView, QProgressBar,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -555,32 +555,115 @@ class FileNameSelector(QDialog):
 class ProjectExporter(QDialog):
     def __init__(self, p_obj):
         QDialog.__init__(self)
-        self._in_obj = p_obj
-        self._out_obj = p_obj
+        self.setWindowTitle("Export Project Data to a Portable Project")
+        self.resize(600, 400)
+        self._o = project_io.Project()
+        self._o._exeDemo = p_obj._exeDemo
+        self._o._exeParam = p_obj._exeParam
         self._qlv_case = create_QListView(self)
         self._qlv_ver = create_QListView(self)
         self._qlv_alg = create_QListView(self)
-
-        fill_check_list(self._qlv_case, self._in_obj._case, self._in_obj._dCaseCheck)
-        fill_check_list(self._qlv_ver, self._in_obj._ver, self._in_obj._dVerCheck)
-        fill_check_list(self._qlv_alg, self._in_obj._alg, self._in_obj._dAlgCheck)
+        self._qle_out_dir = QLineEdit()
+        self._qle_out_name = QLineEdit()
+        self._qle_out_dir.setText(p_obj._dirOutput)
+        qpb_out_dir = QPushButton("Browse...")
+        qpb_out_dir.clicked.connect(lambda: ui_logic.slot_get_path(self._qle_out_dir))
+        fill_check_list(self._qlv_case, p_obj._case, {})
+        fill_check_list(self._qlv_ver, p_obj._ver, {})
+        fill_check_list(self._qlv_alg, p_obj._alg, {})
 
         qpb_export = QPushButton("Export")
         qpb_cancel = QPushButton("Cancel")
+        qpb_export.setStyleSheet("background-color:#9a9a9a")
         qpb_export.clicked.connect(self.slot_export_select)
         qpb_cancel.clicked.connect(self.close)
-        grid = QGridLayout()
-        grid.addWidget(QLabel('Case'), 1, 0)
-        grid.addWidget(self._qlv_case, 1, 1)
-        grid.addWidget(QLabel('Version'), 2, 0)
-        grid.addWidget(self._qlv_ver, 2, 1)
-        grid.addWidget(QLabel('FileName'), 3, 0)
-        grid.addWidget(self._qlv_alg, 3, 1)
-        grid.addWidget(qpb_export, 4, 0)
-        grid.addWidget(qpb_cancel, 4, 1)
-        self.setLayout(grid)
+        # out dir
+        qwg_od = QWidget()
+        qhb = QHBoxLayout()
+        qhb.addWidget(self._qle_out_dir)
+        qhb.addWidget(qpb_out_dir)
+        qwg_od.setLayout(qhb)
+        # export 
+        qwg_exp = QWidget()
+        qhb = QHBoxLayout()
+        qhb.addWidget(QLabel('Export Name:'))
+        qhb.addWidget(self._qle_out_name)
+        qhb.addWidget(qpb_export)
+        qwg_exp.setLayout(qhb)
+
+        # main
+        qvb = QVBoxLayout()
+        qvb.addWidget(QLabel('Select Export Cases:'))
+        qvb.addWidget(self._qlv_case)
+        qvb.addWidget(QLabel('Select Export Versions:'))
+        qvb.addWidget(self._qlv_ver)
+        qvb.addWidget(QLabel('Select Export FileNames:'))
+        qvb.addWidget(self._qlv_alg)
+        qvb.addWidget(QLabel('Select Export Directory:'))
+        qvb.addWidget(qwg_od)
+        qvb.addWidget(qwg_exp)
+        qvb.addWidget(qpb_cancel)
+        self.setLayout(qvb)
+
+    def collect_ui_info(self):
+        l_case = []
+        l_ver = []
+        l_alg = []
+        d_case = {}
+        d_ver = {}
+        d_alg = {}
+        # get selected items
+        read_check_list(self._qlv_case, l_case, d_case)
+        read_check_list(self._qlv_ver, l_ver, d_ver)
+        read_check_list(self._qlv_alg, l_alg, d_alg)
+        # fill output lists
+        self._o._case = [c for c in l_case if c in d_case]
+        self._o._ver = [c for c in l_ver if c in d_ver]
+        self._o._alg = [c for c in l_alg if c in d_alg]
+        # check all item
+        for case in self._o._case:
+            self._o._eCaseCheck[case] = 1
+            self._o._dCaseCheck[case] = 1
+            self._o._sCaseCheck[case] = 1
+        for ver in self._o._ver:
+            self._o._eVerCheck[ver] = 1
+            self._o._dVerCheck[ver] = 1
+            self._o._sVerCheck[ver] = 1
+        for alg in self._o._alg:
+            self._o._eAlgCheck[alg] = 1
+            self._o._dAlgCheck[alg] = 1
+            self._o._sAlgCheck[alg] = 1
+            
 
     def slot_export_select(self):
+        out_dir = self._qle_out_dir.text()
+        if not os.path.exists(out_dir):
+            try:
+                os.makedirs(out_dir)
+            except OSError:
+                QMessageBox.about(self, "Error", "Invalid Output Dir {}!".format(out_dir))
+                return
+        export_name = self._qle_out_name.text()
+        if export_name == "":
+            QMessageBox.about(self, "Error", "Empty Export Name !")
+            return
+        export_dir = os.path.join(out_dir, export_name)
+        if not os.path.exists(export_dir):
+            try:
+                os.makedirs(export_dir)
+            except OSError:
+                QMessageBox.about(self, "Error", "Invalid Export Name {}!".format(export_name))
+                return
+        # start export
+        # set config info
+        self._o._configFile = os.path.join(export_dir, "{}.xml".format(export_name))
+        self.collect_ui_info()
+        self._o._rdirInput = "input"
+        self._o._rdirInput = "output"
+        # copy data
+        dir_i = os.path.join(export_dir, "input")
+        dir_o = os.path.join(export_dir, "output")
+
         return
 
 
