@@ -6,6 +6,7 @@
 import os.path
 import sys
 import datetime
+from shutil import copytree
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
@@ -558,6 +559,8 @@ class ProjectExporter(QDialog):
         self._o = project_io.Project()
         self._o._exeDemo = p_obj._exeDemo
         self._o._exeParam = p_obj._exeParam
+        self._o._dirInput = p_obj._dirInput
+        self._o._dirOutput = p_obj._dirOutput
         self._qlv_case = create_QListView(self)
         self._qlv_ver = create_QListView(self)
         self._qlv_alg = create_QListView(self)
@@ -592,8 +595,8 @@ class ProjectExporter(QDialog):
         qvb.addWidget(self._qlv_case)
         qvb.addWidget(QLabel('Select Export Versions:'))
         qvb.addWidget(self._qlv_ver)
-        qvb.addWidget(QLabel('Select Export FileNames:'))
-        qvb.addWidget(self._qlv_alg)
+        #qvb.addWidget(QLabel('Select Export FileNames:'))
+        #qvb.addWidget(self._qlv_alg)
         qvb.addWidget(QLabel('Select Export Directory:'))
         qvb.addWidget(qwg_od)
         qvb.addWidget(qwg_exp)
@@ -614,7 +617,9 @@ class ProjectExporter(QDialog):
         # fill output lists
         self._o._case = [c for c in l_case if c in d_case]
         self._o._ver = [c for c in l_ver if c in d_ver]
-        self._o._alg = [c for c in l_alg if c in d_alg]
+        #self._o._alg = [c for c in l_alg if c in d_alg]
+        self._o._alg = l_alg # todo select filename
+
         # check all item
         for case in self._o._case:
             self._o._eCaseCheck[case] = 1
@@ -642,17 +647,39 @@ class ProjectExporter(QDialog):
             QMessageBox.about(self, "Error", "Invalid Export Name {}!".format(export_name))
             return
         # start export
-        # set config info
+        # save config info
         self._o._configFile = os.path.join(export_dir, "{}.xml".format(export_name))
         self._o._rdirInput = "input"
         self._o._rdirOutput = "output"
+        self.collect_ui_info()
+        self._o.save_xml(self._o._configFile)
         # copy data
+        org_dir_i = self._o._dirInput
+        org_dir_o = self._o._dirOutput
         dir_i = os.path.join(export_dir, "input")
         dir_o = os.path.join(export_dir, "output")
         utils.try_create_dir(dir_i)
         utils.try_create_dir(dir_o)
-        self.collect_ui_info()
-        self._o.save_xml(self._o._configFile)
+        #input
+        for case in self._o._case:
+            org_case = os.path.join(org_dir_i, case)
+            new_case = os.path.join(dir_i, case)
+            if not os.path.exists(org_case):
+                continue
+            copytree(org_case, new_case)
+        #output
+        for case in self._o._case:
+            org_case = os.path.join(org_dir_o, case)
+            new_case = os.path.join(dir_o, case)
+            if not os.path.exists(org_case):
+                continue
+            utils.try_create_dir(new_case)
+            for ver in self._o._ver:
+                org_ver = os.path.join(org_case, ver)
+                new_ver = os.path.join(new_case, ver)
+                if not os.path.exists(org_ver):
+                    continue
+                copytree(org_ver, new_ver)
         return
 
 
