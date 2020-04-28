@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox,
                              QInputDialog, QLineEdit, QPushButton,
                              QAbstractItemView)
 from PyQt5.QtCore import QItemSelectionModel, Qt
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 from test_framework import project_io
 from test_framework.project_io import get_checked_items
@@ -397,7 +398,7 @@ def slot_exe_run(ui):
 
     ss_exe = thread_module.ExeSession(ui._p, False)
     
-    ui._cmdDialog.add_cmd(exe, param_text)
+    ui._cmdDialog.add_cmd([[exe, param_text]])
     ui._threadExe = thread_module.ExeRunThread(ss_exe)
     ui._threadExe.setTerminationEnabled()
     ui._threadExe._sigProgress.connect(ui.exe_progress)
@@ -806,6 +807,19 @@ def create_QListView(ui, qle=None):
         ql.doubleClicked.connect(lambda: slot_qlv_double_click(ui, ql, qle))
     return ql
 
+# get listview from project_object
+def fill_check_list(lv, item_list, check_dict):
+    model = QStandardItemModel()
+    #pt_item = QStandardItem()
+    flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
+    for i in item_list:
+        item = QStandardItem(i)
+        item.setFlags(flag)
+        check = Qt.Checked if i in check_dict else Qt.Unchecked
+        item.setCheckState(check)
+        item.setCheckable(True)
+        model.appendRow(item)
+    lv.setModel(model)
 
 def slot_qlv_check_list(ui, qlv):
     sl = qlv.selectedIndexes()

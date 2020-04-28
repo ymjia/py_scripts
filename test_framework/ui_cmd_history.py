@@ -111,29 +111,33 @@ class CMDHistory(QDialog):
         q_idx = self._qtv_cmd.model().index(sel_row, 2)
         qpt.setPlainText(q_idx.data())
 
-    def add_cmd(self, exe, param):
-        str_time = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-        # get info
-        stem = os.path.splitext(os.path.basename(exe))[0]
+    def add_cmd(self, cmd_list):
+        print(cmd_list)
         # create file
         self.create_xml()
         self._cmdTree = ET.parse(self._file)
-        rt = self._cmdTree.getroot()
-        # add or find demo
-        demo = rt.find(stem)
-        if demo is None:
-            demo = ET.Element(stem)
-            rt.append(demo)
-        # add or update cmd
-        exist = False
-        for item in demo:
-            if item.attrib["cmd"] != param:
-                continue
-            item.attrib["last_t"] = str_time
-            exist = True
-            break;
-        if not exist:
-            demo.append(ET.Element(
-                "item", {"last_t":str_time, "init_t":str_time, "cmd": param}))
+        str_time = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+        for in_item in cmd_list:
+            exe = in_item[0]
+            param = in_item[1]
+            # get info
+            stem = os.path.splitext(os.path.basename(exe))[0]
+            rt = self._cmdTree.getroot()
+            # add or find demo
+            demo = rt.find(stem)
+            if demo is None:
+                demo = ET.Element(stem)
+                rt.append(demo)
+            # add or update cmd
+            exist = False
+            for item in demo:
+                if item.attrib["cmd"] != param:
+                    continue
+                item.attrib["last_t"] = str_time
+                exist = True
+                break;
+            if not exist:
+                demo.append(ET.Element(
+                    "item", {"last_t":str_time, "init_t":str_time, "cmd": param}))
         indent_xml(rt)
         self._cmdTree.write(self._file)

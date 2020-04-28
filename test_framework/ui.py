@@ -78,6 +78,7 @@ class TFWindow(QWidget):
         self._qcb_doc_type.addItems(["Screenshots", "Time_statistics", "CPU_MEM_statistics", "Hausdorf_dist"])
         # other object
         self._configDialog = GeneralConfigurationUI(self)
+        self._exportDialog = None
         # layout
         grid = QGridLayout()
         grid.addWidget(self.create_history(), 0, 0)
@@ -146,13 +147,13 @@ class TFWindow(QWidget):
             self._qcb_cur_ver.addItem(v)
         self._qcb_cur_ver.setEditText(cur_obj._eVer)
         self._qpt_exe_param.setPlainText(cur_obj._exeParam)
-        self.fill_check_list(self._qlv_exe_case, cur_obj._case, cur_obj._eCaseCheck)
-        self.fill_check_list(self._qlv_ss_case, cur_obj._case, cur_obj._sCaseCheck)
-        self.fill_check_list(self._qlv_ss_ver, cur_obj._ver, cur_obj._sVerCheck)
-        self.fill_check_list(self._qlv_ss_alg, cur_obj._alg, cur_obj._sAlgCheck)
-        self.fill_check_list(self._qlv_doc_case, cur_obj._case, cur_obj._dCaseCheck)
-        self.fill_check_list(self._qlv_doc_ver, cur_obj._ver, cur_obj._dVerCheck)
-        self.fill_check_list(self._qlv_doc_alg, cur_obj._alg, cur_obj._dAlgCheck)
+        ui_logic.fill_check_list(self._qlv_exe_case, cur_obj._case, cur_obj._eCaseCheck)
+        ui_logic.fill_check_list(self._qlv_ss_case, cur_obj._case, cur_obj._sCaseCheck)
+        ui_logic.fill_check_list(self._qlv_ss_ver, cur_obj._ver, cur_obj._sVerCheck)
+        ui_logic.fill_check_list(self._qlv_ss_alg, cur_obj._alg, cur_obj._sAlgCheck)
+        ui_logic.fill_check_list(self._qlv_doc_case, cur_obj._case, cur_obj._dCaseCheck)
+        ui_logic.fill_check_list(self._qlv_doc_ver, cur_obj._ver, cur_obj._dVerCheck)
+        ui_logic.fill_check_list(self._qlv_doc_alg, cur_obj._alg, cur_obj._dAlgCheck)
 
 
     def collect_ui_info(self):
@@ -217,6 +218,9 @@ class TFWindow(QWidget):
         qpb_save = QPushButton("Save Project")
         qpb_load = QPushButton("Load Project")
         qpb_config = QPushButton("Global Configuration")
+        qpb_export = QPushButton("Export Data")
+        qpb_export.setStyleSheet("background-color:#9a9a9a")
+        qpb_export.clicked.connect(self.slot_show_export)
         qpb_config.clicked.connect(self.slot_show_config)
         qpb_new.clicked.connect(lambda: ui_logic.slot_new_project(self))
         qpb_delete.clicked.connect(lambda: ui_logic.slot_delete_project(self))
@@ -229,7 +233,9 @@ class TFWindow(QWidget):
         grid.addWidget(qpb_load, 2, 1)
         grid.addWidget(qpb_delete, 3, 0)
         grid.addWidget(qpb_save, 3, 1)
-        grid.addWidget(qpb_config, 4, 0, 1, 2)
+        grid.addWidget(qpb_export, 4, 0)
+        grid.addWidget(qpb_config, 4, 1)
+
         manage.setLayout(grid)
         return manage
 
@@ -291,19 +297,6 @@ class TFWindow(QWidget):
         lm.setLayout(l_hb)
         return lm
 
-    # get listview from project_object
-    def fill_check_list(self, lv, item_list, check_dict):
-        model = QStandardItemModel()
-        #pt_item = QStandardItem()
-        flag = Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled
-        for i in item_list:
-            item = QStandardItem(i)
-            item.setFlags(flag)
-            check = Qt.Checked if i in check_dict else Qt.Unchecked
-            item.setCheckState(check)
-            item.setCheckable(True)
-            model.appendRow(item)
-        lv.setModel(model)
 
     # get project_object info from listview
     def read_check_list(self, lv, item_list, check_dict):
@@ -450,6 +443,11 @@ class TFWindow(QWidget):
     def slot_show_config(self):
         self._configDialog.show()
 
+    def slot_show_export(self):
+        self.collect_ui_info()
+        self._exportDialog = ProjectExporter(self._p)
+        self._exportDialog.show()
+
     def slot_add_ver_list(self):
         cand = ui_logic.get_all_ver_names(self._p)
         alg_sel = FileNameSelector(cand, self._p._ver)
@@ -503,9 +501,9 @@ class TFWindow(QWidget):
         batch_dialog.exec_()
     
     def slot_batch_run(self):
+        self.collect_ui_info()
         ss_exe = thread_module.ExeSession(self._p, True)
-        for item in self._p._batchList:
-            self._cmdDialog.add_cmd(item[0], item[1])
+        self._cmdDialog.add_cmd([[item[0], item[1]] for item in self._p._batchList])
         self._threadExe = thread_module.ExeRunThread(ss_exe)
         self._threadExe.setTerminationEnabled()
         self._threadExe._sigProgress.connect(self.exe_progress)
@@ -565,6 +563,32 @@ class FileNameSelector(QDialog):
             if item not in self._listToAdd:
                 self._listToAdd.append(item)
         self.close()
+
+
+class ProjectExporter(QDialog):
+    def __init__(self, p_obj):
+        QDialog.__init__(self)
+        self._in_obj = p_obj
+        self._out_obj = p_obj
+        self._qlv_case = create_QListView(self)
+        self._qlv_alg = create_QListView(self)
+        self._qlv_ver = create_QListView(self)
+
+        qpb_export = QPushButton("Export")
+        qpb_cancel = QPushButton("Cancel")
+        grid = QGridLayout()
+        grid.addWidget(QLabel('Case'), 1, 0)
+        grid.addWidget(self._qlv_case, 1, 1)
+        grid.addWidget(QLabel('Version'), 2, 0)
+        grid.addWidget(self._qlv_ver, 2, 1)
+        grid.addWidget(QLabel('FileName'), 3, 0)
+        grid.addWidget(self._qlv_alg, 3, 1)
+        grid.addWidget(qpb_export, 4, 0)
+        grid.addWidget(qpb_cancel, 4, 1)
+        self.setLayout(grid)
+
+
+
 
 if __name__ == "__main__":
     # create ui
