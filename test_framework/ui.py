@@ -10,7 +10,7 @@ from shutil import copytree
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
-                             QStackedWidget, QComboBox, QDialog,
+                             QStackedWidget, QComboBox, QDialog, QMessageBox,
                              QGroupBox, QListView, QHBoxLayout, QVBoxLayout, QTreeView, QProgressBar,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
@@ -561,9 +561,10 @@ class ProjectExporter(QDialog):
         self._o._exeParam = p_obj._exeParam
         self._o._dirInput = p_obj._dirInput
         self._o._dirOutput = p_obj._dirOutput
+        self._o._alg = p_obj._alg.copy() # export all alg name
         self._qlv_case = create_QListView(self)
         self._qlv_ver = create_QListView(self)
-        self._qlv_alg = create_QListView(self)
+        #self._qlv_alg = create_QListView(self)
         self._qle_out_dir = QLineEdit()
         self._qle_out_name = QLineEdit()
         self._qle_out_dir.setText(os.path.join(p_obj._dirOutput, "export"))
@@ -572,7 +573,7 @@ class ProjectExporter(QDialog):
         qpb_out_dir.clicked.connect(lambda: ui_logic.slot_get_path(self._qle_out_dir))
         fill_check_list(self._qlv_case, p_obj._case, {})
         fill_check_list(self._qlv_ver, p_obj._ver, {})
-        fill_check_list(self._qlv_alg, p_obj._alg, {})
+        #fill_check_list(self._qlv_alg, p_obj._alg, {})
 
         qpb_export = QPushButton("Export")
         qpb_export.clicked.connect(self.slot_export_select)
@@ -613,12 +614,11 @@ class ProjectExporter(QDialog):
         # get selected items
         read_check_list(self._qlv_case, l_case, d_case)
         read_check_list(self._qlv_ver, l_ver, d_ver)
-        read_check_list(self._qlv_alg, l_alg, d_alg)
+        #read_check_list(self._qlv_alg, l_alg, d_alg)
         # fill output lists
         self._o._case = [c for c in l_case if c in d_case]
         self._o._ver = [c for c in l_ver if c in d_ver]
         #self._o._alg = [c for c in l_alg if c in d_alg]
-        self._o._alg = l_alg # todo select filename
 
         # check all item
         for case in self._o._case:
@@ -680,6 +680,8 @@ class ProjectExporter(QDialog):
                 if not os.path.exists(org_ver):
                     continue
                 copytree(org_ver, new_ver)
+        QMessageBox.about(self, "Message", "Data Exported to {}!".format(export_dir))
+        ui_logic.open_file(export_dir)
         return
 
 
