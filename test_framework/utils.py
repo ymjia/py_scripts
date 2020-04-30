@@ -17,6 +17,8 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.chart import LineChart, Reference
 from openpyxl.chart.axis import DateAxis
+from shutil import copy2
+
 if sys.platform == "win32":
     import winreg as wr
 
@@ -114,6 +116,15 @@ def try_create_dir(str_dir):
     except OSError:
         return False
 
+
+def try_copy_file(str_from, str_to):
+    if not os.path.exists(str_from):
+        return False
+    try:
+        copy2(str_from, str_to)
+        return True
+    except OSError:
+        return False
 
 def get_sys_table(dir_o, case, ver):
     sys = {}

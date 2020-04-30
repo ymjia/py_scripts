@@ -634,6 +634,8 @@ class ProjectExporter(QDialog):
             
 
     def slot_export_select(self):
+        exp_input_type = utils.g_config.config_val("exp_input_type", "All")
+
         out_dir = self._qle_out_dir.text()
         if not utils.try_create_dir(out_dir):
             QMessageBox.about(self, "Error", "Invalid Output Dir {}!".format(out_dir))
@@ -652,7 +654,6 @@ class ProjectExporter(QDialog):
         self._o._rdirInput = "input"
         self._o._rdirOutput = "output"
         self.collect_ui_info()
-        self._o.save_xml(self._o._configFile)
         # copy data
         org_dir_i = self._o._dirInput
         org_dir_o = self._o._dirOutput
@@ -666,7 +667,16 @@ class ProjectExporter(QDialog):
             new_case = os.path.join(dir_i, case)
             if not os.path.exists(org_case):
                 continue
-            copytree(org_case, new_case)
+            if exp_input_type == "All":
+                copytree(org_case, new_case)
+            else:
+                if not utils.try_create_dir(new_case):
+                    continue
+                if exp_input_type == "None":
+                    continue
+                else: # config.txt only
+                    utils.try_copy_file(os.path.join(org_case, "config.txt"),
+                                  os.path.join(new_case, "config.txt"))
         #output
         for case in self._o._case:
             org_case = os.path.join(org_dir_o, case)
@@ -680,6 +690,11 @@ class ProjectExporter(QDialog):
                 if not os.path.exists(org_ver):
                     continue
                 copytree(org_ver, new_ver)
+
+        # save project xml
+        self._o._dirInput = ""
+        self._o._dirOutput = ""
+        self._o.save_xml(self._o._configFile)
         QMessageBox.about(self, "Message", "Data Exported to {}!".format(export_dir))
         ui_logic.open_file(export_dir)
         return
