@@ -34,9 +34,11 @@ if init_ca[0] == None:
 vs_list = [] #visible sources display properties
 for vi in v_list:
     for si in s_list:
-        dp = servermanager.GetRepresentation(si, vi)
-        if not dp or dp.Visibility == 0 : continue
-        vs_list.append(dp)
+        n_port = si.SMProxy.GetNumberOfOutputPorts()
+        for pi in range(0, n_port):
+            dp = servermanager.GetRepresentation(si[pi], vi)
+            if not dp or dp.Visibility == 0 : continue
+            vs_list.append(dp)
 
 #apply representation status
 for pt_itr in vs_list:

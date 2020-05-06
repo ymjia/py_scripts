@@ -38,10 +38,13 @@ def pm_copy_display(org_dp, dst_dp):
 def get_view_source(s_list, cur_view):
     cur_source = GetActiveSource()
     if cur_source:
+        n_port = cur_source.SMProxy.GetNumberOfOutputPorts()
         dp = servermanager.GetRepresentation(cur_source, cur_view)
         if dp and dp.Visibility == 1:
             return cur_source
     for si in s_list:
-        dp = servermanager.GetRepresentation(si, cur_view)
-        if dp and dp.Visibility == 1:
-            return si
+        n_port = si.SMProxy.GetNumberOfOutputPorts()
+        for pi in range(0, n_port):
+            dp = servermanager.GetRepresentation(si[pi], cur_view)
+            if dp and dp.Visibility == 1:
+                return si[pi]
