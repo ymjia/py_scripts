@@ -262,7 +262,8 @@ def start_camera_set_session(names, f_config):
     # set default camera
 
     it = v.GetInteractor()
-    ant = add_annotation(v, "'C': Record Current Camera\n'Q': Finish and quit\n'Space': Reset Camera\nTotal: {}".format(cn), 16)
+    ant = add_annotation(v, "'C': Record Current Camera\n'Q': Finish and quit\n'R': Reset Camera\n'Ctrl+Alt+D': Delete All Record\nTotal: {}".format(cn), 16)
+    #it.AddObserver("KeyReleaseEvent", #KeyPressEvent",
     it.AddObserver("KeyPressEvent",
                    lambda o, e, source=s, conf = f_config, txt = ant: CameraKey(o, e, source, conf, txt))
     dp = Show(s, v)
@@ -292,14 +293,25 @@ def CameraKey(obj, event, s, conf, txt):
         f.writelines("\n" + cam_str)
         f.close()
         cn = len(read_cam(conf))
-        txt.Text = "'C': Record Current Camera\n'Q': Finish and quit\n'Space': Reset Camera\nTotal: {}".format(cn)
+        txt.Text = "'C': Record Current Camera\n'Q': Finish and quit\n'R': Reset Camera\n'Ctrl+Alt+D': Delete All Record\nTotal: {}".format(cn)
         v.Update()
         Render()
-    elif k == "space":
+    elif k == "r":
         v = GetActiveView()
         co = CameraObject()
         co.create_default_cam_angle(s, "x+")
         co.set_camera(v)
+        v.Update()
+        Render()
+    elif k == 'd':
+        if obj.GetControlKey() == 0 or obj.GetAltKey() == 0:
+            return
+        #clear existing angle
+        f = open(conf, "w")
+        f.close()
+        cn = len(read_cam(conf))
+        txt.Text = "'C': Record Current Camera\n'Q': Finish and quit\n'R': Reset Camera\n'Ctrl+Alt+D': Delete All Record\nTotal: {}".format(cn)
+        v = GetActiveView()
         v.Update()
         Render()
     else:
