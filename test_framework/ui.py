@@ -6,12 +6,14 @@
 import os.path
 import sys
 import datetime
+from time import sleep
 from shutil import copytree
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout,
                              QStackedWidget, QComboBox, QDialog, QMessageBox,
-                             QGroupBox, QListView, QHBoxLayout, QVBoxLayout, QTreeView, QProgressBar,
+                             QGroupBox, QListView, QHBoxLayout, QVBoxLayout, QTreeView,
+                             QProgressBar, QProgressDialog,
                              QLabel, QLineEdit, QPlainTextEdit, QAbstractItemView)
 from PyQt5.QtCore import Qt, QItemSelection, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -634,6 +636,11 @@ class ProjectExporter(QDialog):
             
 
     def slot_export_select(self):
+        pg = QProgressDialog("Copying files...", "Abort Copy", 0, 100, self)
+        pg.setWindowModality(Qt.WindowModal)
+        pg.setCancelButton(None)
+        pg.show()
+
         exp_input_type = utils.g_config.config_val("exp_input_type", "All")
 
         out_dir = self._qle_out_dir.text()
@@ -644,6 +651,8 @@ class ProjectExporter(QDialog):
         if export_name == "":
             QMessageBox.about(self, "Error", "Empty Export Name !")
             return
+        pg.setValue(5)
+        QApplication.processEvents()
         export_dir = os.path.join(out_dir, export_name)
         if not utils.try_create_dir(export_dir):
             QMessageBox.about(self, "Error", "Invalid Export Name {}!".format(export_name))
@@ -654,6 +663,7 @@ class ProjectExporter(QDialog):
         self._o._rdirInput = "input"
         self._o._rdirOutput = "output"
         self.collect_ui_info()
+        pg.setValue(10)
         # copy data
         org_dir_i = self._o._dirInput
         org_dir_o = self._o._dirOutput
@@ -662,7 +672,13 @@ class ProjectExporter(QDialog):
         utils.try_create_dir(dir_i)
         utils.try_create_dir(dir_o)
         #input
-        for case in self._o._case:
+        c_num = float(len(self._o._case))
+        if c_num < 1:
+            return
+        
+        for idx, case in enumerate(self._o._case):
+            pg.setValue(idx/c_num * 40 + 10)
+            #QApplication.processEvents()
             org_case = os.path.join(org_dir_i, case)
             new_case = os.path.join(dir_i, case)
             if not os.path.exists(org_case):
@@ -678,7 +694,8 @@ class ProjectExporter(QDialog):
                     utils.try_copy_file(os.path.join(org_case, "config.txt"),
                                   os.path.join(new_case, "config.txt"))
         #output
-        for case in self._o._case:
+        for idx, case in enumerate(self._o._case):
+            pg.setValue(idx/c_num * 40 + 50)
             org_case = os.path.join(org_dir_o, case)
             new_case = os.path.join(dir_o, case)
             if not os.path.exists(org_case):
@@ -695,6 +712,7 @@ class ProjectExporter(QDialog):
         self._o._dirInput = ""
         self._o._dirOutput = ""
         self._o.save_xml(self._o._configFile)
+        pg.setValue(100)
         QMessageBox.about(self, "Message", "Data Exported to {}!".format(export_dir))
         ui_logic.open_file(export_dir)
         return
