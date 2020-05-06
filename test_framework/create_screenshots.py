@@ -432,7 +432,7 @@ def read_cam(case_file):
 
 # execute screenshot operation(need config information)
 # general operation, case/version/filanem all have their effects
-def create_screenshots(sc):
+def create_screenshots(sc, cb=None):
     print("Creating screen shot:")
     sc.print_config()
     total_num = 0
@@ -445,7 +445,12 @@ def create_screenshots(sc):
         for vi in sc.list_ver:
             file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
     #create shot
-    for item in file_dir:
+    if cb is not None:
+        cb(5)
+    ss_num = float(len(file_dir))
+    for ss_idx, item in enumerate(file_dir):
+        if cb is not None:
+            cb(ss_idx / ss_num * 90 + 5)
         case_name = item[0]
         ver_name = item[1]
         case_files = item[2]
@@ -477,6 +482,8 @@ def create_screenshots(sc):
                 print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
                 total_num += ss.create_shot(file_list, cam_list, pic_out_dir , alg,
                                             case_name, ver_name)
+    if cb is not None:
+        cb(100)
     return total_num
 
 

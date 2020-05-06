@@ -10,8 +10,8 @@ import subprocess
 import xml.etree.ElementTree as ET
 from openpyxl import Workbook
 
-from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox,
-                             QInputDialog, QLineEdit, QPushButton,
+from PyQt5.QtWidgets import (QApplication, QListView, QFileDialog, QMessageBox,
+                             QInputDialog, QLineEdit, QPushButton, QProgressDialog,
                              QAbstractItemView)
 from PyQt5.QtCore import QItemSelectionModel, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -257,7 +257,12 @@ def slot_create_screenshots(ui):
         ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
         if ret == qm.Cancel:
             return
-    total_num = create_screenshots.create_screenshots(sc)
+    pg = QProgressDialog("Creating ScreenShots...", "Cancel", 0, 100, ui)
+    pg.setWindowModality(Qt.WindowModal)
+    pg.setCancelButton(None)
+    pg.setValue(1)
+    pg.show()
+    total_num = create_screenshots.create_screenshots(sc, pg.setValue)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
