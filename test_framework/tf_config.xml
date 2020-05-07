@@ -1,6 +1,6 @@
 <project>
-  <input path="D:/tmp/tf_test/input" />
-  <output path="D:/tmp/tf_test/output/" />
+  <input path="D:/tmp/tf_test_2/input" />
+  <output path="D:/tmp/tf_test_2/output/" />
   <rel_input path="" />
   <rel_output path="" />
   <exe_demo path="D:/tools/JYMTest/JYMTest.exe" />

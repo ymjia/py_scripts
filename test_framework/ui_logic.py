@@ -604,9 +604,13 @@ def slot_ss_manage(ui):
         return
     case_name = sl[0].data()
     dir_case = os.path.join(p_obj._dirInput, case_name)
+    if not os.path.exists(dir_case):
+        print("Warning: Input Dir {} does not exists! Try create.".format(dir_case))
+        utils.try_create_dir(dir_case)
+        return
     dir_case_out= os.path.join(p_obj._dirOutput, case_name)
-    if not os.path.exists(dir_case_out):
-        os.makedirs(dir_case_out)
+    if not utils.try_create_dir(dir_case_out):
+        QMessageBox.about(ui, "Error:", "Fail creating dir {}.".format(dir_case_out))
     # default directory show in file dialog
     dir_default = dir_case
     if utils.g_config.config_val("ss_default_reference_directory", "Input") == "Output":
