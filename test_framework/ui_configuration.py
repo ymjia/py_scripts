@@ -54,6 +54,9 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_ss_default_ref_dir.setEditable(False)
         self._qcb_ss_default_ref_dir.addItems(["Input", "Output"])
 
+        self._qcb_doc_compare_type = QComboBox() # compare type (table column)
+        self._qcb_doc_compare_type.setEditable(False)
+        self._qcb_doc_compare_type.addItems(["Versions", "FileNames"])
 
         self._qcb_hd_std_sts = QCheckBox("Generate Standard Statistics Table", self)
         self._qcb_hd_dist_rate = QCheckBox("Generate Distance Rate Table", self)
@@ -81,6 +84,7 @@ class GeneralConfigurationUI(QWidget):
         qwg_general = QWidget()
         qwgl_general = QGridLayout()
         qwgl_general.addWidget(self.exe_region())
+        qwgl_general.addWidget(self.doc_region())
         qwgl_general.addWidget(self.export_region())
         qwg_general.setLayout(qwgl_general)
         
@@ -121,6 +125,14 @@ class GeneralConfigurationUI(QWidget):
         qgl_exe.addWidget(self._qcb_exe_input_depth)
         qgb_exe.setLayout(qgl_exe)
         return qgb_exe
+
+    def doc_region(self):
+        qgb_doc = QGroupBox("Documents Settings")
+        qgl_doc = QVBoxLayout()
+        qgl_doc.addWidget(QLabel("ScreenShot Table Compare Type (e.g. table column)"))
+        qgl_doc.addWidget(self._qcb_doc_compare_type)
+        qgb_doc.setLayout(qgl_doc)
+        return qbg_doc
 
     def export_region(self):
         qgb_export = QGroupBox("Export Settings")
@@ -196,6 +208,8 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config["ss_default_reference_directory"] = self._qcb_ss_default_ref_dir.currentText()
         cfg_obj._config["ss_default_camera_type"] = self._qcb_ss_default_camera.currentText()
 
+        cfg_obj._config["doc_compare_type"] = self._qcb_doc_compare_type.currentText()
+
         cfg_obj._config["hd_standard_statistics"] = self._qcb_hd_std_sts.isChecked()
         cfg_obj._config["hd_distance_rate"] = self._qcb_hd_dist_rate.isChecked()
         cfg_obj._config["hd_6_sigma"] = self._qcb_hd_6_sigma.isChecked()
@@ -224,6 +238,8 @@ class GeneralConfigurationUI(QWidget):
         self._qle_ss_view_height.setText(cfg_obj.config_val("ss_view_height", "768"))
         self._qcb_ss_default_ref_dir.setCurrentText(cfg_obj.config_val("ss_default_reference_directory", "Input"))
         self._qcb_ss_default_camera.setCurrentText(cfg_obj.config_val("ss_default_camera_type", "4_quadrant"))
+
+        self._qcb_doc_compare_type.setCurrentText(cfg_obj.config_val("doc_compare_type", "Versions")) 
 
         self._qcb_hd_std_sts.setChecked(cfg_obj.config_val("hd_standard_statistics", True))
         self._qcb_hd_dist_rate.setChecked(cfg_obj.config_val("hd_distance_rate", True))
