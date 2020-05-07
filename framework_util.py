@@ -166,7 +166,8 @@ def add_time_annotation(view, tfile):
 
 
 # load_file for given framework config(dir, case, alg, compare version_list)
-def load_state_files(dir_input, dir_output, case, alg, list_v):
+# *deprecated* 20200507, stay here for backward compatibility
+def load_state_files(dir_input, dir_output, case, alg, list_v): 
     # get source list
     list_dir = []
     list_annot = []
@@ -183,7 +184,37 @@ def load_state_files(dir_input, dir_output, case, alg, list_v):
             list_dir.append(dir_source)
             list_annot.append("{}_{}_{}".format(case, v, alg))
             list_source.append(get_file(dir_source, alg))
+    # create layout before create view
+    l = CreateLayout('{}_{}'.format(case, alg))
+    assign_file_to_layout(list_annot, list_source, l)
 
+
+def load_state_files_v1(dir_input, dir_output, case, list_v, list_alg, compare_type = "Versions", has_input=False):
+    # get source list
+    list_dir = []
+    list_annot = []
+    list_source = []
+    if has_input:
+        dir_source = os.path.join(dir_input, case)
+        list_dir.append(dir_source)
+        list_annot.append("{}_input".format(case))
+        list_source.append(get_file(dir_input, case))
+
+    for v in list_v:
+        dir_source = ""
+        if v == "input":
+            continue
+        for alg in list_alg:
+            dir_source = os.path.join(dir_output, case, v)
+            list_dir.append(dir_source)
+            list_annot.append("{}_{}_{}".format(case, v, alg))
+            list_source.append(get_file(dir_source, alg))
+    # create layout before create view
+    l = CreateLayout('{}_{}'.format(case, alg))
+    assign_file_to_layout(list_annot, list_source, l)
+
+
+def assign_file_to_layout(list_annot, list_source, l):
     list_proxy = []
     for si in range(0, len(list_source)):
         reader = read_files(list_source[si])
@@ -195,8 +226,6 @@ def load_state_files(dir_input, dir_output, case, alg, list_v):
     if len(list_source) != len(list_proxy):
         print("Error: target file lost!")
         return
-    # create layout before create view
-    l = CreateLayout('{}_{}'.format(case, alg))
     l_pos = generate_view(l, len(list_proxy))
     # create view
     list_view = [CreateRenderView(False, registrationName=annot) for annot in list_annot]
