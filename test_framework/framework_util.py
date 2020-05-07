@@ -99,7 +99,11 @@ def read_files(file_list):
 
 def load_local_plugin(name_str, module_str, load_ns):
     if not module_str in load_ns:
-        plugin_path = os.path.join(g_config.dir_exe, "plugins", name_str, "{}.dll".format(name_str))
+        p1 = os.path.join(g_config.dir_exe, "plugins", name_str, "{}.dll".format(name_str))
+        p2 = os.path.join(g_config.dir_exe, "paraview-5.8", "plugins", name_str, "{}.dll".format(name_str))
+        plugin_path = p1
+        if os.path.exists(p2):
+            plugin_path = p2
         if os.path.exists(plugin_path):
             try:
                 print("Loading plugin from: {}".format(plugin_path))
@@ -107,6 +111,8 @@ def load_local_plugin(name_str, module_str, load_ns):
                 print("Loaded plugin from: {}".format(plugin_path))
             except RuntimeError:
                 print("Error! Fail to Loaded plugin from: {}".format(plugin_path))
+        else:
+            print("Error! plugin {} not exists".format(plugin_path))
     return module_str in load_ns
 
 

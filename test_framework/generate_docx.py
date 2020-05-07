@@ -77,13 +77,17 @@ class HausdorffSts:
 ## @brief read camera positions in input config
 def read_cam(case_file):
     if not os.path.exists(case_file):
-        return None
-    content = None
+        print("Warning! config file {} does not exists!".format(case_file))
+        return []
+    content = []
     with open(case_file, encoding="utf-8") as f:
         content = f.readlines()
     str_list = [l.strip() for l in content if len(l) > 20]
     str_lines = [line.split(", ") for line in str_list]
-    return [[float(s) for s in item] for item in str_lines if len(item) == 12]
+    res = [[float(s) for s in item] for item in str_lines if len(item) == 12]
+    if len(res) == 0:
+        print("Warning! No Camera Record in file {}!".format(case_file))
+    return res
 
 
 def add_cell_content(cell, text, pic):
@@ -121,6 +125,7 @@ class DocxGenerator:
             text_file.write(file_content)
 
     def add_case_table(self, case, cam_num):
+        self._doc.add_paragraph("ScreenShots Compare Tables")
         col_num = len(self._listVer)
         if col_num < 1:
             print("Error: No Version Checked!")
@@ -160,6 +165,38 @@ class DocxGenerator:
                     file_pic = os.path.join(dir_pic, name_pic)
                     add_cell_content(row_cells[vi], ver, file_pic)
         return 0
+
+    def add_hausdorff_case_table(self, case, cam_num):
+        col_num = len(self._listVer)
+        if col_num < 1:
+            print("Error: No Version Checked!")
+            return 1
+        for alg in self._listAlg:
+            table = self._doc.add_table(rows=1, cols=col_num)
+            table.style = 'Table Grid'
+            row1 = table.rows[0]
+            row1.cells[0].merge(row1.cells[col_num - 1])
+            row1.cells[0].text = alg
+            case_tmp = case.replace("/", "_")
+            name_state = "{}_{}_{}.py".format(case_tmp, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+            # color title
+            shade_cell(row1.cells[0])
+            if g_config.config_val("ss_default_camera_type", "4_quadrant") == "4_quadrant":
+                cam_num = cam_num + 4
+            else:
+                cam_num = cam_num + 6
+            for cam in range(0, cam_num):
+                row_cells = table.add_row().cells
+                for vi in range(0, col_num):
+                    ver = self._listVer[vi]
+                    dir_pic = os.path.join(self._dirOutput, case, ver)
+                    name_pic = "ss_{}_v{}.png".format(alg, cam)
+                    if ver == "input":
+                        name_pic = "ss_input_v{}.png".format(cam)
+                    file_pic = os.path.join(dir_pic, name_pic)
+                    add_cell_content(row_cells[vi], ver, file_pic)
+        return 0
+        
 
     def fill_row(self, table, rid, content):
         r = table.rows[rid].cells
@@ -355,6 +392,20 @@ class DocxGenerator:
         doc.add_heading("Compare Result {}".format(str_time), 0)
         doc.add_paragraph("From config file: {}".format(file_config))
         for case in self._listCase:
+            doc.add_paragraph("")
+            doc.add_paragraph(case, style='List Bullet')
+            list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
+            if self.add_case_table(case, len(list_cam)) != 0:
+                print("Case Table Error for case: {}".format(case))
+        doc.save(file_save)
+
+    def generate_hausdorff_docx(self, file_save, file_config):
+        doc = self._doc
+        # screen shot view list
+        str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        doc.add_heading("Compare Result {}".format(str_time), 0)
+        doc.add_paragraph("From config file: {}".format(file_config))
+        for case in self._listCase:
             doc.add_paragraph(case, style='List Bullet')
             list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
             if list_cam is None or len(list_cam) == 0:
@@ -371,7 +422,7 @@ class DocxGenerator:
                     continue
             doc.add_paragraph("")
             doc.add_paragraph("ScreenShots Compare Tables")
-            if self.add_case_table(case, len(list_cam)) != 0:
+            if self.add_hausdorff_case_table(case, len(list_cam)) != 0:
                 print("Case Table Error for case: {}".format(case))
         doc.save(file_save)
 

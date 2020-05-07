@@ -102,7 +102,7 @@ def slot_generate_docx(ui):
     elif doc_type == "CPU_MEM_statistics":
         return generate_proc_docx(ui)
     else:
-        return generate_hausdorf_docx(ui)
+        return generate_hausdorff_docx(ui)
 
 
 def generate_ss_docx(ui):
@@ -185,7 +185,7 @@ def generate_proc_docx(ui):
         QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
 
 
-def generate_hausdorf_docx(ui):
+def generate_hausdorff_docx(ui):
     # create hausdorff shot
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
@@ -212,7 +212,7 @@ def generate_hausdorf_docx(ui):
     l_alg = ["__hd"] # reserved alg_name for hausdorff dist
     gd = generate_docx.DocxGenerator(p_obj._dirInput, p_obj._dirOutput, sc.list_case,
                                      l_ver, l_alg)
-    gd.generate_docx(file_save, p_obj._configFile)
+    gd.generate_hausdorff_docx(file_save, p_obj._configFile)
     ui.add_hist_item("doc", 1)
     QMessageBox.about(ui, "Message", "Hausdorff Docx wrote to {}!".format(file_save))
     
