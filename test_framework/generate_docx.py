@@ -105,6 +105,14 @@ def shade_cell(cell):
     cell._tc.get_or_add_tcPr().append(shading_ele)
 
 
+def merge_row(row, txt):
+    cells = row.cells
+    cells[0].merge(cells[len(cells) - 1])
+    cells[0].text = txt
+    return cells[0]
+
+
+
 class DocxGenerator:
     def __init__(self, dir_input, dir_output, list_case, list_ver, list_alg):
         self._dirInput = dir_input
@@ -124,46 +132,74 @@ class DocxGenerator:
         with open(filename, "w", encoding="utf-8") as text_file:
             text_file.write(file_content)
 
-    def add_case_table(self, case, cam_num):
-        self._doc.add_paragraph("ScreenShots Compare Tables")
+    def add_case_table_ver(self, case, cam_num):
+        dir_state = os.path.join(self._dirOutput, "ParaView_projects")
+        if not os.path.exists(dir_state):
+            os.makedirs(dir_state)
+
+        self._doc.add_paragraph("Compare between Versions")
         col_num = len(self._listVer)
         if col_num < 1:
             print("Error: No Version Checked!")
             return 1
+        str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
         for alg in self._listAlg:
+            name_state = "{}_{}_{}.py".format(case.replace("/", "_"), alg, str_time)
+            file_state = os.path.join(dir_state, name_state)
+            self.get_paraview_project(file_state, case, alg)
             table = self._doc.add_table(rows=1, cols=col_num)
             table.style = 'Table Grid'
-            row1 = table.rows[0]
-            row1.cells[0].merge(row1.cells[col_num - 1])
-            row1.cells[0].text = alg
-            row2 = table.add_row().cells
-            row2[0].merge(row2[col_num-1])
-            case_tmp = case.replace("/", "_")
-            name_state = "{}_{}_{}.py".format(case_tmp, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
-            dir_state = os.path.join(self._dirOutput, "ParaView_projects")
-            if not os.path.exists(dir_state):
-                os.makedirs(dir_state)
-            file_state = os.path.join(dir_state, name_state)
-            row2[0].text = file_state
             # color title
-            shade_cell(row1.cells[0])
-            shade_cell(row2[0])
-            self.get_paraview_project(file_state, case, alg)
-            if (alg == "__hd"):
-                if g_config.config_val("ss_default_camera_type", "4_quadrant") == "4_quadrant":
-                    cam_num = cam_num + 4
-                else:
-                    cam_num = cam_num + 6
+            shade_cell(merge_row(table.rows[0], alg))
+            shade_cell(merge_row(table.add_row(), file_state))
+            # add row for every camera angle
             for cam in range(0, cam_num):
-                row_cells = table.add_row().cells
-                for vi in range(0, col_num):
+                for vi, cell in enumerate(table.add_row().cells):
                     ver = self._listVer[vi]
                     dir_pic = os.path.join(self._dirOutput, case, ver)
                     name_pic = "ss_{}_v{}.png".format(alg, cam)
                     if ver == "input":
                         name_pic = "ss_input_v{}.png".format(cam)
                     file_pic = os.path.join(dir_pic, name_pic)
-                    add_cell_content(row_cells[vi], ver, file_pic)
+                    add_cell_content(cell, ver, file_pic)
+        return 0
+
+    def add_case_table_alg(self, case, cam_num):
+        if len(self._listAlg) < 1:
+            print("Error: No FileName Checked!")
+            return 1
+
+        dir_state = os.path.join(self._dirOutput, "ParaView_projects")
+        if not os.path.exists(dir_state):
+            os.makedirs(dir_state)
+        self._doc.add_paragraph("Compare between Files")
+        compare_with_input = False
+        col_list = self._listAlg.copy()
+        if "input" in self._listVer:
+            compare_with_input = True
+            col_list.insert(0, "input")
+        str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        for ver in self._listVer:
+            if ver == "input": # skip input table, because no file to compare in input
+                continue
+            name_state = "{}_{}_{}.py".format(case.replace("/", "_"), ver, str_time)
+            file_state = os.path.join(dir_state, name_state)
+            #self.get_paraview_project(file_state, case, alg)
+            table = self._doc.add_table(rows=1, cols=len(col_list))
+            table.style = 'Table Grid'
+            # color title
+            shade_cell(merge_row(table.rows[0], ver))
+            shade_cell(merge_row(table.add_row(), file_state))
+            # add row for every camera angle
+            for cam in range(0, cam_num):
+                for fi, cell in enumerate(table.add_row().cells):
+                    alg = col_list[fi]
+                    dir_pic = os.path.join(self._dirOutput, case, ver)
+                    name_pic = "ss_{}_v{}.png".format(alg, cam)
+                    if alg == "input":
+                        dir_pic = os.path.join(self._dirOutput, case, "input")
+                    file_pic = os.path.join(dir_pic, name_pic)
+                    add_cell_content(cell, alg, file_pic)
         return 0
 
     def add_hausdorff_case_table(self, case, cam_num):
@@ -395,7 +431,7 @@ class DocxGenerator:
             doc.add_paragraph("")
             doc.add_paragraph(case, style='List Bullet')
             list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
-            if self.add_case_table(case, len(list_cam)) != 0:
+            if self.add_case_table_alg(case, len(list_cam)) != 0:
                 print("Case Table Error for case: {}".format(case))
         doc.save(file_save)
 

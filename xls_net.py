@@ -10,15 +10,15 @@ from openpyxl import *
 #from openpyxl import styles
 from bisect import bisect_left
 
-xls_input = "c:/data/xls/net/215000.XLSX"
-xls_output = "c:/data/xls/net/215000_output.XLSX"
+xls_input = "d:/data/xls_f/216336FY19.XLSX"
+xls_output = "d:/data/xls_f/216336FY19.XLSX_output.XLSX"
 
 
 my_color = styles.colors.Color(rgb="ffff00")
 around_color = styles.fills.PatternFill(patternType='solid', fgColor=my_color)
 
 # global variables
-idx_column = 12
+idx_column = 11
 
 
 # ##################### FILE LOAD ####################    

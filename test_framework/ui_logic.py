@@ -120,6 +120,8 @@ def generate_ss_docx(ui):
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
     l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
+    #if "input" in l_ver:
+        #l_alg.insert(0, "input")
     gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
     gd.generate_docx(file_save, p_obj._configFile)
     ui.add_hist_item("doc", 1)
