@@ -38,7 +38,7 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_exp_input_type = QComboBox() # type of document to be generated
         self._qcb_exp_input_type.setEditable(False)
         self._qcb_exp_input_type.addItems(["All", "None", "Config.txt only"])
-        self._qcb_exp_testbug = QCheckBox("Export Testbug if Exists", self)
+        self._qcb_exp_testbug = QCheckBox("Export Testbug if Exists in Output Dir", self)
 
         self._qcb_ss_force_update = QCheckBox("Force Update Screenshot", self)
         self._qcb_ss_specular = QCheckBox("Specular", self)
