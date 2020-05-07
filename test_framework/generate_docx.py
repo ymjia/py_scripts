@@ -123,12 +123,20 @@ class DocxGenerator:
         self._doc = Document()
 
     # generate paraview project for given data
-    def get_paraview_project(self, filename, case, alg):
+    def get_paraview_project(self, filename, case, l_ver, l_alg, compare_type, has_input):
         str_list_v = "["
-        for v in self._listVer:
+        for v in l_ver:
             str_list_v = str_list_v + "\"{}\",".format(v)
         str_list_v = str_list_v[:-1] + "]"
-        file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files(r\"{}\", r\"{}\", \"{}\", \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, alg, str_list_v)
+
+        str_list_a = "["
+        for a in l_alg:
+            str_list_a = str_list_a + "\"{}\",".format(a)
+        str_list_a = str_list_a[:-1] + "]"
+
+        str_has_input = "True" if has_input else "False"
+        
+        file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files_v1(r\"{}\", r\"{}\", \"{}\", {}, {}, \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, str_list_v, str_list_a, compare_type, str_has_input)
         with open(filename, "w", encoding="utf-8") as text_file:
             text_file.write(file_content)
 
@@ -143,10 +151,11 @@ class DocxGenerator:
             print("Error: No Version Checked!")
             return 1
         str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        has_input = "input" in self._listVer
         for alg in self._listAlg:
             name_state = "{}_{}_{}.py".format(case.replace("/", "_"), alg, str_time)
             file_state = os.path.join(dir_state, name_state)
-            self.get_paraview_project(file_state, case, alg)
+            self.get_paraview_project(file_state, case,  self._listVer, [alg], "Versions", has_input)
             table = self._doc.add_table(rows=1, cols=col_num)
             table.style = 'Table Grid'
             # color title
@@ -184,7 +193,7 @@ class DocxGenerator:
                 continue
             name_state = "{}_{}_{}.py".format(case.replace("/", "_"), ver, str_time)
             file_state = os.path.join(dir_state, name_state)
-            #self.get_paraview_project(file_state, case, alg)
+            self.get_paraview_project(file_state, case, [ver], self._listAlg, "FileNames", compare_with_input)
             table = self._doc.add_table(rows=1, cols=len(col_list))
             table.style = 'Table Grid'
             # color title
@@ -422,6 +431,7 @@ class DocxGenerator:
     ## @param dir_output algorithm/screenshots output directory
     ## @param file_config file contains user specified compare config
     def generate_docx(self, file_save, file_config):
+        compare_type = g_config.config_val("doc_compare_type", "Versions")
         doc = self._doc
         # screen shot view list
         str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
@@ -431,7 +441,12 @@ class DocxGenerator:
             doc.add_paragraph("")
             doc.add_paragraph(case, style='List Bullet')
             list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
-            if self.add_case_table_alg(case, len(list_cam)) != 0:
+            res = 0
+            if compare_type == "Versions":
+                res = self.add_case_table_ver(case, len(list_cam))
+            else:
+                res = self.add_case_table_alg(case, len(list_cam))
+            if res != 0:
                 print("Case Table Error for case: {}".format(case))
         doc.save(file_save)
 

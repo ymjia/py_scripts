@@ -132,7 +132,7 @@ class GeneralConfigurationUI(QWidget):
         qgl_doc.addWidget(QLabel("ScreenShot Table Compare Type (e.g. table column)"))
         qgl_doc.addWidget(self._qcb_doc_compare_type)
         qgb_doc.setLayout(qgl_doc)
-        return qbg_doc
+        return qgb_doc
 
     def export_region(self):
         qgb_export = QGroupBox("Export Settings")
