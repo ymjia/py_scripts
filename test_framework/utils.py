@@ -268,10 +268,11 @@ def get_stem_list(folder):
         if isdir(join(folder, name)):
             continue
         stem, ext = os.path.splitext(name)
-        if not any(ext in e for e in support_ext):
+        if not any(ext.casefold() in e for e in support_ext):
             continue
         res.append(stem)
     return res
+
 
 def get_file_list(folder):
     res = []
@@ -280,18 +281,11 @@ def get_file_list(folder):
     for name in os.listdir(folder):
         if isdir(join(folder, name)):
             continue
-        stem, ext = os.path.splitext(name)
+        ext = os.path.splitext(name)[1].casefold()
         if not any(ext in e for e in support_ext):
             continue
         res.append(join(folder, name))
     return res
-
-# def get_file_list(folder):
-#     stem_list = get_stem_list(folder)
-#     res = []
-#     for stem in stem_list:
-#         res.append(join(folder, stem))
-#     return res
 
 
 def get_selected_item(qlv):

@@ -41,10 +41,12 @@ support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin", ".tb"]
 
 def get_file_list(folder):
     res = []
+    if not os.path.exists(folder):
+        return res
     for name in os.listdir(folder):
         if os.path.isdir(os.path.join(folder, name)):
             continue
-        ext = os.path.splitext(name)[1]
+        ext = os.path.splitext(name)[1].casefold()
         if not any(ext in e for e in support_ext):
             continue
         res.append(os.path.join(folder, name))
@@ -53,6 +55,7 @@ def get_file_list(folder):
 
 # read file name with stem in folder, return *list*
 def get_file(folder, stem):
+    stem = stem.casefold()
     if not os.path.exists(folder):
         return None
     full_path = os.path.join(folder, stem)
@@ -64,10 +67,8 @@ def get_file(folder, stem):
     cur_root = str(Path(full_path).parent)
     for f in os.listdir(cur_root):
         cur_stem, cur_ext = os.path.splitext(f)
-        if cur_stem == stem:
-            find_res = os.path.join(cur_root, f)
-            if cur_ext in support_ext:
-                return [find_res]
+        if cur_stem.casefold() == stem and cur_ext in support_ext:
+            return [os.path.join(folder, f)]
     return None
 
 

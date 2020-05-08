@@ -868,9 +868,10 @@ def slot_project_list_filter(ui):
 
 def fill_dict(d, l_item):
     for item in l_item:
-        if item in d:
+        lc = item.casefold()
+        if lc in d:
             continue
-        d[item] = 1
+        d[lc] = 1
 
 
 # get all avaliable filenames in output dir

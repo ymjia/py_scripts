@@ -547,8 +547,10 @@ class FileNameSelector(QDialog):
             for i in text_list:
                 if i not in l_item:
                     l_item.append(i)
+        l_compare = [item.casefold() for item in self._listToAdd]
         for item in l_item:
-            if item not in self._listToAdd:
+            if item.casefold() not in l_compare:
+                l_compare.append(item.casefold())
                 self._listToAdd.append(item)
         self.close()
 
