@@ -637,6 +637,7 @@ class ProjectExporter(QDialog):
 
     def slot_export_select(self):
         pg = QProgressDialog("Copying files...", "Abort Copy", 0, 100, self)
+        pg.setWindowTitle("Please Wait")
         pg.setWindowModality(Qt.WindowModal)
         pg.setCancelButton(None)
         pg.show()

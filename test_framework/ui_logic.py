@@ -260,6 +260,7 @@ def slot_create_screenshots(ui):
         if ret == qm.Cancel:
             return
     pg = QProgressDialog("Creating ScreenShots...", "Cancel", 0, 100, ui)
+    pg.setWindowTitle("Please Wait")
     pg.setWindowModality(Qt.WindowModal)
     pg.setCancelButton(None)
     pg.setValue(1)
