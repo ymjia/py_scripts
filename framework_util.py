@@ -5,6 +5,7 @@
 ## @author jiayanming
 import os
 import os.path
+from pathlib import Path
 import math
 import time
 import datetime
@@ -55,14 +56,17 @@ def get_file_list(folder):
 def get_file(folder, stem):
     if not os.path.exists(folder):
         return None
-    for f in os.listdir(folder):
+    full_path = os.path.join(folder, stem)
+    res = []
+    if os.path.isdir(full_path):
+        res = get_file_list(full_path)
+    if len(res) > 0:
+        return res
+    cur_root = str(Path(full_path).parent)
+    for f in os.listdir(cur_root):
         cur_stem, cur_ext = os.path.splitext(f)
-        if cur_stem == stem:
-            find_res = os.path.join(folder, f)
-            if os.path.isdir(find_res):
-                return get_file_list(find_res)
-            elif cur_ext in support_ext:
-                return [find_res]
+        if cur_stem == stem and cur_ext in support_ext:
+            return [os.path.join(folder, f)]
     return None
 
 
@@ -91,6 +95,8 @@ def generate_view(l, s_num):
     # view positions in layout
     l_pos = []
     # split layout and store positions
+    if s_num == 1:
+        return [0]
     if s_num == 2:
         pos = l.SplitHorizontal(0, 0.5)
         l_pos = [pos, pos + 1]
