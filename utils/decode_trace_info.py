@@ -112,7 +112,15 @@ def decode_alg(f_name):
 
 
 if __name__ == "__main__":
-    filename = sys.argv[1]
+    filename = ""
+    file_compare = ""
+    if len(sys.argv) == 2:
+        filename = sys.argv[1]
+    if len(sys.argv) > 2:
+        file_compare = sys.argv[2]
+
     alg_list = decode_alg(filename)
+    alg_compare = decode_alg(file_compare)
+
     for a in alg_list:
         a.print_self()
