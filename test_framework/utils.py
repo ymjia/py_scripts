@@ -136,6 +136,8 @@ def get_sys_table(dir_o, case, ver):
     with open(file_sys, encoding="utf-8") as f:
         content = f.readlines()
     str_list = [l.strip() for l in content if len(l) > 4]
+    if len(str_list) < 1:
+        print("Warning! No enough System info in {}/{}".format(case, ver))
     for line in str_list:
         name, v = line.split(" ", 1)
         sys[name] = v
@@ -504,8 +506,8 @@ def create_chart(in_list, sp_list, ws):
     for f_in in in_list:
         with open(f_in, encoding="utf-8") as f:
             content = f.readlines()
-        cur_mem = []
-        cur_cpu = []
+        cur_mem = ['0', '0']
+        cur_cpu = ['0', '0']
         str_list = [l.strip() for l in content if len(l) > 4]
         for line in str_list:
             cpu, mem = line.split(" ", 1)
@@ -555,7 +557,7 @@ def create_chart(in_list, sp_list, ws):
     for se in lc_mem.series:
         se.graphicalProperties.line.dashStyle = "sysDot"
     lc_cpu += lc_mem
-    ws.add_chart(lc_cpu, "{}1".format(chr(ord('A') + f_num * 2 + 2)))
+    ws.add_chart(lc_cpu)#, "{}1".format(chr(ord('A') + f_num * 2 + 2)))
     return 0
 
 # global config

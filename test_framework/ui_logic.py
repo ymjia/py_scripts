@@ -180,6 +180,9 @@ def generate_proc_docx(ui):
         wb.save(file_save)
     except PermissionError:
         res = 1
+    except ValueError:
+        QMessageBox.about(ui, "Message", "Fail to write MEM/CPU doc")
+        return
     if res == 0:
         ui.add_hist_item("doc", 1)
         QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
