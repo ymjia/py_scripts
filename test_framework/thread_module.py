@@ -68,7 +68,9 @@ class ExeRunThread(QThread):
         exe_py = ""
         if ext == ".py":
             exe_py = utils.get_py_interpretor()
-            
+            if exe_py is None or exe_py == "":
+                print("Error! Fail to find Python Interpretor!")
+                return
         pg = (p_range[1] - p_range[0]) / len(self._ss.l_case)
         cur_pg = p_range[0]
         sys_info = utils.get_sys_info()

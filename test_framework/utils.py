@@ -27,18 +27,24 @@ def get_py_in_reg():
     for reg in [wr.HKEY_CURRENT_USER, wr.HKEY_LOCAL_MACHINE]:
         try:
             reg_table = wr.ConnectRegistry(None, reg)
-            for ver in ["3.6", "3.7"]:
-                rp = r"Software\Python\PythonCore\3.6\InstallPath".format(ver)
-                key = wr.OpenKey(reg_table, rp, 0, wr.KEY_READ)
+            for ver in ["3.6", "3.7", "3.8"]:
+                rp = r"Software\Python\PythonCore\{}\InstallPath".format(ver)
+                key = None
                 try:
+                    key = wr.OpenKey(reg_table, rp, 0, wr.KEY_READ)
                     exe_py, _ = wr.QueryValueEx(key, "ExecutablePath")
                     if exe_py is not None and exists(exe_py):
                         wr.CloseKey(key)
+                        print("Found Python({}) interpreter at {}".format(ver, exe_py))
                         return exe_py
+                except FileNotFoundError:
+                    continue
                 finally:
-                    wr.CloseKey(key)
+                    if key is not None:
+                        wr.CloseKey(key)
         except WindowsError:
             pass
+    return ""
 
 def set_reg_item(type_str, val):
     reg = wr.ConnectRegistry(None, wr.HKEY_CURRENT_USER)

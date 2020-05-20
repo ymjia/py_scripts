@@ -19,7 +19,7 @@ import numpy
 from vtk.numpy_interface import dataset_adapter as dsa
 pdi = self.GetInputDataObject(0,0)
 pdo = self.GetOutputDataObject(0)
-pdo.CopyAttributes(pdi)
+#pdo.CopyAttributes(pdi)
 snp = dsa.WrapDataObject(pdi)
 pix = snp.PointData['{}']
 smooth = cv2.GaussianBlur(pix,(5,5),0)
@@ -28,7 +28,7 @@ im_out = self.GetImageDataOutput()
 im_out.GetPointData().AddArray(vdarr)""".format(img_type)
     gauss_filter.RequestInformationScript = ''
     gauss_filter.RequestUpdateExtentScript = ''
-    gauss_filter.CopyArrays = 1
+    gauss_filter.CopyArrays = 0
     gauss_filter.PythonPath = ''
     return gauss_filter
 
