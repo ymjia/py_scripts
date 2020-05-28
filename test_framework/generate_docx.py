@@ -135,7 +135,7 @@ class DocxGenerator:
         str_list_a = str_list_a[:-1] + "]"
 
         str_has_input = "True" if has_input else "False"
-        old_ver = g_config.config_val("exe_old_pv_state"), True)
+        old_ver = g_config.config_val("exe_old_pv_state", True)
         file_content = ""
         if old_ver:
             file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files_v1(r\"{}\", r\"{}\", \"{}\", {}, {}, \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, str_list_v, str_list_a, compare_type, str_has_input)
