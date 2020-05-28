@@ -34,12 +34,14 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_exe_input_depth = QComboBox() # input directory scan depth
         self._qcb_exe_input_depth.setEditable(False)
         self._qcb_exe_input_depth.addItems(["1", "2", "3"])
-
+        self._qcb_exe_old_pv_state = QCheckBox("Use Old Version ParaView Projects", self)
+        
         self._qcb_exp_input_type = QComboBox() # type of document to be generated
         self._qcb_exp_input_type.setEditable(False)
         self._qcb_exp_input_type.addItems(["All", "None", "Config.txt only"])
         self._qcb_exp_testbug = QCheckBox("Export Testbug if Exists in Output Dir", self)
 
+        
         self._qcb_ss_force_update = QCheckBox("Force Update Screenshot", self)
         self._qcb_ss_specular = QCheckBox("Specular", self)
         self._qcb_ss_enable_color = QCheckBox("Enable RGB Color if exists", self)
@@ -123,6 +125,7 @@ class GeneralConfigurationUI(QWidget):
         qgl_exe.addWidget(self._qcb_exe_auto_input)
         qgl_exe.addWidget(QLabel("Max Depth in Input Dir Scanning"))
         qgl_exe.addWidget(self._qcb_exe_input_depth)
+        qgl_exe.addWidget(self._qcb_exe_old_pv_state)
         qgb_exe.setLayout(qgl_exe)
         return qgb_exe
 
@@ -197,6 +200,7 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config.clear()
         cfg_obj._config["exe_auto_input"] = self._qcb_exe_auto_input.isChecked()
         cfg_obj._config["exe_input_depth"] = self._qcb_exe_input_depth.currentText()
+        cfg_obj._config["exe_old_pv_state"] = self._qcb_exe_old_pv_state.isChecked()
 
         cfg_obj._config["ss_force_update"] = self._qcb_ss_force_update.isChecked()
         cfg_obj._config["ss_specular"] = self._qcb_ss_specular.isChecked()
@@ -228,6 +232,7 @@ class GeneralConfigurationUI(QWidget):
     def fill_info(self, cfg_obj):
         self._qcb_exe_auto_input.setChecked(cfg_obj.config_val("exe_auto_input", True))
         self._qcb_exe_input_depth.setCurrentText(cfg_obj.config_val("exe_input_depth", "1"))
+        self._qcb_exe_old_pv_state.setChecked((cfg_obj.config_val("exe_old_pv_state", True)))
 
         self._qcb_ss_force_update.setChecked(cfg_obj.config_val("ss_force_update", False))
         self._qcb_ss_specular.setChecked(cfg_obj.config_val("ss_specular", True))
