@@ -36,6 +36,70 @@ class HausdorffSts:
         self.critical_dist = 0.0
         self.max_dist = 0.0
 
+    def get_from_hd(self, sd):
+        self.nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
+        self.critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
+        self.max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
+
+        fd = sd.GetFieldData()
+        vtk_arr = fd.GetArray("six_sigma_rate")
+        if vtk_arr is None or vtk_arr.GetDataSize() != 6:
+            print("Warning! no statistics info in hausdorff output")
+            return
+        self.sigma_rate = [vtk_arr.GetTuple1(i) for i in range(0, 6)]
+        vtk_arr = fd.GetArray("six_sigma_num")
+        self.sigma_num = [vtk_arr.GetTuple1(i) for i in range(0, 6)]
+        self.mean_total = fd.GetArray("mean_total").GetTuple1(0)
+        self.mean_positive = fd.GetArray("mean_positive").GetTuple1(0)
+        self.mean_negative = fd.GetArray("mean_negative").GetTuple1(0)
+        self.max_positive = fd.GetArray("max_positive").GetTuple1(0)
+        self.max_negative = fd.GetArray("max_negative").GetTuple1(0)
+        self.standard_deviation = fd.GetArray("standard_deviation").GetTuple1(0)
+
+        # calculate dist rate
+        d_arr = sd.GetPointData().GetArray("Distance")
+        self.v_num = d_arr.GetNumberOfTuples();
+        nominal_num = 0
+        critical_num = 0
+        max_num = 0
+        out_num = 0
+        for vi in range(0, self.v_num):
+            val = abs(d_arr.GetTuple1(vi))
+            if val < self.nominal_dist:
+                nominal_num += 1
+            elif val < self.critical_dist:
+                critical_num += 1
+            elif val < self.max_dist:
+                max_num += 1
+            else:
+                out_num += 1
+        self.nominal_num = nominal_num
+        self.critical_num = critical_num
+        self.max_num = max_num
+        self.out_nm = out_num
+
+    def write_to_file(self, filename):
+        f_sts = open(filename, "w", encoding='utf-8')
+        f_sts.write("{}\n".format(" ".join(map(str, [self.sigma_rate.GetTuple1(i) for i in range(0, 6)]))))
+        f_sts.write("{}\n".format(" ".join(map(str, [self.sigma_num.GetTuple1(i) for i in range(0, 6)]))))
+        f_sts.write("{}\n".format(self.mean_total))
+        f_sts.write("{}\n".format(self.mean_positive))
+        f_sts.write("{}\n".format(self.mean_negative))
+        f_sts.write("{}\n".format(self.max_positive))
+        f_sts.write("{}\n".format(self.max_negative))
+        f_sts.write("{}\n".format(self.standard_deviation))
+        f_sts.write("{}\n".format(self.in_file))
+        f_sts.write("{}\n".format(self.v_num))
+        f_sts.write("{}\n".format(self.nominal_num))
+        f_sts.write("{}\n".format(self.critical_num))
+        f_sts.write("{}\n".format(self.max_num))
+        f_sts.write("{}\n".format(self.out_num))
+        f_sts.write("{}\n".format(self.nominal_dist))
+        f_sts.write("{}\n".format(self.critical_dist))
+        f_sts.write("{}\n".format(self.max_dist))
+        f_sts.close()
+
+
     def read_from_file(self, filename):
         content = None
         if not os.path.exists(filename):

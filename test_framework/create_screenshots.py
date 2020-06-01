@@ -15,7 +15,7 @@ from paraview.simple import GetDisplayProperties
 from test_framework.utils import SessionConfig
 from test_framework.utils import g_config
 from test_framework.framework_util import *
-
+from test_framework.generate_docx import HausdorffSts
 
 ## ====================texture =================================
 pxm = servermanager.ProxyManager()
@@ -187,63 +187,11 @@ def show_hausdorff_dist(s_name_list, sc):
     set_legend_prop(lgd_v1, nominal_dist, critical_dist, max_dist)
     return (v0, v1, hd)
 
-def write_dist_statistics(sd, filename, in_file, sc):
-    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
-    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
-    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
-
-    fd = sd.GetFieldData()
-    sigma_rate = fd.GetArray("six_sigma_rate")
-    if sigma_rate is None or sigma_rate.GetDataSize() != 6:
-        print("Warning! no statistics info in hausdorff output")
-        return
-    sigma_num = fd.GetArray("six_sigma_num")
-    mean_total = fd.GetArray("mean_total").GetTuple1(0)
-    mean_positive = fd.GetArray("mean_positive").GetTuple1(0)
-    mean_negative = fd.GetArray("mean_negative").GetTuple1(0)
-    max_positive = fd.GetArray("max_positive").GetTuple1(0)
-    max_negative = fd.GetArray("max_negative").GetTuple1(0)
-    standard_deviation = fd.GetArray("standard_deviation").GetTuple1(0)
-
-    # calculate dist rate
-    d_arr = sd.GetPointData().GetArray("Distance")
-    v_num = d_arr.GetNumberOfTuples();
-    nominal_num = 0
-    critical_num = 0
-    max_num = 0
-    out_num = 0
-    for vi in range(0, v_num):
-        val = abs(d_arr.GetTuple1(vi))
-        if val < nominal_dist:
-            nominal_num += 1
-        elif val < critical_dist:
-            critical_num += 1
-        elif val < max_dist:
-            max_num += 1
-        else:
-            out_num += 1
-    # sigma_rate = vtk.vtkDoubleArray()
-    # sigma_rate.SetNumberOfComponents(1)
-    # sigma_rate.SetNumberOfTuples(6)
-    f_sts = open(filename, "w", encoding='utf-8')
-    f_sts.write("{}\n".format(" ".join(map(str, [sigma_rate.GetTuple1(i) for i in range(0, 6)]))))
-    f_sts.write("{}\n".format(" ".join(map(str, [sigma_num.GetTuple1(i) for i in range(0, 6)]))))
-    f_sts.write("{}\n".format(mean_total))
-    f_sts.write("{}\n".format(mean_positive))
-    f_sts.write("{}\n".format(mean_negative))
-    f_sts.write("{}\n".format(max_positive))
-    f_sts.write("{}\n".format(max_negative))
-    f_sts.write("{}\n".format(standard_deviation))
-    f_sts.write("{}\n".format(in_file))
-    f_sts.write("{}\n".format(v_num))
-    f_sts.write("{}\n".format(nominal_num))
-    f_sts.write("{}\n".format(critical_num))
-    f_sts.write("{}\n".format(max_num))
-    f_sts.write("{}\n".format(out_num))
-    f_sts.write("{}\n".format(nominal_dist))
-    f_sts.write("{}\n".format(critical_dist))
-    f_sts.write("{}\n".format(max_dist))
-    f_sts.close()
+def write_dist_statistics(sd, filename, in_file):
+    sts = HausdorffSts()
+    sts.get_from_hd(sd)
+    sts.in_file = in_file
+    sts.write_to_file(filename)
 ## end=================hausdorff distance ======================
 
 ## ==================Camera position Setting =================
@@ -540,8 +488,8 @@ def create_hausdorff_shot(sc):
             f_0 = sc.config_map["{}_test_name".format(case)]
         if "{}_ref_name".format(case) in sc.config_map:
             f_1 = sc.config_map["{}_ref_name".format(case)]
-        write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), f_0, sc)
-        write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), f_1, sc)
+        write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), f_0)
+        write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), f_1)
         ss = ScreenShotHelper(sc)
         # standard
         std_cam = []
