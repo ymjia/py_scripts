@@ -80,8 +80,8 @@ class HausdorffSts:
 
     def write_to_file(self, filename):
         f_sts = open(filename, "w", encoding='utf-8')
-        f_sts.write("{}\n".format(" ".join(map(str, [self.sigma_rate.GetTuple1(i) for i in range(0, 6)]))))
-        f_sts.write("{}\n".format(" ".join(map(str, [self.sigma_num.GetTuple1(i) for i in range(0, 6)]))))
+        f_sts.write("{}\n".format(" ".join(map(str, [self.sigma_rate[i] for i in range(0, 6)]))))
+        f_sts.write("{}\n".format(" ".join(map(str, [self.sigma_num[i] for i in range(0, 6)]))))
         f_sts.write("{}\n".format(self.mean_total))
         f_sts.write("{}\n".format(self.mean_positive))
         f_sts.write("{}\n".format(self.mean_negative))
