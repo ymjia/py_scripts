@@ -113,13 +113,8 @@ def set_legend_prop(lgd, nominal_dist, critical_dist, max_dist):
     lgd.CustomLabels = [-max_dist, -critical_dist, -nominal_dist, nominal_dist, critical_dist, max_dist]
     
 
-def show_hausdorff_dist(s_name_list, sc):
+def show_hausdorff_dist_from_name_list(s_name_list):
     #get parameter
-    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
-    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
-    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
-    view_height = int(g_config.config_val("ss_view_height", "768"))
-    view_width = int(g_config.config_val("ss_view_width", "1024"))
     s_num = len(s_name_list)
     if s_num != 2:
         print("Error! 2 source need to be selected, current source:")
@@ -138,6 +133,10 @@ def show_hausdorff_dist(s_name_list, sc):
         print("Error! Fail to load Utils Plugin!")
         return (None, None, None)
     print("###{}".format("HausdorffDistance" in globals()))
+    show_hausdorff_dist_from_slist(s_list)
+
+
+def show_hausdorff_dist_from_slist(s_list):
     # get names
     pxm = servermanager.ProxyManager();
     name0 = os.path.splitext(pxm.GetProxyName("sources", s_list[0]))[0]
@@ -149,12 +148,22 @@ def show_hausdorff_dist(s_name_list, sc):
     sd2 = servermanager.Fetch(s2)
     p2c = sd1.IsA("vtkPolyData") and sd2.IsA("vtkPolyData")
     # create filter
+    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
     hd = HausdorffDistance(InputA=s1, InputB=s2)
     hd.MaxSearchRadius = max_dist
     if not p2c:
         hd.TargetDistanceMethod = 'Point-to-Point'
-    SetActiveSource(hd)    # set active source to hd to find transfer function
     RenameSource("{}_{}".format(name0, name1), hd)
+    show_hausdorff_dist_from_hd(hd, name0, name1)
+
+
+def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
+    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
+    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
+    view_height = int(g_config.config_val("ss_view_height", "768"))
+    view_width = int(g_config.config_val("ss_view_width", "1024"))
+
+    SetActiveSource(hd)    # set active source to hd to find transfer function
     
     ly = CreateLayout('Hdf_{}{}'.format(name0, name1))
     v0 = CreateRenderView(False, registrationName=name0)
@@ -186,6 +195,7 @@ def show_hausdorff_dist(s_name_list, sc):
     set_legend_prop(lgd_v0, nominal_dist, critical_dist, max_dist)
     set_legend_prop(lgd_v1, nominal_dist, critical_dist, max_dist)
     return (v0, v1, hd)
+
 
 def write_dist_statistics(sd, filename, in_file):
     sts = HausdorffSts()
@@ -466,13 +476,15 @@ def create_hausdorff_shot(sc):
     total_num = 0
     for case in sc.list_case:
         i_list = get_file(dir_input, case)
-        out_dir = os.path.join(dir_output, case, "hausdorff_A2B")
+        #create_hausdorff_shot(hd, os.path.join(dir_output, case))
+        #def create_hausdorff_shot(s0, s1, tmp_dir):
+        out_dir = os.path.join(tmp_dir, "hausdorff_A2B")
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
-        out_dir2 = os.path.join(dir_output, case, "hausdorff_B2A")
+        out_dir2 = os.path.join(tmp_dir, "hausdorff_B2A")
         if not os.path.exists(out_dir2):
             os.makedirs(out_dir2)
-        (v0, v1, hd) = show_hausdorff_dist(i_list, sc)
+        (v0, v1, hd) = show_hausdorff_dist(i_list)
         if v0 is None:
             continue
         set_default_view_display(v0)
