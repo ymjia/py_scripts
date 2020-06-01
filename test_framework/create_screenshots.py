@@ -133,7 +133,7 @@ def show_hausdorff_dist_from_name_list(s_name_list):
         print("Error! Fail to load Utils Plugin!")
         return (None, None, None)
     print("###{}".format("HausdorffDistance" in globals()))
-    show_hausdorff_dist_from_slist(s_list)
+    return show_hausdorff_dist_from_slist(s_list)
 
 
 def show_hausdorff_dist_from_slist(s_list):
@@ -154,13 +154,13 @@ def show_hausdorff_dist_from_slist(s_list):
     if not p2c:
         hd.TargetDistanceMethod = 'Point-to-Point'
     RenameSource("{}_{}".format(name0, name1), hd)
-    show_hausdorff_dist_from_hd(hd, name0, name1)
+    return show_hausdorff_dist_from_hd(hd, name0, name1)
 
 
 def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
     nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
     critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
-    max_dist = hd.MaxSearchRadius
+    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))#hd.MaxSearchRadius
 
     SetActiveSource(hd)    # set active source to hd to find transfer function
     
