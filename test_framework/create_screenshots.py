@@ -162,12 +162,17 @@ def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
     critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
     view_height = int(g_config.config_val("ss_view_height", "768"))
     view_width = int(g_config.config_val("ss_view_width", "1024"))
+    max_dist = hd.MaxSearchRadius
 
     SetActiveSource(hd)    # set active source to hd to find transfer function
     
     ly = CreateLayout('Hdf_{}{}'.format(name0, name1))
     v0 = CreateRenderView(False, registrationName=name0)
     v1 = CreateRenderView(False, registrationName=name1)
+    pos = ly.SplitHorizontal(0, 0.5)
+    ly.AssignView(pos, v0)
+    ly.AssignView(pos+1, v1)
+
     v0.ViewSize = [view_width, view_height]
     v1.ViewSize = [view_width, view_height]
     out0 = OutputPort(hd, 0)
@@ -281,9 +286,8 @@ def CameraKey(obj, event, s, conf, txt):
 
 # class for screenshots with config
 class ScreenShotHelper:
-    def __init__(self, sc):
+    def __init__(self):
         paraview.simple._DisableFirstRenderCameraReset()
-        self._sc = sc
         self._v = None
 
     def __del__(self):
@@ -409,7 +413,7 @@ def create_screenshots(sc, cb=None):
     dir_input = sc.dir_i
     dir_output = sc.dir_o
     # case/version/alg
-    ss = ScreenShotHelper(sc)
+    ss = ScreenShotHelper()
     file_dir = []
     for ci in sc.list_case:
         for vi in sc.list_ver:
@@ -464,7 +468,6 @@ def create_screenshots(sc, cb=None):
 def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
     print("Case: {}".format(sc.list_case))
-    camera_type = g_config.config_val("ss_default_camera_type", "4_quadrant")
     
     dir_input = sc.dir_i
     dir_output = sc.dir_o
@@ -475,9 +478,8 @@ def create_hausdorff_shot(sc):
 
     total_num = 0
     for case in sc.list_case:
+        tmp_dir = os.path.join(dir_output, case)
         i_list = get_file(dir_input, case)
-        #create_hausdorff_shot(hd, os.path.join(dir_output, case))
-        #def create_hausdorff_shot(s0, s1, tmp_dir):
         out_dir = os.path.join(tmp_dir, "hausdorff_A2B")
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
@@ -489,66 +491,76 @@ def create_hausdorff_shot(sc):
             continue
         set_default_view_display(v0)
         set_default_view_display(v1)
-        out0 = OutputPort(hd, 0)
-        out1 = OutputPort(hd, 1)
         sd0 = servermanager.Fetch(hd, idx=0)
         sd1 = servermanager.Fetch(hd, idx=1)
-        # findout filename str
         f_0 = i_list[0]
         f_1 = i_list[1]
-        if "{}_test_name".format(case) in sc.config_map:
-            f_0 = sc.config_map["{}_test_name".format(case)]
-        if "{}_ref_name".format(case) in sc.config_map:
-            f_1 = sc.config_map["{}_ref_name".format(case)]
+        # findout filename str
         write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), f_0)
         write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), f_1)
-        ss = ScreenShotHelper(sc)
-        # standard
-        std_cam = []
-        co = CameraObject()
-        if camera_type == "6_axis":
-            co.create_default_cam_angle(out0, "x+")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "x-")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "y+")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "y-")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "z+")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "z-")
-            std_cam.append(co.generate_camera_str())
-        else:
-            co.create_4_cam_angle(out0, "x+y+")
-            std_cam.append(co.generate_camera_str())
-            co.create_4_cam_angle(out0, "x+y-")
-            std_cam.append(co.generate_camera_str())
-            co.create_4_cam_angle(out0, "x-y+")
-            std_cam.append(co.generate_camera_str())
-            co.create_4_cam_angle(out0, "x-y-")
-            std_cam.append(co.generate_camera_str())
-
-        std_cam_num = len(std_cam)
-        for i in range(0, std_cam_num):
-            ss.take_shot(v0, std_cam[i],
-                         "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
-            ss.take_shot(v1, std_cam[i],
-                         "{}/ss___hd_v{}.png".format(out_dir2, i).replace("\\", "/"))
-        total_num = total_num + std_cam_num * 2
         cam_file = os.path.join(dir_input, case, "config.txt")
         cam_list = read_cam(cam_file)
-        if len(cam_list) > 0:
-            for i in range(0, len(cam_list)):
-                ss.take_shot(v0, cam_list[i],
-                             "{}/ss___hd_v{}.png".format(out_dir, i + std_cam_num).replace("\\", "/"))
-                ss.take_shot(v1, cam_list[i],
-                             "{}/ss___hd_v{}.png".format(out_dir2, i + std_cam_num).replace("\\", "/"))
-        total_num = total_num + len(cam_list) * 2
+        total_num += create_shot_for_hd(hd, v0, v1, tmp_dir, cam_list)
         Delete(v0)
         Delete(v1)
         del v0
         del v1
+    return total_num
+
+        
+def create_shot_for_hd(hd, v0, v1, tmp_dir, cam_list):
+    out_dir = os.path.join(tmp_dir, "hausdorff_A2B")
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    out_dir2 = os.path.join(tmp_dir, "hausdorff_B2A")
+    if not os.path.exists(out_dir2):
+        os.makedirs(out_dir2)
+
+    camera_type = g_config.config_val("ss_default_camera_type", "4_quadrant")
+    total_num = 0
+    out0 = OutputPort(hd, 0)
+    out1 = OutputPort(hd, 1)
+    ss = ScreenShotHelper()
+    # standard
+    std_cam = []
+    co = CameraObject()
+    if camera_type == "6_axis":
+        co.create_default_cam_angle(out0, "x+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "x-")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "y+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "y-")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "z+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "z-")
+        std_cam.append(co.generate_camera_str())
+    else:
+        co.create_4_cam_angle(out0, "x+y+")
+        std_cam.append(co.generate_camera_str())
+        co.create_4_cam_angle(out0, "x+y-")
+        std_cam.append(co.generate_camera_str())
+        co.create_4_cam_angle(out0, "x-y+")
+        std_cam.append(co.generate_camera_str())
+        co.create_4_cam_angle(out0, "x-y-")
+        std_cam.append(co.generate_camera_str())
+
+    std_cam_num = len(std_cam)
+    for i in range(0, std_cam_num):
+        ss.take_shot(v0, std_cam[i],
+                     "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
+        ss.take_shot(v1, std_cam[i],
+                     "{}/ss___hd_v{}.png".format(out_dir2, i).replace("\\", "/"))
+    total_num = total_num + std_cam_num * 2
+    if len(cam_list) > 0:
+        for i in range(0, len(cam_list)):
+            ss.take_shot(v0, cam_list[i],
+                         "{}/ss___hd_v{}.png".format(out_dir, i + std_cam_num).replace("\\", "/"))
+            ss.take_shot(v1, cam_list[i],
+                         "{}/ss___hd_v{}.png".format(out_dir2, i + std_cam_num).replace("\\", "/"))
+    total_num = total_num + len(cam_list) * 2
     return total_num
 
 
