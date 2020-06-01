@@ -140,7 +140,7 @@ class DocxGenerator:
         if old_ver:
             file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files_v1(r\"{}\", r\"{}\", \"{}\", {}, {}, \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, str_list_v, str_list_a, compare_type, str_has_input)
         else:
-            file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\nfrom sn3d_utils.framework_util import load_state_files_v1\nload_state_files_v1(r\"{}\", r\"{}\", \"{}\", {}, {}, \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, str_list_v, str_list_a, compare_type, str_has_input)
+            file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\nfrom test_framework.framework_util import load_state_files_v1\nload_state_files_v1(r\"{}\", r\"{}\", \"{}\", {}, {}, \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, str_list_v, str_list_a, compare_type, str_has_input)
         with open(filename, "w", encoding="utf-8") as text_file:
             text_file.write(file_content)
 
@@ -256,6 +256,8 @@ class DocxGenerator:
             else:
                 r[ci].text = str(content[ci])
 
+
+
     def add_hausdorff_statistic_table(self, case):
         if len(self._listVer) != 2:
             return
@@ -266,6 +268,10 @@ class DocxGenerator:
         b2a = HausdorffSts()
         a2b.read_from_file(os.path.join(dir_a2b, "dist.sts"))
         b2a.read_from_file(os.path.join(dir_b2a, "dist.sts"))
+        add_hausdorff_statistic_table(self, a2b, b2a)
+
+
+    def add_hausdorff_statistic_table(self, a2b, b2a):
         # heading
         self._doc.add_paragraph("Deviation Report between two mesh A and B")
         self._doc.add_paragraph("A: {}".format(a2b.in_file))
