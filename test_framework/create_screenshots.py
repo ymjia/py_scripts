@@ -160,8 +160,6 @@ def show_hausdorff_dist_from_slist(s_list):
 def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
     nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
     critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
-    view_height = int(g_config.config_val("ss_view_height", "768"))
-    view_width = int(g_config.config_val("ss_view_width", "1024"))
     max_dist = hd.MaxSearchRadius
 
     SetActiveSource(hd)    # set active source to hd to find transfer function
@@ -173,8 +171,6 @@ def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
     ly.AssignView(pos, v0)
     ly.AssignView(pos+1, v1)
 
-    v0.ViewSize = [view_width, view_height]
-    v1.ViewSize = [view_width, view_height]
     out0 = OutputPort(hd, 0)
     out1 = OutputPort(hd, 1)
     display0 = Show(out0, v0)
@@ -296,13 +292,16 @@ class ScreenShotHelper:
 
     # static methed, view need not be associated to self._v
     def take_shot(self, view, cam, filename):
+        view_height = int(g_config.config_val("ss_view_height", "768"))
+        view_width = int(g_config.config_val("ss_view_width", "1024"))
+
         trans_bg = g_config.config_val("ss_transparent_bg", "False") == "True"
         co = CameraObject()
         if not co.read_camera_from_str(cam):
             print("Warning! cannot decode camera from string {}".format(cam))
             return
         co.set_camera(view)
-        v_size = view.ViewSize
+        v_size = [view_width, view_height]
         view.Update()
         # create temporary file to cope utf-8 char
         if not os.path.exists("c:/tf_tmp"):
@@ -362,7 +361,6 @@ class ScreenShotHelper:
             self._v = CreateView("RenderView")
         #cur_view = CreateView("RenderView")
         cur_view = self._v
-        cur_view.ViewSize = [v_w, v_h]
         cur_view.CenterAxesVisibility = 0
         cur_source = self.read_and_render(file_list, cur_view, case, ver)
         if cur_source is None:
