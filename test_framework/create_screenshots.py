@@ -114,6 +114,9 @@ def set_legend_prop(lgd, nominal_dist, critical_dist, max_dist):
     
 
 def show_hausdorff_dist_from_name_list(s_name_list):
+    if not load_local_plugin("Utils", "HausdorffDistance", globals()):
+        print("Fail to load utils plugin")
+        return [None, None, None]
     #get parameter
     s_num = len(s_name_list)
     if s_num != 2:
@@ -137,6 +140,9 @@ def show_hausdorff_dist_from_name_list(s_name_list):
 
 
 def show_hausdorff_dist_from_slist(s_list):
+    if not load_local_plugin("Utils", "HausdorffDistance", globals()):
+        print("Fail to load utils plugin")
+        return [None, None, None]
     # get names
     pxm = servermanager.ProxyManager();
     name0 = os.path.splitext(pxm.GetProxyName("sources", s_list[0]))[0]
@@ -158,6 +164,7 @@ def show_hausdorff_dist_from_slist(s_list):
 
 
 def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
     critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
     max_dist = float(g_config.config_val("hd_max_dist", "0.3"))#hd.MaxSearchRadius
@@ -170,6 +177,7 @@ def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
     pos = ly.SplitHorizontal(0, 0.5)
     ly.AssignView(pos, v0)
     ly.AssignView(pos+1, v1)
+    AddCameraLink(v0, v1, "hdl{}".format(str_time))
 
     out0 = OutputPort(hd, 0)
     out1 = OutputPort(hd, 1)
