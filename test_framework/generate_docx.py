@@ -346,10 +346,39 @@ class DocxGenerator:
         b2a = HausdorffSts()
         a2b.read_from_file(os.path.join(dir_a2b, "dist.sts"))
         b2a.read_from_file(os.path.join(dir_b2a, "dist.sts"))
-        add_hausdorff_statistic_table(self, a2b, b2a)
+        self.add_hausdorff_statistic_table_from_sts(a2b, b2a)
+
+        
+    def add_rate_table(self, a2b, title_str = "A to B"):
+        self._doc.add_paragraph("")
+        self._doc.add_paragraph("Distance Percentage Statistics {}".format(title_str))
+        t_rate = self._doc.add_table(rows = 5, cols = 4)
+        t_rate.style = 'Table Grid'
+        self.fill_row(t_rate, 0, ["", title_str])
+        shade_cell(t_rate.rows[0].cells[1])
+        shade_cell(t_rate.rows[0].cells[2])
+        nominal_num = int(a2b.nominal_num)
+        critical_num = int(nominal_num + a2b.critical_num)
+        max_num = int(critical_num + a2b.max_num)
+        out_num = int(a2b.out_num)
+        v_num = float(a2b.v_num)
+        self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
+        self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist),
+                                  nominal_num,
+                                  "{:.2f}%".format(float(nominal_num) / v_num * 100)])
+        self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist),
+                                  critical_num,
+                                  "{:.2f}%".format(float(critical_num) / v_num * 100)])
+        self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
+                                  "{:.2f}%".format(float(max_num) / v_num * 100)])
+        self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
+                                  "{:.2f}%".format(float(out_num) / v_num * 100)])
+        # histogram
+        t_rate.rows[0].cells[3].merge(t_rate.rows[4].cells[3])
 
 
-    def add_hausdorff_statistic_table(self, a2b, b2a):
+
+    def add_hausdorff_statistic_table_from_sts(self, a2b, b2a):
         # heading
         self._doc.add_paragraph("Deviation Report between two mesh A and B")
         self._doc.add_paragraph("A: {}".format(a2b.in_file))
@@ -371,53 +400,8 @@ class DocxGenerator:
             self.fill_row(table, 6, ["max_negtive", a2b.max_negtive, b2a.max_negtive])
         
         if g_config.config_val("hd_distance_rate", True):
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("Distance Percentage Statistics A to B")
-            t_rate = self._doc.add_table(rows = 5, cols = 3)
-            t_rate.style = 'Table Grid'
-            self.fill_row(t_rate, 0, ["", "A to B"])
-            shade_cell(t_rate.rows[0].cells[1])
-            shade_cell(t_rate.rows[0].cells[2])
-            nominal_num = int(a2b.nominal_num)
-            critical_num = int(nominal_num + a2b.critical_num)
-            max_num = int(critical_num + a2b.max_num)
-            out_num = int(a2b.out_num)
-            v_num = float(a2b.v_num)
-            self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
-            self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist),
-                                      nominal_num,
-                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
-            self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist),
-                                      critical_num,
-                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
-            self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
-                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
-            self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
-                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
-
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("Distance Percentage Statistics B to A")
-            t_rate_b2a = self._doc.add_table(rows = 5, cols = 3)
-            t_rate_b2a.style = 'Table Grid'
-            self.fill_row(t_rate_b2a, 0, ["", "B to A"])
-            shade_cell(t_rate_b2a.rows[0].cells[1])
-            shade_cell(t_rate_b2a.rows[0].cells[2])
-            nominal_num = int(b2a.nominal_num)
-            critical_num = int(nominal_num + b2a.critical_num)
-            max_num = int(critical_num + b2a.max_num)
-            out_num = int(b2a.out_num)
-            v_num = float(b2a.v_num)
-            self.fill_row(t_rate_b2a, 0, ["", "Point Number", "Point Percentage"])
-            self.fill_row(t_rate_b2a, 1, ["Nominal(<{})".format(b2a.nominal_dist),
-                                          nominal_num,
-                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
-            self.fill_row(t_rate_b2a, 2, ["Critical(<{})".format(b2a.critical_dist),
-                                          critical_num,
-                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
-            self.fill_row(t_rate_b2a, 3, ["Max(<{})".format(b2a.max_dist), max_num,
-                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
-            self.fill_row(t_rate_b2a, 4, ["Out(>={})".format(b2a.max_dist), out_num,
-                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
+            self.add_rate_table(a2b, "A to B")
+            self.add_rate_table(a2b, "B to A")
 
         if g_config.config_val("hd_6_sigma", True):
             self._doc.add_paragraph("")
