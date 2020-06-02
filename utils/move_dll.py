@@ -1,6 +1,6 @@
-# -*- coding: UTF-8
+# -*- coding: utf-8 -*-
 ## @file move_dll.py
-## @brief 将文件中每行的dll复制到指定位置
+## @brief move dll from txt file
 ## @usage (windows) py -3 move_dll.py input_file move_destination
 ## @author jiayanming01@shining3d.com
 
