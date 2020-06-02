@@ -174,6 +174,11 @@ def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
     ly = CreateLayout('Hdf_{}{}'.format(name0, name1))
     v0 = CreateRenderView(False, registrationName=name0)
     v1 = CreateRenderView(False, registrationName=name1)
+    if not g_config.config_val("inside_pv", False):
+        view_height = int(g_config.config_val("ss_view_height", "768"))
+        view_width = int(g_config.config_val("ss_view_width", "1024"))
+        v0.ViewSize = [view_width, view_height]
+        v1.ViewSize = [view_width, view_height]
     pos = ly.SplitHorizontal(0, 0.5)
     ly.AssignView(pos, v0)
     ly.AssignView(pos+1, v1)
@@ -492,7 +497,7 @@ def create_hausdorff_shot(sc):
         out_dir2 = os.path.join(tmp_dir, "hausdorff_B2A")
         if not os.path.exists(out_dir2):
             os.makedirs(out_dir2)
-        (v0, v1, hd) = show_hausdorff_dist(i_list)
+        (v0, v1, hd) = show_hausdorff_dist_from_name_list(i_list)
         if v0 is None:
             continue
         set_default_view_display(v0)
