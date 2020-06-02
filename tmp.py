@@ -7,12 +7,13 @@ import cv2
 import math
 import openpyxl
 import threading
-import numpy as np
 from PIL import Image
 from operator import itemgetter
 import docx
 import pathlib
 import codecs
+import matplotlib.pyplot as plt
+import numpy as np
 from PyQt5.QtWidgets import QProgressDialog, QApplication, QWidget
 from os.path import join, isdir
 
@@ -259,9 +260,55 @@ def list_subdir_with_depth(root, depth=3):
     return res
             
 
-#print(list_subdir_with_depth("d:/tmp/tb"))
 
-print(__file__)
-print(os.path.join(os.path.dirname(__file__), '..'))
-print(os.path.dirname(os.path.realpath(__file__)))
-print(os.path.abspath(os.path.dirname(__file__)))
+def test_fig():
+    plt.rcdefaults()
+    data = [[30, 25, 50, 20],
+            [40, 23, 51, 17],
+            [35, 22, 45, 19]]
+    X = np.arange(4)
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(X + 0.00, data[0], color = 'b', width = 0.25)
+    ax.bar(X + 0.25, data[1], color = 'g', width = 0.25)
+    ax.bar(X + 0.50, data[2], color = 'r', width = 0.25)
+    plt.savefig("d:/tmp/fig.png")
+    os.startfile("d:/tmp/fig.png")
+ 
+
+def create_percentage_bar_plot(axis, vals):
+    fig = plt.figure()
+    ax = fig.add_axes([1,1,1,1])
+    ax.bar(axis, vals)
+    #ax.barh(100, 10, align='center')
+    ax.set_xticks(axis)
+    ax.set_yticks(np.arange(0, 101, 10))
+    ax.set_xlabel('Percentage')
+    #plt.show()
+    plt.savefig("d:/tmp/fig.png")
+    #ax.set_yticklabels(axis)
+    
+
+def create_percentage_bar_plot(axis, vals, title = ""):
+    # Fixing random state for reproducibility
+    #plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = [i for i in range(0, len(axis))]
+    ax.barh(y_pos, vals, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(axis)
+    #ax.invert_yaxis()  # labels read top-to-bottom
+    ax.set_xlabel('Percentage')
+    if title != "":
+        ax.set_title(title)
+    plt.savefig("d:/tmp/fig.png")
+
+
+
+
+axis = ["-max", "-critical", "critical", "max"]
+vals = [10, 30, 50, 10]
+#create_percentage_bar_plot(axis, vals)
+#os.startfile("d:/tmp/fig.png")
+create_percentage_bar_plot(axis, vals)
+os.startfile("d:/tmp/fig.png")

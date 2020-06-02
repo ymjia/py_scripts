@@ -13,6 +13,7 @@ from docx.shared import Inches
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from docx.shared import Mm
+import matplotlib.pyplot as plt
 from test_framework.utils import g_config
 
 ## hausdorff relative#########################
@@ -134,6 +135,19 @@ class HausdorffSts:
         self.critical_dist = float(str_list[15])
         self.max_dist = float(str_list[16])
 
+def create_percentage_bar_plot(axis, vals, save_path, title = ""):
+    # Fixing random state for reproducibility
+    #plt.rcdefaults()
+    fig, ax = plt.subplots()
+    y_pos = [i for i in range(0, len(axis))]
+    ax.barh(y_pos, vals, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(axis)
+    #ax.invert_yaxis()  # labels read top-to-bottom
+    ax.set_xlabel('Percentage')
+    if title != "":
+        ax.set_title(title)
+    plt.savefig(save_path)
 
 ## end hausdorff relative#######################
 
