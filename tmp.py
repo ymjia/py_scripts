@@ -303,12 +303,26 @@ def create_percentage_bar_plot(axis, vals, title = ""):
         ax.set_title(title)
     plt.savefig("d:/tmp/fig.png")
 
-
+def create_percentage_pie_plot(axis, vals, exp_idx = 0):
+    plt.rcParams.update({'font.size': 18})
+    explode = [0 for i in range(0, len(axis))]
+    explode[exp_idx] = 0.1
+    label = ["{:.2f}%".format(i) for i in vals]
+    aug_vals = [max(i, 1.5) for i in vals]
+    fig1, ax = plt.subplots()
+    fig1.tight_layout()
+    ax.set_position([0.1, 0.1, 0.6, 0.8])
+    wedges, texts = ax.pie(aug_vals, explode=explode, labels=label,
+                           shadow=True, startangle=90)
+    ax.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.85, 0, 0.4, 1))
+    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.savefig("d:/tmp/fig.png")
+    
 
 
 axis = ["-max", "-critical", "critical", "max"]
-vals = [10, 30, 50, 10]
+vals = [0.10031928, 0.03381920, 50, 46]
 #create_percentage_bar_plot(axis, vals)
 #os.startfile("d:/tmp/fig.png")
-create_percentage_bar_plot(axis, vals)
+create_percentage_pie_plot(axis, vals)
 os.startfile("d:/tmp/fig.png")

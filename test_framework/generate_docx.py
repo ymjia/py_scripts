@@ -14,7 +14,7 @@ from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from docx.shared import Mm
 import matplotlib.pyplot as plt
-from test_framework.utils import g_config
+from test_framework.utils import g_config, try_create_dir
 
 ## hausdorff relative#########################
 class HausdorffSts:
@@ -135,19 +135,45 @@ class HausdorffSts:
         self.critical_dist = float(str_list[15])
         self.max_dist = float(str_list[16])
 
-def create_percentage_bar_plot(axis, vals, save_path, title = ""):
+def create_percentage_bar_plot(axis, vals, title = ""):
+    pic_dir = os.path.join(os.getcwd(), "doc_pic")
+    try_create_dir(pic_dir)
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    save_path = os.path.join(pic_dir, "{}.png".format(str_time))
     # Fixing random state for reproducibility
     #plt.rcdefaults()
+    plt.rcParams.update({'font.size': 20})
     fig, ax = plt.subplots()
+    fig.tight_layout()
+
     y_pos = [i for i in range(0, len(axis))]
     ax.barh(y_pos, vals, align='center')
     ax.set_yticks(y_pos)
     ax.set_yticklabels(axis)
-    #ax.invert_yaxis()  # labels read top-to-bottom
-    ax.set_xlabel('Percentage')
     if title != "":
         ax.set_title(title)
     plt.savefig(save_path)
+    return save_path
+
+def create_percentage_pie_plot(axis, vals, exp_idx = 0):
+    pic_dir = os.path.join(os.getcwd(), "doc_pic")
+    try_create_dir(pic_dir)
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    save_path = os.path.join(pic_dir, "{}.png".format(str_time))
+    plt.rcParams.update({'font.size': 18})
+    explode = [0.1 * i for i in range(0, len(axis))]
+
+    labels = ["{:.2f}%".format(float(i)) for i in vals]
+    aug_vals = [max(i, 2.5) for i in vals]
+    fig1, ax = plt.subplots()
+    fig1.tight_layout()
+    ax.set_position([0.1, 0.1, 0.6, 0.8])
+    wedges, texts = ax.pie(aug_vals, explode=explode, labels=labels,
+            shadow=True, startangle=90)
+    ax.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.85, 0, 0.4, 1))
+    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.savefig(save_path)
+    return save_path
 
 ## end hausdorff relative#######################
 
@@ -334,8 +360,6 @@ class DocxGenerator:
             else:
                 r[ci].text = str(content[ci])
 
-
-
     def add_hausdorff_statistic_table(self, case):
         if len(self._listVer) != 2:
             return
@@ -348,50 +372,67 @@ class DocxGenerator:
         b2a.read_from_file(os.path.join(dir_b2a, "dist.sts"))
         self.add_hausdorff_statistic_table_from_sts(a2b, b2a)
 
-        
     def add_rate_table(self, a2b, title_str = "A to B"):
         self._doc.add_paragraph("")
         self._doc.add_paragraph("Distance Percentage Statistics {}".format(title_str))
-        t_rate = self._doc.add_table(rows = 5, cols = 4)
-        t_rate.style = 'Table Grid'
-        self.fill_row(t_rate, 0, ["", title_str])
-        shade_cell(t_rate.rows[0].cells[1])
-        shade_cell(t_rate.rows[0].cells[2])
+        t_add = self._doc.add_table(rows = 5, cols = 5)
+        for row in t_add.rows:
+            row.height = Mm(7)
+        t_add.style = 'Table Grid'
+        self.fill_row(t_add, 0, ["", title_str])
+        shade_cell(t_add.rows[0].cells[1])
+        shade_cell(t_add.rows[0].cells[2])
         nominal_num = int(a2b.nominal_num)
         critical_num = int(nominal_num + a2b.critical_num)
         max_num = int(critical_num + a2b.max_num)
         out_num = int(a2b.out_num)
         v_num = float(a2b.v_num)
-        self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
-        self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist),
+        self.fill_row(t_add, 0, ["", "Point Number", "Percentage"])
+        self.fill_row(t_add, 1, ["Nominal(<{})".format(a2b.nominal_dist),
                                   nominal_num,
                                   "{:.2f}%".format(float(nominal_num) / v_num * 100)])
-        self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist),
+        self.fill_row(t_add, 2, ["Critical(<{})".format(a2b.critical_dist),
                                   critical_num,
                                   "{:.2f}%".format(float(critical_num) / v_num * 100)])
-        self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
+        self.fill_row(t_add, 3, ["Max(<{})".format(a2b.max_dist), max_num,
                                   "{:.2f}%".format(float(max_num) / v_num * 100)])
-        self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
+        self.fill_row(t_add, 4, ["Out(>={})".format(a2b.max_dist), out_num,
                                   "{:.2f}%".format(float(out_num) / v_num * 100)])
         # histogram
-        t_rate.rows[0].cells[3].merge(t_rate.rows[4].cells[3])
+        critical_r = float(a2b.critical_num) / v_num * 100
+        nominal_r = float(a2b.nominal_num) / v_num * 100
+        max_r = float(a2b.max_num) / v_num * 100
+        out_r = float(a2b.out_num) / v_num * 100
+        t_add.rows[0].cells[3].merge(t_add.rows[4].cells[4])
+        axis = ["Nominal", "Critical", "Max", "Out"]
+        val_list = [nominal_r, critical_r, max_r, out_r]
+        pic = create_percentage_pie_plot(axis, val_list)
+        pg = t_add.rows[0].cells[3].paragraphs[0]
+        run = pg.add_run()
+        run.add_picture(pic, height=Mm(34))
 
     def add_6sigma_table(self, a2b, title_str = "A to B"):
         self._doc.add_paragraph("")
         self._doc.add_paragraph("6-SIGMA Statistics {}".format(title_str))
-        ts_a2b = self._doc.add_table(rows = 7, cols = 4)
-        ts_a2b.style = 'Table Grid'
-        self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
-        shade_cell(ts_a2b.rows[0].cells[1])
-        shade_cell(ts_a2b.rows[0].cells[2])
+        t_add = self._doc.add_table(rows = 7, cols = 5)
+        for row in t_add.rows:
+            row.height = Mm(7)
+        t_add.style = 'Table Grid'
+        self.fill_row(t_add, 0, ["", "Point Number", "Percentage"])
+        shade_cell(t_add.rows[0].cells[1])
+        shade_cell(t_add.rows[0].cells[2])
         sigma_map = [-3, -2, -1, 1, 2, 3]
         for ri in range(0, 6):
-            self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
+            self.fill_row(t_add, ri + 1, ["{} sigma".format(sigma_map[ri]),
                                            a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
         # histogram
-        ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
+        t_add.rows[0].cells[3].merge(t_add.rows[6].cells[4])
+        axis = ["-3 \u03C3", "-2 \u03C3", "-1 \u03C3", "1 \u03C3", "2 \u03C3", "3 \u03C3"]
+        pic = create_percentage_bar_plot(axis, [i * 100 for i in a2b.sigma_rate])
+        pg = t_add.rows[0].cells[3].paragraphs[0]
+        run = pg.add_run()
+        run.add_picture(pic, height=Mm(48))
         
-
     def add_hausdorff_statistic_table_from_sts(self, a2b, b2a):
         # heading
         self._doc.add_paragraph("Deviation Report between two mesh A and B")
@@ -420,6 +461,7 @@ class DocxGenerator:
         if g_config.config_val("hd_6_sigma", True):
             self.add_6sigma_table(a2b, "A to B")
             self.add_6sigma_table(b2a, "B to A")
+
 
     def add_hausdorff_statistic_table_single(self, case):
         if len(self._listVer) != 1:
@@ -451,43 +493,10 @@ class DocxGenerator:
             self.fill_row(table, 6, ["max_negtive", a2b.max_negtive])
 
         if g_config.config_val("hd_distance_rate", True):
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("Distance Percentage Statistics A to B")
-            t_rate = self._doc.add_table(rows = 5, cols = 3)
-            t_rate.style = 'Table Grid'
-            self.fill_row(t_rate, 0, ["", "A to B"])
-            shade_cell(t_rate.rows[0].cells[1])
-            shade_cell(t_rate.rows[0].cells[2])
-            nominal_num = int(a2b.nominal_num)
-            critical_num = int(nominal_num + a2b.critical_num)
-            max_num = int(critical_num + a2b.max_num)
-            out_num = int(a2b.out_num)
-            v_num = float(a2b.v_num)
-            self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
-            self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist), nominal_num,
-                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
-            self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist), critical_num,
-                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
-            self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
-                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
-            self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
-                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
+            self.add_rate_table(a2b)
 
         if g_config.config_val("hd_6_sigma", True):
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("6-SIGMA Statistics A to B")
-            ts_a2b = self._doc.add_table(rows = 7, cols = 4)
-            ts_a2b.style = 'Table Grid'
-            self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
-            shade_cell(ts_a2b.rows[0].cells[1])
-            shade_cell(ts_a2b.rows[0].cells[2])
-            sigma_map = [-3, -2, -1, 1, 2, 3]
-            for ri in range(0, 6):
-                self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                               a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
-            # histogram
-            ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
-
+            self.add_6sigma_table(a2b)
 
     ## @brief generate docx file from given algorithm output dir, and config
     ## @param dir_input data case config directory
