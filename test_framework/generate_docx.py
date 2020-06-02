@@ -376,7 +376,21 @@ class DocxGenerator:
         # histogram
         t_rate.rows[0].cells[3].merge(t_rate.rows[4].cells[3])
 
-
+    def add_6sigma_table(self, a2b, title_str = "A to B"):
+        self._doc.add_paragraph("")
+        self._doc.add_paragraph("6-SIGMA Statistics {}".format(title_str))
+        ts_a2b = self._doc.add_table(rows = 7, cols = 4)
+        ts_a2b.style = 'Table Grid'
+        self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
+        shade_cell(ts_a2b.rows[0].cells[1])
+        shade_cell(ts_a2b.rows[0].cells[2])
+        sigma_map = [-3, -2, -1, 1, 2, 3]
+        for ri in range(0, 6):
+            self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
+                                           a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
+        # histogram
+        ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
+        
 
     def add_hausdorff_statistic_table_from_sts(self, a2b, b2a):
         # heading
@@ -401,34 +415,11 @@ class DocxGenerator:
         
         if g_config.config_val("hd_distance_rate", True):
             self.add_rate_table(a2b, "A to B")
-            self.add_rate_table(a2b, "B to A")
+            self.add_rate_table(b2a, "B to A")
 
         if g_config.config_val("hd_6_sigma", True):
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("6-SIGMA Statistics A to B")
-            ts_a2b = self._doc.add_table(rows = 7, cols = 4)
-            ts_a2b.style = 'Table Grid'
-            self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
-            shade_cell(ts_a2b.rows[0].cells[1])
-            shade_cell(ts_a2b.rows[0].cells[2])
-            sigma_map = [-3, -2, -1, 1, 2, 3]
-            for ri in range(0, 6):
-                self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                               a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
-            # histogram
-            ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
-
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("6-SIGMA Statistics B to A")
-            ts_b2a = self._doc.add_table(rows = 7, cols = 4)
-            ts_b2a.style = 'Table Grid'
-            self.fill_row(ts_b2a, 0, ["", "Point Number", "Point Percentage"])
-            shade_cell(ts_b2a.rows[0].cells[1])
-            shade_cell(ts_b2a.rows[0].cells[2])
-            for ri in range(0, 6):
-                self.fill_row(ts_b2a, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                           b2a.sigma_num[ri], "{:.2f}%".format(b2a.sigma_rate[ri] * 100.0)])
-            ts_b2a.rows[0].cells[3].merge(ts_b2a.rows[6].cells[3])        
+            self.add_6sigma_table(a2b, "A to B")
+            self.add_6sigma_table(b2a, "B to A")
 
     def add_hausdorff_statistic_table_single(self, case):
         if len(self._listVer) != 1:
