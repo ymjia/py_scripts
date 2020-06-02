@@ -160,18 +160,18 @@ def create_percentage_pie_plot(axis, vals, exp_idx = 0):
     try_create_dir(pic_dir)
     str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     save_path = os.path.join(pic_dir, "{}.png".format(str_time))
-    plt.rcParams.update({'font.size': 18})
+    plt.rcParams.update({'font.size': 32})
     explode = [0.1 * i for i in range(0, len(axis))]
 
-    labels = ["{:.2f}%".format(float(i)) for i in vals]
+    label = ["{:.2f}%".format(float(i)) for i in vals]
     aug_vals = [max(i, 2.5) for i in vals]
-    fig1, ax = plt.subplots()
-    fig1.tight_layout()
-    ax.set_position([0.1, 0.1, 0.6, 0.8])
-    wedges, texts = ax.pie(aug_vals, explode=explode, labels=labels,
-            shadow=True, startangle=90)
-    ax.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.85, 0, 0.4, 1))
-    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    fig, (ax1, ax2) = plt.subplots(1, 2, False, True, figsize=(15,8))
+    fig.tight_layout()
+    ax1.set_position([0.05, 0.05, 0.8, 0.8])
+    wedges, texts = ax1.pie(aug_vals, explode=explode, labels=label,
+                           shadow=True, startangle=90)
+    ax2.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.5, 0, 0.4, 1))
+    plt.axis('off')
     plt.savefig(save_path)
     return save_path
 
@@ -424,7 +424,8 @@ class DocxGenerator:
         sigma_map = [-3, -2, -1, 1, 2, 3]
         for ri in range(0, 6):
             self.fill_row(t_add, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                           a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
+                                           int(a2b.sigma_num[ri]),
+                                          "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
         # histogram
         t_add.rows[0].cells[3].merge(t_add.rows[6].cells[4])
         axis = ["-3 \u03C3", "-2 \u03C3", "-1 \u03C3", "1 \u03C3", "2 \u03C3", "3 \u03C3"]

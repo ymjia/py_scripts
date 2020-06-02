@@ -304,24 +304,27 @@ def create_percentage_bar_plot(axis, vals, title = ""):
     plt.savefig("d:/tmp/fig.png")
 
 def create_percentage_pie_plot(axis, vals, exp_idx = 0):
-    plt.rcParams.update({'font.size': 18})
+    plt.rcParams.update({'font.size': 32})
+
     explode = [0 for i in range(0, len(axis))]
-    explode[exp_idx] = 0.1
-    label = ["{:.2f}%".format(i) for i in vals]
-    aug_vals = [max(i, 1.5) for i in vals]
-    fig1, ax = plt.subplots()
-    fig1.tight_layout()
-    ax.set_position([0.1, 0.1, 0.6, 0.8])
-    wedges, texts = ax.pie(aug_vals, explode=explode, labels=label,
+    explode = [0.1 * i for i in range(0, len(axis))]
+    label = ["{:.2f}%".format(float(i)) for i in vals]
+    aug_vals = [max(i, 2.5) for i in vals]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, False, True, figsize=(15,8))
+    fig.tight_layout()
+    ax1.set_position([0.05, 0.05, 0.8, 0.8])
+    wedges, texts = ax1.pie(aug_vals, explode=explode, labels=label,
                            shadow=True, startangle=90)
-    ax.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.85, 0, 0.4, 1))
-    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    ax2.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.5, 0, 0.4, 1))
+    plt.axis('off')
+    #ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     plt.savefig("d:/tmp/fig.png")
     
 
 
 axis = ["-max", "-critical", "critical", "max"]
-vals = [0.10031928, 0.03381920, 50, 46]
+vals = [97, 0.10031928, 0.03381920, 0.20]
 #create_percentage_bar_plot(axis, vals)
 #os.startfile("d:/tmp/fig.png")
 create_percentage_pie_plot(axis, vals)
