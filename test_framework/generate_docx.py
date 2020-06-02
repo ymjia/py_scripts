@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 from test_framework.utils import g_config, try_create_dir
 
 ## hausdorff relative#########################
+list_color = ['limegreen', 'yellow', 'red', 'blue', 'black']
+
 class HausdorffSts:
     def __init__(self):
         self.sigma_rate = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -169,7 +171,7 @@ def create_percentage_pie_plot(axis, vals, exp_idx = 0):
     fig.tight_layout()
     ax1.set_position([0.05, 0.05, 0.8, 0.8])
     wedges, texts = ax1.pie(aug_vals, explode=explode, labels=label,
-                           shadow=True, startangle=90)
+                            shadow=True, startangle=90, colors=list_color)
     ax2.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.5, 0, 0.4, 1))
     plt.axis('off')
     plt.savefig(save_path)

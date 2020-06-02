@@ -314,8 +314,9 @@ def create_percentage_pie_plot(axis, vals, exp_idx = 0):
     fig, (ax1, ax2) = plt.subplots(1, 2, False, True, figsize=(15,8))
     fig.tight_layout()
     ax1.set_position([0.05, 0.05, 0.8, 0.8])
+    cs = ['limegreen', 'yellow', 'red', 'blue', 'black']
     wedges, texts = ax1.pie(aug_vals, explode=explode, labels=label,
-                           shadow=True, startangle=90)
+                            shadow=True, startangle=90, colors=cs)
     ax2.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.5, 0, 0.4, 1))
     plt.axis('off')
     #ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.

@@ -26,5 +26,5 @@ def update_scripts(dir_base, dir_pv_base, dir_dst):
 
 dir_base = "d:/dev/py_scripts"
 dir_pv_base = "d:/dev/paraview_plugin/scripts"
-dir_dst = "d:/ParaView57_r"
+dir_dst = "d:/ParaView57_rr"
 update_scripts(dir_base, dir_pv_base, dir_dst)
