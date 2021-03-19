@@ -117,12 +117,12 @@ class CMDHistory(QDialog):
         self.create_xml()
         self._cmdTree = ET.parse(self._file)
         str_time = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+        rt = self._cmdTree.getroot()
         for in_item in cmd_list:
             exe = in_item[0]
             param = in_item[1]
             # get info
             stem = os.path.splitext(os.path.basename(exe))[0]
-            rt = self._cmdTree.getroot()
             # add or find demo
             demo = rt.find(stem)
             if demo is None:

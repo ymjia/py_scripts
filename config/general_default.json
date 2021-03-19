@@ -1,6 +1,7 @@
 {
     "exe_auto_input": true,
-    "exe_input_depth": "2",
+    "exe_input_depth": "1",
+    "exe_old_pv_state": true,
     "ss_force_update": false,
     "ss_specular": true,
     "ss_enable_color": false,
@@ -8,13 +9,18 @@
     "ss_transparent_bg": false,
     "ss_view_width": "1024",
     "ss_view_height": "768",
+    "ss_default_reference_directory": "Input",
+    "ss_default_camera_type": "6_axis",
+    "doc_compare_type": "Versions",
     "hd_standard_statistics": true,
     "hd_distance_rate": true,
     "hd_6_sigma": true,
     "hd_screenshot_table": true,
-    "hd_legend_type": "Horizontal",
+    "hd_legend_type": "Vertical",
     "hd_nominal_dist": "0.03",
     "hd_critical_dist": "0.05",
     "hd_max_dist": "0.3",
-    "hd_picture_scale": "2.0"
+    "hd_picture_scale": "1.5",
+    "exp_input_type": "Config.txt only",
+    "exp_testbug": false
 }

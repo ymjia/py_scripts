@@ -45,8 +45,6 @@ def deviation_report(f_a, f_b):
     sc.dir_o = dir_out
 
     # move files
-    sc.config_map["{}_test_name".format(case_name)] = f_a
-    sc.config_map["{}_ref_name".format(case_name)] = f_b
     f_tmp_a = os.path.join(case_dir, "a{}".format(pa.suffix))
     f_tmp_b = os.path.join(case_dir, "b{}".format(pb.suffix))
     move(f_a, f_tmp_a)

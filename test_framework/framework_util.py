@@ -41,10 +41,12 @@ support_ext = [".asc", ".rge", ".obj", ".stl", ".ply", ".srge", ".bin", ".tb"]
 
 def get_file_list(folder):
     res = []
+    if not os.path.exists(folder):
+        return res
     for name in os.listdir(folder):
         if os.path.isdir(os.path.join(folder, name)):
             continue
-        ext = os.path.splitext(name)[1]
+        ext = os.path.splitext(name)[1].casefold()
         if not any(ext in e for e in support_ext):
             continue
         res.append(os.path.join(folder, name))
@@ -53,6 +55,7 @@ def get_file_list(folder):
 
 # read file name with stem in folder, return *list*
 def get_file(folder, stem):
+    stem = stem.casefold()
     if not os.path.exists(folder):
         return None
     full_path = os.path.join(folder, stem)
@@ -64,10 +67,8 @@ def get_file(folder, stem):
     cur_root = str(Path(full_path).parent)
     for f in os.listdir(cur_root):
         cur_stem, cur_ext = os.path.splitext(f)
-        if cur_stem == stem:
-            find_res = os.path.join(cur_root, f)
-            if cur_ext in support_ext:
-                return [find_res]
+        if cur_stem.casefold() == stem and cur_ext in support_ext:
+            return [os.path.join(folder, f)]
     return None
 
 
@@ -99,7 +100,11 @@ def read_files(file_list):
 
 def load_local_plugin(name_str, module_str, load_ns):
     if not module_str in load_ns:
-        plugin_path = os.path.join(g_config.dir_exe, "plugins", name_str, "{}.dll".format(name_str))
+        p1 = os.path.join(g_config.dir_exe, "plugins", name_str, "{}.dll".format(name_str))
+        p2 = os.path.join(g_config.dir_exe, "paraview-5.8", "plugins", name_str, "{}.dll".format(name_str))
+        plugin_path = p1
+        if os.path.exists(p2):
+            plugin_path = p2
         if os.path.exists(plugin_path):
             try:
                 print("Loading plugin from: {}".format(plugin_path))
@@ -107,6 +112,8 @@ def load_local_plugin(name_str, module_str, load_ns):
                 print("Loaded plugin from: {}".format(plugin_path))
             except RuntimeError:
                 print("Error! Fail to Loaded plugin from: {}".format(plugin_path))
+        else:
+            print("Error! plugin {} not exists".format(plugin_path))
     return module_str in load_ns
 
 
@@ -194,7 +201,8 @@ def add_time_annotation(view, tfile):
 
 
 # load_file for given framework config(dir, case, alg, compare version_list)
-def load_state_files(dir_input, dir_output, case, alg, list_v):
+# *deprecated* 20200507, stay here for backward compatibility
+def load_state_files(dir_input, dir_output, case, alg, list_v): 
     # get source list
     list_dir = []
     list_annot = []
@@ -211,7 +219,37 @@ def load_state_files(dir_input, dir_output, case, alg, list_v):
             list_dir.append(dir_source)
             list_annot.append("{}_{}_{}".format(case, v, alg))
             list_source.append(get_file(dir_source, alg))
+    # create layout before create view
+    l = CreateLayout('{}_{}'.format(case, alg))
+    assign_file_to_layout(list_annot, list_source, l)
 
+
+def load_state_files_v1(dir_input, dir_output, case, list_v, list_alg, compare_type = "Versions", has_input=False):
+    # get source list
+    list_dir = []
+    list_annot = []
+    list_source = []
+    if has_input:
+        dir_source = os.path.join(dir_input, case)
+        list_dir.append(dir_source)
+        list_annot.append("{}_input".format(case))
+        list_source.append(get_file(dir_input, case))
+
+    for v in list_v:
+        dir_source = ""
+        if v == "input":
+            continue
+        for alg in list_alg:
+            dir_source = os.path.join(dir_output, case, v)
+            list_dir.append(dir_source)
+            list_annot.append("{}_{}_{}".format(case, v, alg))
+            list_source.append(get_file(dir_source, alg))
+    # create layout before create view
+    l = CreateLayout('{}_{}'.format(case, alg))
+    assign_file_to_layout(list_annot, list_source, l)
+
+
+def assign_file_to_layout(list_annot, list_source, l):
     list_proxy = []
     for si in range(0, len(list_source)):
         reader = read_files(list_source[si])
@@ -223,8 +261,6 @@ def load_state_files(dir_input, dir_output, case, alg, list_v):
     if len(list_source) != len(list_proxy):
         print("Error: target file lost!")
         return
-    # create layout before create view
-    l = CreateLayout('{}_{}'.format(case, alg))
     l_pos = generate_view(l, len(list_proxy))
     # create view
     list_view = [CreateRenderView(False, registrationName=annot) for annot in list_annot]

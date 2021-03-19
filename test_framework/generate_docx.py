@@ -13,9 +13,12 @@ from docx.shared import Inches
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from docx.shared import Mm
-from test_framework.utils import g_config
+import matplotlib.pyplot as plt
+from test_framework.utils import g_config, try_create_dir
 
 ## hausdorff relative#########################
+list_color = ['limegreen', 'yellow', 'red', 'blue', 'black']
+
 class HausdorffSts:
     def __init__(self):
         self.sigma_rate = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -35,6 +38,70 @@ class HausdorffSts:
         self.nominal_dist = 0.0
         self.critical_dist = 0.0
         self.max_dist = 0.0
+
+    def get_from_hd(self, sd):
+        self.nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
+        self.critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
+        self.max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
+
+        fd = sd.GetFieldData()
+        vtk_arr = fd.GetArray("six_sigma_rate")
+        if vtk_arr is None or vtk_arr.GetDataSize() != 6:
+            print("Warning! no statistics info in hausdorff output")
+            return
+        self.sigma_rate = [vtk_arr.GetTuple1(i) for i in range(0, 6)]
+        vtk_arr = fd.GetArray("six_sigma_num")
+        self.sigma_num = [vtk_arr.GetTuple1(i) for i in range(0, 6)]
+        self.mean_total = fd.GetArray("mean_total").GetTuple1(0)
+        self.mean_positive = fd.GetArray("mean_positive").GetTuple1(0)
+        self.mean_negative = fd.GetArray("mean_negative").GetTuple1(0)
+        self.max_positive = fd.GetArray("max_positive").GetTuple1(0)
+        self.max_negative = fd.GetArray("max_negative").GetTuple1(0)
+        self.standard_deviation = fd.GetArray("standard_deviation").GetTuple1(0)
+
+        # calculate dist rate
+        d_arr = sd.GetPointData().GetArray("Distance")
+        self.v_num = d_arr.GetNumberOfTuples();
+        nominal_num = 0
+        critical_num = 0
+        max_num = 0
+        out_num = 0
+        for vi in range(0, self.v_num):
+            val = abs(d_arr.GetTuple1(vi))
+            if val < self.nominal_dist:
+                nominal_num += 1
+            elif val < self.critical_dist:
+                critical_num += 1
+            elif val < self.max_dist:
+                max_num += 1
+            else:
+                out_num += 1
+        self.nominal_num = nominal_num
+        self.critical_num = critical_num
+        self.max_num = max_num
+        self.out_nm = out_num
+
+    def write_to_file(self, filename):
+        f_sts = open(filename, "w", encoding='utf-8')
+        f_sts.write("{}\n".format(" ".join(map(str, [self.sigma_rate[i] for i in range(0, 6)]))))
+        f_sts.write("{}\n".format(" ".join(map(str, [self.sigma_num[i] for i in range(0, 6)]))))
+        f_sts.write("{}\n".format(self.mean_total))
+        f_sts.write("{}\n".format(self.mean_positive))
+        f_sts.write("{}\n".format(self.mean_negative))
+        f_sts.write("{}\n".format(self.max_positive))
+        f_sts.write("{}\n".format(self.max_negative))
+        f_sts.write("{}\n".format(self.standard_deviation))
+        f_sts.write("{}\n".format(self.in_file))
+        f_sts.write("{}\n".format(self.v_num))
+        f_sts.write("{}\n".format(self.nominal_num))
+        f_sts.write("{}\n".format(self.critical_num))
+        f_sts.write("{}\n".format(self.max_num))
+        f_sts.write("{}\n".format(self.out_num))
+        f_sts.write("{}\n".format(self.nominal_dist))
+        f_sts.write("{}\n".format(self.critical_dist))
+        f_sts.write("{}\n".format(self.max_dist))
+        f_sts.close()
+
 
     def read_from_file(self, filename):
         content = None
@@ -70,6 +137,45 @@ class HausdorffSts:
         self.critical_dist = float(str_list[15])
         self.max_dist = float(str_list[16])
 
+def create_percentage_bar_plot(axis, vals, title = ""):
+    pic_dir = os.path.join(os.getcwd(), "doc_pic")
+    try_create_dir(pic_dir)
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    save_path = os.path.join(pic_dir, "{}.png".format(str_time))
+    # Fixing random state for reproducibility
+    #plt.rcdefaults()
+    plt.rcParams.update({'font.size': 20})
+    fig, ax = plt.subplots()
+    fig.tight_layout()
+
+    y_pos = [i for i in range(0, len(axis))]
+    ax.barh(y_pos, vals, align='center')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(axis)
+    if title != "":
+        ax.set_title(title)
+    plt.savefig(save_path)
+    return save_path
+
+def create_percentage_pie_plot(axis, vals, exp_idx = 0):
+    pic_dir = os.path.join(os.getcwd(), "doc_pic")
+    try_create_dir(pic_dir)
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    save_path = os.path.join(pic_dir, "{}.png".format(str_time))
+    plt.rcParams.update({'font.size': 32})
+    explode = [0.1 * i for i in range(0, len(axis))]
+
+    label = ["{:.2f}%".format(float(i)) for i in vals]
+    aug_vals = [max(i, 2.5) for i in vals]
+    fig, (ax1, ax2) = plt.subplots(1, 2, False, True, figsize=(15,8))
+    fig.tight_layout()
+    ax1.set_position([0.05, 0.05, 0.8, 0.8])
+    wedges, texts = ax1.pie(aug_vals, explode=explode, labels=label,
+                            shadow=True, startangle=90, colors=list_color)
+    ax2.legend(wedges, axis, loc="center left", bbox_to_anchor=(0.5, 0, 0.4, 1))
+    plt.axis('off')
+    plt.savefig(save_path)
+    return save_path
 
 ## end hausdorff relative#######################
 
@@ -77,13 +183,17 @@ class HausdorffSts:
 ## @brief read camera positions in input config
 def read_cam(case_file):
     if not os.path.exists(case_file):
-        return None
-    content = None
+        print("Warning! config file {} does not exists!".format(case_file))
+        return []
+    content = []
     with open(case_file, encoding="utf-8") as f:
         content = f.readlines()
     str_list = [l.strip() for l in content if len(l) > 20]
     str_lines = [line.split(", ") for line in str_list]
-    return [[float(s) for s in item] for item in str_lines if len(item) == 12]
+    res = [[float(s) for s in item] for item in str_lines if len(item) == 12]
+    if len(res) == 0:
+        print("Warning! No Camera Record in file {}!".format(case_file))
+    return res
 
 
 def add_cell_content(cell, text, pic):
@@ -101,6 +211,14 @@ def shade_cell(cell):
     cell._tc.get_or_add_tcPr().append(shading_ele)
 
 
+def merge_row(row, txt):
+    cells = row.cells
+    cells[0].merge(cells[len(cells) - 1])
+    cells[0].text = txt
+    return cells[0]
+
+
+
 class DocxGenerator:
     def __init__(self, dir_input, dir_output, list_case, list_ver, list_alg):
         self._dirInput = dir_input
@@ -111,16 +229,99 @@ class DocxGenerator:
         self._doc = Document()
 
     # generate paraview project for given data
-    def get_paraview_project(self, filename, case, alg):
+    def get_paraview_project(self, filename, case, l_ver, l_alg, compare_type, has_input):
         str_list_v = "["
-        for v in self._listVer:
+        for v in l_ver:
             str_list_v = str_list_v + "\"{}\",".format(v)
         str_list_v = str_list_v[:-1] + "]"
-        file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files(r\"{}\", r\"{}\", \"{}\", \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, alg, str_list_v)
+
+        str_list_a = "["
+        for a in l_alg:
+            str_list_a = str_list_a + "\"{}\",".format(a)
+        str_list_a = str_list_a[:-1] + "]"
+
+        str_has_input = "True" if has_input else "False"
+        old_ver = g_config.config_val("exe_old_pv_state", True)
+        file_content = ""
+        if old_ver:
+            file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\ndir_py_module = os.path.join(os.getcwd(), \"..\", \"Sn3D_plugins\", \"scripts\", \"pv_module\")\nsys.path.append(dir_py_module)\nfrom framework_util import *\nload_state_files_v1(r\"{}\", r\"{}\", \"{}\", {}, {}, \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, str_list_v, str_list_a, compare_type, str_has_input)
+        else:
+            file_content = """# -*- coding: utf-8 -*-\n## @brief Paraview Macro to reproduce data state\n## @author jiayanming_auto_generate\nimport os\nimport sys\nfrom test_framework.framework_util import load_state_files_v1\nload_state_files_v1(r\"{}\", r\"{}\", \"{}\", {}, {}, \"{}\", {})\n""".format(self._dirInput, self._dirOutput, case, str_list_v, str_list_a, compare_type, str_has_input)
         with open(filename, "w", encoding="utf-8") as text_file:
             text_file.write(file_content)
 
-    def add_case_table(self, case, cam_num):
+    def add_case_table_ver(self, case, cam_num):
+        dir_state = os.path.join(self._dirOutput, "ParaView_projects")
+        if not os.path.exists(dir_state):
+            os.makedirs(dir_state)
+
+        self._doc.add_paragraph("Compare between Versions")
+        col_num = len(self._listVer)
+        if col_num < 1:
+            print("Error: No Version Checked!")
+            return 1
+        str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        has_input = "input" in self._listVer
+        for alg in self._listAlg:
+            name_state = "{}_{}_{}.py".format(case.replace("/", "_"), alg, str_time)
+            file_state = os.path.join(dir_state, name_state)
+            self.get_paraview_project(file_state, case,  self._listVer, [alg], "Versions", has_input)
+            table = self._doc.add_table(rows=1, cols=col_num)
+            table.style = 'Table Grid'
+            # color title
+            shade_cell(merge_row(table.rows[0], alg))
+            shade_cell(merge_row(table.add_row(), file_state))
+            # add row for every camera angle
+            for cam in range(0, cam_num):
+                for vi, cell in enumerate(table.add_row().cells):
+                    ver = self._listVer[vi]
+                    dir_pic = os.path.join(self._dirOutput, case, ver)
+                    name_pic = "ss_{}_v{}.png".format(alg, cam)
+                    if ver == "input":
+                        name_pic = "ss_input_v{}.png".format(cam)
+                    file_pic = os.path.join(dir_pic, name_pic)
+                    add_cell_content(cell, ver, file_pic)
+        return 0
+
+    def add_case_table_alg(self, case, cam_num):
+        if len(self._listAlg) < 1:
+            print("Error: No FileName Checked!")
+            return 1
+
+        dir_state = os.path.join(self._dirOutput, "ParaView_projects")
+        if not os.path.exists(dir_state):
+            os.makedirs(dir_state)
+        self._doc.add_paragraph("Compare between Files")
+        compare_with_input = False
+        col_list = self._listAlg.copy()
+        if "input" in self._listVer:
+            compare_with_input = True
+            col_list.insert(0, "input")
+        str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        for ver in self._listVer:
+            if ver == "input": # skip input table, because no file to compare in input
+                continue
+            name_state = "{}_{}_{}.py".format(case.replace("/", "_"), ver, str_time)
+            file_state = os.path.join(dir_state, name_state)
+            self.get_paraview_project(file_state, case, [ver], self._listAlg, "FileNames", compare_with_input)
+            table = self._doc.add_table(rows=1, cols=len(col_list))
+            table.style = 'Table Grid'
+            # color title
+            shade_cell(merge_row(table.rows[0], ver))
+            shade_cell(merge_row(table.add_row(), file_state))
+            # add row for every camera angle
+            for cam in range(0, cam_num):
+                for fi, cell in enumerate(table.add_row().cells):
+                    alg = col_list[fi]
+                    dir_pic = os.path.join(self._dirOutput, case, ver)
+                    name_pic = "ss_{}_v{}.png".format(alg, cam)
+                    if alg == "input":
+                        dir_pic = os.path.join(self._dirOutput, case, "input")
+                    file_pic = os.path.join(dir_pic, name_pic)
+                    add_cell_content(cell, alg, file_pic)
+        return 0
+
+    def add_hausdorff_case_table(self, case, cam_num):
         col_num = len(self._listVer)
         if col_num < 1:
             print("Error: No Version Checked!")
@@ -131,24 +332,14 @@ class DocxGenerator:
             row1 = table.rows[0]
             row1.cells[0].merge(row1.cells[col_num - 1])
             row1.cells[0].text = alg
-            row2 = table.add_row().cells
-            row2[0].merge(row2[col_num-1])
             case_tmp = case.replace("/", "_")
             name_state = "{}_{}_{}.py".format(case_tmp, alg, str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
-            dir_state = os.path.join(self._dirOutput, "ParaView_projects")
-            if not os.path.exists(dir_state):
-                os.makedirs(dir_state)
-            file_state = os.path.join(dir_state, name_state)
-            row2[0].text = file_state
             # color title
             shade_cell(row1.cells[0])
-            shade_cell(row2[0])
-            self.get_paraview_project(file_state, case, alg)
-            if (alg == "__hd"):
-                if g_config.config_val("ss_default_camera_type", "4_quadrant") == "4_quadrant":
-                    cam_num = cam_num + 4
-                else:
-                    cam_num = cam_num + 6
+            if g_config.config_val("ss_default_camera_type", "4_quadrant") == "4_quadrant":
+                cam_num = cam_num + 4
+            else:
+                cam_num = cam_num + 6
             for cam in range(0, cam_num):
                 row_cells = table.add_row().cells
                 for vi in range(0, col_num):
@@ -160,6 +351,7 @@ class DocxGenerator:
                     file_pic = os.path.join(dir_pic, name_pic)
                     add_cell_content(row_cells[vi], ver, file_pic)
         return 0
+        
 
     def fill_row(self, table, rid, content):
         r = table.rows[rid].cells
@@ -180,6 +372,71 @@ class DocxGenerator:
         b2a = HausdorffSts()
         a2b.read_from_file(os.path.join(dir_a2b, "dist.sts"))
         b2a.read_from_file(os.path.join(dir_b2a, "dist.sts"))
+        self.add_hausdorff_statistic_table_from_sts(a2b, b2a)
+
+    def add_rate_table(self, a2b, title_str = "A to B"):
+        self._doc.add_paragraph("")
+        self._doc.add_paragraph("Distance Percentage Statistics {}".format(title_str))
+        t_add = self._doc.add_table(rows = 5, cols = 5)
+        for row in t_add.rows:
+            row.height = Mm(7)
+        t_add.style = 'Table Grid'
+        self.fill_row(t_add, 0, ["", title_str])
+        shade_cell(t_add.rows[0].cells[1])
+        shade_cell(t_add.rows[0].cells[2])
+        nominal_num = int(a2b.nominal_num)
+        critical_num = int(nominal_num + a2b.critical_num)
+        max_num = int(critical_num + a2b.max_num)
+        out_num = int(a2b.out_num)
+        v_num = float(a2b.v_num)
+        self.fill_row(t_add, 0, ["", "Point Number", "Percentage"])
+        self.fill_row(t_add, 1, ["Nominal(<{})".format(a2b.nominal_dist),
+                                  nominal_num,
+                                  "{:.2f}%".format(float(nominal_num) / v_num * 100)])
+        self.fill_row(t_add, 2, ["Critical(<{})".format(a2b.critical_dist),
+                                  critical_num,
+                                  "{:.2f}%".format(float(critical_num) / v_num * 100)])
+        self.fill_row(t_add, 3, ["Max(<{})".format(a2b.max_dist), max_num,
+                                  "{:.2f}%".format(float(max_num) / v_num * 100)])
+        self.fill_row(t_add, 4, ["Out(>={})".format(a2b.max_dist), out_num,
+                                  "{:.2f}%".format(float(out_num) / v_num * 100)])
+        # histogram
+        critical_r = float(a2b.critical_num) / v_num * 100
+        nominal_r = float(a2b.nominal_num) / v_num * 100
+        max_r = float(a2b.max_num) / v_num * 100
+        out_r = float(a2b.out_num) / v_num * 100
+        t_add.rows[0].cells[3].merge(t_add.rows[4].cells[4])
+        axis = ["Nominal", "Critical", "Max", "Out"]
+        val_list = [nominal_r, critical_r, max_r, out_r]
+        pic = create_percentage_pie_plot(axis, val_list)
+        pg = t_add.rows[0].cells[3].paragraphs[0]
+        run = pg.add_run()
+        run.add_picture(pic, height=Mm(34))
+
+    def add_6sigma_table(self, a2b, title_str = "A to B"):
+        self._doc.add_paragraph("")
+        self._doc.add_paragraph("6-SIGMA Statistics {}".format(title_str))
+        t_add = self._doc.add_table(rows = 7, cols = 5)
+        for row in t_add.rows:
+            row.height = Mm(7)
+        t_add.style = 'Table Grid'
+        self.fill_row(t_add, 0, ["", "Point Number", "Percentage"])
+        shade_cell(t_add.rows[0].cells[1])
+        shade_cell(t_add.rows[0].cells[2])
+        sigma_map = [-3, -2, -1, 1, 2, 3]
+        for ri in range(0, 6):
+            self.fill_row(t_add, ri + 1, ["{} sigma".format(sigma_map[ri]),
+                                           int(a2b.sigma_num[ri]),
+                                          "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
+        # histogram
+        t_add.rows[0].cells[3].merge(t_add.rows[6].cells[4])
+        axis = ["-3 \u03C3", "-2 \u03C3", "-1 \u03C3", "1 \u03C3", "2 \u03C3", "3 \u03C3"]
+        pic = create_percentage_bar_plot(axis, [i * 100 for i in a2b.sigma_rate])
+        pg = t_add.rows[0].cells[3].paragraphs[0]
+        run = pg.add_run()
+        run.add_picture(pic, height=Mm(48))
+        
+    def add_hausdorff_statistic_table_from_sts(self, a2b, b2a):
         # heading
         self._doc.add_paragraph("Deviation Report between two mesh A and B")
         self._doc.add_paragraph("A: {}".format(a2b.in_file))
@@ -201,80 +458,13 @@ class DocxGenerator:
             self.fill_row(table, 6, ["max_negtive", a2b.max_negtive, b2a.max_negtive])
         
         if g_config.config_val("hd_distance_rate", True):
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("Distance Percentage Statistics A to B")
-            t_rate = self._doc.add_table(rows = 5, cols = 3)
-            t_rate.style = 'Table Grid'
-            self.fill_row(t_rate, 0, ["", "A to B"])
-            shade_cell(t_rate.rows[0].cells[1])
-            shade_cell(t_rate.rows[0].cells[2])
-            nominal_num = int(a2b.nominal_num)
-            critical_num = int(nominal_num + a2b.critical_num)
-            max_num = int(critical_num + a2b.max_num)
-            out_num = int(a2b.out_num)
-            v_num = float(a2b.v_num)
-            self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
-            self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist),
-                                      nominal_num,
-                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
-            self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist),
-                                      critical_num,
-                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
-            self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
-                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
-            self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
-                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
-
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("Distance Percentage Statistics B to A")
-            t_rate_b2a = self._doc.add_table(rows = 5, cols = 3)
-            t_rate_b2a.style = 'Table Grid'
-            self.fill_row(t_rate_b2a, 0, ["", "B to A"])
-            shade_cell(t_rate_b2a.rows[0].cells[1])
-            shade_cell(t_rate_b2a.rows[0].cells[2])
-            nominal_num = int(b2a.nominal_num)
-            critical_num = int(nominal_num + b2a.critical_num)
-            max_num = int(critical_num + b2a.max_num)
-            out_num = int(b2a.out_num)
-            v_num = float(b2a.v_num)
-            self.fill_row(t_rate_b2a, 0, ["", "Point Number", "Point Percentage"])
-            self.fill_row(t_rate_b2a, 1, ["Nominal(<{})".format(b2a.nominal_dist),
-                                          nominal_num,
-                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
-            self.fill_row(t_rate_b2a, 2, ["Critical(<{})".format(b2a.critical_dist),
-                                          critical_num,
-                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
-            self.fill_row(t_rate_b2a, 3, ["Max(<{})".format(b2a.max_dist), max_num,
-                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
-            self.fill_row(t_rate_b2a, 4, ["Out(>={})".format(b2a.max_dist), out_num,
-                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
+            self.add_rate_table(a2b, "A to B")
+            self.add_rate_table(b2a, "B to A")
 
         if g_config.config_val("hd_6_sigma", True):
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("6-SIGMA Statistics A to B")
-            ts_a2b = self._doc.add_table(rows = 7, cols = 4)
-            ts_a2b.style = 'Table Grid'
-            self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
-            shade_cell(ts_a2b.rows[0].cells[1])
-            shade_cell(ts_a2b.rows[0].cells[2])
-            sigma_map = [-3, -2, -1, 1, 2, 3]
-            for ri in range(0, 6):
-                self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                               a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
-            # histogram
-            ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
+            self.add_6sigma_table(a2b, "A to B")
+            self.add_6sigma_table(b2a, "B to A")
 
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("6-SIGMA Statistics B to A")
-            ts_b2a = self._doc.add_table(rows = 7, cols = 4)
-            ts_b2a.style = 'Table Grid'
-            self.fill_row(ts_b2a, 0, ["", "Point Number", "Point Percentage"])
-            shade_cell(ts_b2a.rows[0].cells[1])
-            shade_cell(ts_b2a.rows[0].cells[2])
-            for ri in range(0, 6):
-                self.fill_row(ts_b2a, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                           b2a.sigma_num[ri], "{:.2f}%".format(b2a.sigma_rate[ri] * 100.0)])
-            ts_b2a.rows[0].cells[3].merge(ts_b2a.rows[6].cells[3])        
 
     def add_hausdorff_statistic_table_single(self, case):
         if len(self._listVer) != 1:
@@ -306,49 +496,36 @@ class DocxGenerator:
             self.fill_row(table, 6, ["max_negtive", a2b.max_negtive])
 
         if g_config.config_val("hd_distance_rate", True):
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("Distance Percentage Statistics A to B")
-            t_rate = self._doc.add_table(rows = 5, cols = 3)
-            t_rate.style = 'Table Grid'
-            self.fill_row(t_rate, 0, ["", "A to B"])
-            shade_cell(t_rate.rows[0].cells[1])
-            shade_cell(t_rate.rows[0].cells[2])
-            nominal_num = int(a2b.nominal_num)
-            critical_num = int(nominal_num + a2b.critical_num)
-            max_num = int(critical_num + a2b.max_num)
-            out_num = int(a2b.out_num)
-            v_num = float(a2b.v_num)
-            self.fill_row(t_rate, 0, ["", "Point Number", "Point Percentage"])
-            self.fill_row(t_rate, 1, ["Nominal(<{})".format(a2b.nominal_dist), nominal_num,
-                                      "{:.2f}%".format(float(nominal_num) / v_num * 100)])
-            self.fill_row(t_rate, 2, ["Critical(<{})".format(a2b.critical_dist), critical_num,
-                                      "{:.2f}%".format(float(critical_num) / v_num * 100)])
-            self.fill_row(t_rate, 3, ["Max(<{})".format(a2b.max_dist), max_num,
-                                      "{:.2f}%".format(float(max_num) / v_num * 100)])
-            self.fill_row(t_rate, 4, ["Out(>={})".format(a2b.max_dist), out_num,
-                                      "{:.2f}%".format(float(out_num) / v_num * 100)])
+            self.add_rate_table(a2b)
 
         if g_config.config_val("hd_6_sigma", True):
-            self._doc.add_paragraph("")
-            self._doc.add_paragraph("6-SIGMA Statistics A to B")
-            ts_a2b = self._doc.add_table(rows = 7, cols = 4)
-            ts_a2b.style = 'Table Grid'
-            self.fill_row(ts_a2b, 0, ["", "Point Number", "Point Percentage"])
-            shade_cell(ts_a2b.rows[0].cells[1])
-            shade_cell(ts_a2b.rows[0].cells[2])
-            sigma_map = [-3, -2, -1, 1, 2, 3]
-            for ri in range(0, 6):
-                self.fill_row(ts_a2b, ri + 1, ["{} sigma".format(sigma_map[ri]),
-                                               a2b.sigma_num[ri], "{:.2f}%".format(a2b.sigma_rate[ri] * 100.0)])
-            # histogram
-            ts_a2b.rows[0].cells[3].merge(ts_a2b.rows[6].cells[3])
-
+            self.add_6sigma_table(a2b)
 
     ## @brief generate docx file from given algorithm output dir, and config
     ## @param dir_input data case config directory
     ## @param dir_output algorithm/screenshots output directory
     ## @param file_config file contains user specified compare config
     def generate_docx(self, file_save, file_config):
+        compare_type = g_config.config_val("doc_compare_type", "Versions")
+        doc = self._doc
+        # screen shot view list
+        str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+        doc.add_heading("Compare Result {}".format(str_time), 0)
+        doc.add_paragraph("From config file: {}".format(file_config))
+        for case in self._listCase:
+            doc.add_paragraph("")
+            doc.add_paragraph(case, style='List Bullet')
+            list_cam = read_cam(os.path.join(self._dirInput, case, "config.txt"))
+            res = 0
+            if compare_type == "Versions":
+                res = self.add_case_table_ver(case, len(list_cam))
+            else:
+                res = self.add_case_table_alg(case, len(list_cam))
+            if res != 0:
+                print("Case Table Error for case: {}".format(case))
+        doc.save(file_save)
+
+    def generate_hausdorff_docx(self, file_save, file_config):
         doc = self._doc
         # screen shot view list
         str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
@@ -371,7 +548,7 @@ class DocxGenerator:
                     continue
             doc.add_paragraph("")
             doc.add_paragraph("ScreenShots Compare Tables")
-            if self.add_case_table(case, len(list_cam)) != 0:
+            if self.add_hausdorff_case_table(case, len(list_cam)) != 0:
                 print("Case Table Error for case: {}".format(case))
         doc.save(file_save)
 

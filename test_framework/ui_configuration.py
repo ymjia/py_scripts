@@ -10,7 +10,7 @@ import sys
 import xml.etree.ElementTree as ET
 from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QTreeView, QLabel,
                              QCheckBox, QLineEdit, QComboBox, QGroupBox, QPushButton,
-                             QTabWidget)
+                             QTabWidget, QVBoxLayout, QHBoxLayout)
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from test_framework.utils import g_config
@@ -34,7 +34,14 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_exe_input_depth = QComboBox() # input directory scan depth
         self._qcb_exe_input_depth.setEditable(False)
         self._qcb_exe_input_depth.addItems(["1", "2", "3"])
+        self._qcb_exe_old_pv_state = QCheckBox("Use Old Version ParaView Projects", self)
+        
+        self._qcb_exp_input_type = QComboBox() # type of document to be generated
+        self._qcb_exp_input_type.setEditable(False)
+        self._qcb_exp_input_type.addItems(["All", "None", "Config.txt only"])
+        self._qcb_exp_testbug = QCheckBox("Export Testbug if Exists in Output Dir", self)
 
+        
         self._qcb_ss_force_update = QCheckBox("Force Update Screenshot", self)
         self._qcb_ss_specular = QCheckBox("Specular", self)
         self._qcb_ss_enable_color = QCheckBox("Enable RGB Color if exists", self)
@@ -49,6 +56,9 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_ss_default_ref_dir.setEditable(False)
         self._qcb_ss_default_ref_dir.addItems(["Input", "Output"])
 
+        self._qcb_doc_compare_type = QComboBox() # compare type (table column)
+        self._qcb_doc_compare_type.setEditable(False)
+        self._qcb_doc_compare_type.addItems(["Versions", "FileNames"])
 
         self._qcb_hd_std_sts = QCheckBox("Generate Standard Statistics Table", self)
         self._qcb_hd_dist_rate = QCheckBox("Generate Distance Rate Table", self)
@@ -69,13 +79,74 @@ class GeneralConfigurationUI(QWidget):
         qpb_default.clicked.connect(self.slot_load_default)
         qpb_close = QPushButton("Close")
         qpb_close.clicked.connect(self.close)
+
+        #================= widgets organize=====================================
+        # tabs
+        # tab--general
+        qwg_general = QWidget()
+        qwgl_general = QGridLayout()
+        qwgl_general.addWidget(self.exe_region())
+        qwgl_general.addWidget(self.doc_region())
+        qwgl_general.addWidget(self.export_region())
+        qwg_general.setLayout(qwgl_general)
+        
+        # tab--screenshot
+        qwg_ss = QWidget()
+        qwgl_ss = QGridLayout()
+        qwgl_ss.addWidget(self.screenshot_region())
+        qwg_ss.setLayout(qwgl_ss)
+        
+        # tab--hausdorff
+        qwg_hd = QWidget()
+        qwgl_hd = QGridLayout()
+        qwgl_hd.addWidget(self.hausdorf_region())
+        qwg_hd.setLayout(qwgl_hd)
+
+        # tabs
+        qtb_main = QTabWidget()
+        qtb_main.addTab(qwg_general, "General")
+        qtb_main.addTab(qwg_ss, "Screenshot")
+        qtb_main.addTab(qwg_hd, "Deviation Report")
+
+        # main
+        qgl_conf = QGridLayout()
+        qgl_conf.addWidget(qtb_main, 0, 0, 1, 2)
+        qgl_conf.addWidget(qpb_save, 1, 0)
+        qgl_conf.addWidget(qpb_default, 1, 1)
+        qgl_conf.addWidget(qpb_close, 2, 0, 1, 2)
+        self.setLayout(qgl_conf)
+        # fill in current config
+        self.fill_info(g_config)
+
+    def exe_region(self):
+        # exe general
         qgb_exe = QGroupBox("Exe Batch Settings")
-        qgl_exe = QGridLayout()
+        qgl_exe = QVBoxLayout()
         qgl_exe.addWidget(self._qcb_exe_auto_input)
         qgl_exe.addWidget(QLabel("Max Depth in Input Dir Scanning"))
         qgl_exe.addWidget(self._qcb_exe_input_depth)
+        qgl_exe.addWidget(self._qcb_exe_old_pv_state)
         qgb_exe.setLayout(qgl_exe)
+        return qgb_exe
 
+    def doc_region(self):
+        qgb_doc = QGroupBox("Documents Settings")
+        qgl_doc = QVBoxLayout()
+        qgl_doc.addWidget(QLabel("ScreenShot Table Compare Type (e.g. table column)"))
+        qgl_doc.addWidget(self._qcb_doc_compare_type)
+        qgb_doc.setLayout(qgl_doc)
+        return qgb_doc
+
+    def export_region(self):
+        qgb_export = QGroupBox("Export Settings")
+        qgl_export = QVBoxLayout()
+        qgl_export.addWidget(QLabel("Input Export Type"))
+        qgl_export.addWidget(self._qcb_exp_input_type)
+        qgl_export.addWidget(self._qcb_exp_testbug)
+        qgb_export.setLayout(qgl_export)
+        return qgb_export
+
+    def screenshot_region(self):
         # screenshot general
         qgb_ss = QGroupBox("Generate ScreenShot Settings")
         qgl_ss = QGridLayout()
@@ -93,7 +164,9 @@ class GeneralConfigurationUI(QWidget):
         qgl_ss.addWidget(QLabel("Default Camera Angle Type"))
         qgl_ss.addWidget(self._qcb_ss_default_camera)
         qgb_ss.setLayout(qgl_ss)
+        return qgb_ss
 
+    def hausdorf_region(self):
         # hausdorff doc
         qgb_hd = QGroupBox("Hausdorff Distance Report Configuration")
         qgl_hd = QGridLayout()
@@ -112,32 +185,8 @@ class GeneralConfigurationUI(QWidget):
         qgl_hd.addWidget(QLabel("Max Search Distance"))
         qgl_hd.addWidget(self._qle_hd_max_dist)
         qgb_hd.setLayout(qgl_hd)
+        return qgb_hd
 
-        # tabs
-        # tab--general
-        qwg_general = QWidget()
-        qgl_general = QGridLayout()
-        qgl_general.addWidget(qgb_exe)
-        qgl_general.addWidget(qgb_ss)
-        qwg_general.setLayout(qgl_general)
-        # tab--hausdorff
-        qwg_hd = QWidget()
-        qgl_hd = QGridLayout()
-        qgl_hd.addWidget(qgb_hd)
-        qwg_hd.setLayout(qgl_hd)
-        qtb_main = QTabWidget()
-        qtb_main.addTab(qwg_general, "General")
-        qtb_main.addTab(qwg_hd, "Deviation Report")
-
-        # main
-        qgl_conf = QGridLayout()
-        qgl_conf.addWidget(qtb_main, 0, 0, 1, 2)
-        qgl_conf.addWidget(qpb_save, 1, 0)
-        qgl_conf.addWidget(qpb_default, 1, 1)
-        qgl_conf.addWidget(qpb_close, 2, 0, 1, 2)
-        self.setLayout(qgl_conf)
-        # fill in current config
-        self.fill_info(g_config)
 
     def slot_save_config(self):
         self.collect_info(g_config)
@@ -151,6 +200,7 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config.clear()
         cfg_obj._config["exe_auto_input"] = self._qcb_exe_auto_input.isChecked()
         cfg_obj._config["exe_input_depth"] = self._qcb_exe_input_depth.currentText()
+        cfg_obj._config["exe_old_pv_state"] = self._qcb_exe_old_pv_state.isChecked()
 
         cfg_obj._config["ss_force_update"] = self._qcb_ss_force_update.isChecked()
         cfg_obj._config["ss_specular"] = self._qcb_ss_specular.isChecked()
@@ -162,6 +212,8 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config["ss_default_reference_directory"] = self._qcb_ss_default_ref_dir.currentText()
         cfg_obj._config["ss_default_camera_type"] = self._qcb_ss_default_camera.currentText()
 
+        cfg_obj._config["doc_compare_type"] = self._qcb_doc_compare_type.currentText()
+
         cfg_obj._config["hd_standard_statistics"] = self._qcb_hd_std_sts.isChecked()
         cfg_obj._config["hd_distance_rate"] = self._qcb_hd_dist_rate.isChecked()
         cfg_obj._config["hd_6_sigma"] = self._qcb_hd_6_sigma.isChecked()
@@ -172,9 +224,15 @@ class GeneralConfigurationUI(QWidget):
         cfg_obj._config["hd_max_dist"] = self._qle_hd_max_dist.text()
         cfg_obj._config["hd_picture_scale"] = self._qle_hd_picture_scale.text()
 
+        # export
+        cfg_obj._config["exp_input_type"] = self._qcb_exp_input_type.currentText()
+        cfg_obj._config["exp_testbug"] = self._qcb_exp_testbug.isChecked()
+
+
     def fill_info(self, cfg_obj):
         self._qcb_exe_auto_input.setChecked(cfg_obj.config_val("exe_auto_input", True))
         self._qcb_exe_input_depth.setCurrentText(cfg_obj.config_val("exe_input_depth", "1"))
+        self._qcb_exe_old_pv_state.setChecked((cfg_obj.config_val("exe_old_pv_state", True)))
 
         self._qcb_ss_force_update.setChecked(cfg_obj.config_val("ss_force_update", False))
         self._qcb_ss_specular.setChecked(cfg_obj.config_val("ss_specular", True))
@@ -186,6 +244,8 @@ class GeneralConfigurationUI(QWidget):
         self._qcb_ss_default_ref_dir.setCurrentText(cfg_obj.config_val("ss_default_reference_directory", "Input"))
         self._qcb_ss_default_camera.setCurrentText(cfg_obj.config_val("ss_default_camera_type", "4_quadrant"))
 
+        self._qcb_doc_compare_type.setCurrentText(cfg_obj.config_val("doc_compare_type", "Versions")) 
+
         self._qcb_hd_std_sts.setChecked(cfg_obj.config_val("hd_standard_statistics", True))
         self._qcb_hd_dist_rate.setChecked(cfg_obj.config_val("hd_distance_rate", True))
         self._qcb_hd_6_sigma.setChecked(cfg_obj.config_val("hd_6_sigma", True))
@@ -195,6 +255,11 @@ class GeneralConfigurationUI(QWidget):
         self._qle_hd_critical_dist.setText(cfg_obj.config_val("hd_critical_dist", "0.05"))
         self._qle_hd_max_dist.setText(cfg_obj.config_val("hd_max_dist", "0.3"))
         self._qle_hd_picture_scale.setText(cfg_obj.config_val("hd_picture_scale", "1.0"))
+        # export
+        self._qcb_exp_input_type.setCurrentText(cfg_obj.config_val("exp_input_type", "All"))
+        self._qcb_exp_testbug.setChecked(cfg_obj.config_val("exp_testbug", False))
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

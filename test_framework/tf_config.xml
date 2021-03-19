@@ -1,6 +1,6 @@
 <project>
-  <input path="D:/tmp/tf_test/input" />
-  <output path="D:/tmp/tf_test/output/" />
+  <input path="D:/tmp/tf_test_2/input" />
+  <output path="D:/tmp/tf_test_2/output/" />
   <rel_input path="" />
   <rel_output path="" />
   <exe_demo path="D:/tools/JYMTest/JYMTest.exe" />
@@ -17,7 +17,6 @@
       <item check="1" name="input" />
       <item check="1" name="qem" />
       <item check="1" name="smooth" />
-      <item check="1" name="qem2" />
       <item check="1" name="smooth2" />
     </version>
     <algorithm>
@@ -47,7 +46,6 @@
       <item check="1" name="input" />
       <item check="1" name="qem" />
       <item check="1" name="smooth" />
-      <item check="1" name="qem2" />
       <item check="1" name="smooth2" />
     </version>
     <algorithm>
@@ -57,16 +55,15 @@
   <docx>
     <case>
       <item check="1" name="case1" />
-      <item check="1" name="case2" />
-      <item check="1" name="case3" />
-      <item check="1" name="case4" />
-      <item check="1" name="case5" />
+      <item check="0" name="case2" />
+      <item check="0" name="case3" />
+      <item check="0" name="case4" />
+      <item check="0" name="case5" />
     </case>
     <version>
       <item check="1" name="input" />
       <item check="0" name="qem" />
       <item check="0" name="smooth" />
-      <item check="0" name="qem2" />
       <item check="0" name="smooth2" />
     </version>
     <algorithm>
@@ -74,7 +71,7 @@
     </algorithm>
     <doc_name name="test_doc" />
     <current_name name="test_doc_20200427_142701.docx" />
-    <current_type name="Screenshots" />
+    <current_type name="Hausdorf_dist" />
   </docx>
   <batch>
     <batch_item>

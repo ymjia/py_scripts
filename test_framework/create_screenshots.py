@@ -15,7 +15,7 @@ from paraview.simple import GetDisplayProperties
 from test_framework.utils import SessionConfig
 from test_framework.utils import g_config
 from test_framework.framework_util import *
-
+from test_framework.generate_docx import HausdorffSts
 
 ## ====================texture =================================
 pxm = servermanager.ProxyManager()
@@ -113,13 +113,11 @@ def set_legend_prop(lgd, nominal_dist, critical_dist, max_dist):
     lgd.CustomLabels = [-max_dist, -critical_dist, -nominal_dist, nominal_dist, critical_dist, max_dist]
     
 
-def show_hausdorff_dist(s_name_list, sc):
+def show_hausdorff_dist_from_name_list(s_name_list):
+    if not load_local_plugin("Utils", "HausdorffDistance", globals()):
+        print("Fail to load utils plugin")
+        return [None, None, None]
     #get parameter
-    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
-    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
-    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
-    view_height = int(g_config.config_val("ss_view_height", "768"))
-    view_width = int(g_config.config_val("ss_view_width", "1024"))
     s_num = len(s_name_list)
     if s_num != 2:
         print("Error! 2 source need to be selected, current source:")
@@ -138,6 +136,13 @@ def show_hausdorff_dist(s_name_list, sc):
         print("Error! Fail to load Utils Plugin!")
         return (None, None, None)
     print("###{}".format("HausdorffDistance" in globals()))
+    return show_hausdorff_dist_from_slist(s_list)
+
+
+def show_hausdorff_dist_from_slist(s_list):
+    if not load_local_plugin("Utils", "HausdorffDistance", globals()):
+        print("Fail to load utils plugin")
+        return [None, None, None]
     # get names
     pxm = servermanager.ProxyManager();
     name0 = os.path.splitext(pxm.GetProxyName("sources", s_list[0]))[0]
@@ -149,18 +154,36 @@ def show_hausdorff_dist(s_name_list, sc):
     sd2 = servermanager.Fetch(s2)
     p2c = sd1.IsA("vtkPolyData") and sd2.IsA("vtkPolyData")
     # create filter
+    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
     hd = HausdorffDistance(InputA=s1, InputB=s2)
     hd.MaxSearchRadius = max_dist
     if not p2c:
         hd.TargetDistanceMethod = 'Point-to-Point'
-    SetActiveSource(hd)    # set active source to hd to find transfer function
     RenameSource("{}_{}".format(name0, name1), hd)
+    return show_hausdorff_dist_from_hd(hd, name0, name1)
+
+
+def show_hausdorff_dist_from_hd(hd, name0="A", name1="B"):
+    str_time = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
+    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
+    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))#hd.MaxSearchRadius
+
+    SetActiveSource(hd)    # set active source to hd to find transfer function
     
     ly = CreateLayout('Hdf_{}{}'.format(name0, name1))
     v0 = CreateRenderView(False, registrationName=name0)
     v1 = CreateRenderView(False, registrationName=name1)
-    v0.ViewSize = [view_width, view_height]
-    v1.ViewSize = [view_width, view_height]
+    if not g_config.config_val("inside_pv", False):
+        view_height = int(g_config.config_val("ss_view_height", "768"))
+        view_width = int(g_config.config_val("ss_view_width", "1024"))
+        v0.ViewSize = [view_width, view_height]
+        v1.ViewSize = [view_width, view_height]
+    pos = ly.SplitHorizontal(0, 0.5)
+    ly.AssignView(pos, v0)
+    ly.AssignView(pos+1, v1)
+    AddCameraLink(v0, v1, "hdl{}".format(str_time))
+
     out0 = OutputPort(hd, 0)
     out1 = OutputPort(hd, 1)
     display0 = Show(out0, v0)
@@ -187,63 +210,12 @@ def show_hausdorff_dist(s_name_list, sc):
     set_legend_prop(lgd_v1, nominal_dist, critical_dist, max_dist)
     return (v0, v1, hd)
 
-def write_dist_statistics(sd, filename, in_file, sc):
-    nominal_dist = float(g_config.config_val("hd_nominal_dist", "0.03"))
-    critical_dist = float(g_config.config_val("hd_critical_dist", "0.05"))
-    max_dist = float(g_config.config_val("hd_max_dist", "0.3"))
 
-    fd = sd.GetFieldData()
-    sigma_rate = fd.GetArray("six_sigma_rate")
-    if sigma_rate is None or sigma_rate.GetDataSize() != 6:
-        print("Warning! no statistics info in hausdorff output")
-        return
-    sigma_num = fd.GetArray("six_sigma_num")
-    mean_total = fd.GetArray("mean_total").GetTuple1(0)
-    mean_positive = fd.GetArray("mean_positive").GetTuple1(0)
-    mean_negative = fd.GetArray("mean_negative").GetTuple1(0)
-    max_positive = fd.GetArray("max_positive").GetTuple1(0)
-    max_negative = fd.GetArray("max_negative").GetTuple1(0)
-    standard_deviation = fd.GetArray("standard_deviation").GetTuple1(0)
-
-    # calculate dist rate
-    d_arr = sd.GetPointData().GetArray("Distance")
-    v_num = d_arr.GetNumberOfTuples();
-    nominal_num = 0
-    critical_num = 0
-    max_num = 0
-    out_num = 0
-    for vi in range(0, v_num):
-        val = abs(d_arr.GetTuple1(vi))
-        if val < nominal_dist:
-            nominal_num += 1
-        elif val < critical_dist:
-            critical_num += 1
-        elif val < max_dist:
-            max_num += 1
-        else:
-            out_num += 1
-    # sigma_rate = vtk.vtkDoubleArray()
-    # sigma_rate.SetNumberOfComponents(1)
-    # sigma_rate.SetNumberOfTuples(6)
-    f_sts = open(filename, "w", encoding='utf-8')
-    f_sts.write("{}\n".format(" ".join(map(str, [sigma_rate.GetTuple1(i) for i in range(0, 6)]))))
-    f_sts.write("{}\n".format(" ".join(map(str, [sigma_num.GetTuple1(i) for i in range(0, 6)]))))
-    f_sts.write("{}\n".format(mean_total))
-    f_sts.write("{}\n".format(mean_positive))
-    f_sts.write("{}\n".format(mean_negative))
-    f_sts.write("{}\n".format(max_positive))
-    f_sts.write("{}\n".format(max_negative))
-    f_sts.write("{}\n".format(standard_deviation))
-    f_sts.write("{}\n".format(in_file))
-    f_sts.write("{}\n".format(v_num))
-    f_sts.write("{}\n".format(nominal_num))
-    f_sts.write("{}\n".format(critical_num))
-    f_sts.write("{}\n".format(max_num))
-    f_sts.write("{}\n".format(out_num))
-    f_sts.write("{}\n".format(nominal_dist))
-    f_sts.write("{}\n".format(critical_dist))
-    f_sts.write("{}\n".format(max_dist))
-    f_sts.close()
+def write_dist_statistics(sd, filename, in_file):
+    sts = HausdorffSts()
+    sts.get_from_hd(sd)
+    sts.in_file = in_file
+    sts.write_to_file(filename)
 ## end=================hausdorff distance ======================
 
 ## ==================Camera position Setting =================
@@ -262,7 +234,8 @@ def start_camera_set_session(names, f_config):
     # set default camera
 
     it = v.GetInteractor()
-    ant = add_annotation(v, "'C': Record Current Camera\n'Q': Finish and quit\n'Space': Reset Camera\nTotal: {}".format(cn), 16)
+    ant = add_annotation(v, "'C': Record Current Camera\n'Q': Finish and quit\n'R': Reset Camera\n'Ctrl+Alt+D': Delete All Record\nTotal: {}".format(cn), 16)
+    #it.AddObserver("KeyReleaseEvent", #KeyPressEvent",
     it.AddObserver("KeyPressEvent",
                    lambda o, e, source=s, conf = f_config, txt = ant: CameraKey(o, e, source, conf, txt))
     dp = Show(s, v)
@@ -292,14 +265,25 @@ def CameraKey(obj, event, s, conf, txt):
         f.writelines("\n" + cam_str)
         f.close()
         cn = len(read_cam(conf))
-        txt.Text = "'C': Record Current Camera\n'Q': Finish and quit\n'Space': Reset Camera\nTotal: {}".format(cn)
+        txt.Text = "'C': Record Current Camera\n'Q': Finish and quit\n'R': Reset Camera\n'Ctrl+Alt+D': Delete All Record\nTotal: {}".format(cn)
         v.Update()
         Render()
-    elif k == "space":
+    elif k == "r":
         v = GetActiveView()
         co = CameraObject()
         co.create_default_cam_angle(s, "x+")
         co.set_camera(v)
+        v.Update()
+        Render()
+    elif k == 'd':
+        if obj.GetControlKey() == 0 or obj.GetAltKey() == 0:
+            return
+        #clear existing angle
+        f = open(conf, "w")
+        f.close()
+        cn = len(read_cam(conf))
+        txt.Text = "'C': Record Current Camera\n'Q': Finish and quit\n'R': Reset Camera\n'Ctrl+Alt+D': Delete All Record\nTotal: {}".format(cn)
+        v = GetActiveView()
         v.Update()
         Render()
     else:
@@ -311,9 +295,8 @@ def CameraKey(obj, event, s, conf, txt):
 
 # class for screenshots with config
 class ScreenShotHelper:
-    def __init__(self, sc):
+    def __init__(self):
         paraview.simple._DisableFirstRenderCameraReset()
-        self._sc = sc
         self._v = None
 
     def __del__(self):
@@ -322,13 +305,16 @@ class ScreenShotHelper:
 
     # static methed, view need not be associated to self._v
     def take_shot(self, view, cam, filename):
+        view_height = int(g_config.config_val("ss_view_height", "768"))
+        view_width = int(g_config.config_val("ss_view_width", "1024"))
+
         trans_bg = g_config.config_val("ss_transparent_bg", "False") == "True"
         co = CameraObject()
         if not co.read_camera_from_str(cam):
             print("Warning! cannot decode camera from string {}".format(cam))
             return
         co.set_camera(view)
-        v_size = view.ViewSize
+        v_size = [view_width, view_height]
         view.Update()
         # create temporary file to cope utf-8 char
         if not os.path.exists("c:/tf_tmp"):
@@ -388,7 +374,6 @@ class ScreenShotHelper:
             self._v = CreateView("RenderView")
         #cur_view = CreateView("RenderView")
         cur_view = self._v
-        cur_view.ViewSize = [v_w, v_h]
         cur_view.CenterAxesVisibility = 0
         cur_source = self.read_and_render(file_list, cur_view, case, ver)
         if cur_source is None:
@@ -432,20 +417,25 @@ def read_cam(case_file):
 
 # execute screenshot operation(need config information)
 # general operation, case/version/filanem all have their effects
-def create_screenshots(sc):
+def create_screenshots(sc, cb=None):
     print("Creating screen shot:")
     sc.print_config()
     total_num = 0
     dir_input = sc.dir_i
     dir_output = sc.dir_o
     # case/version/alg
-    ss = ScreenShotHelper(sc)
+    ss = ScreenShotHelper()
     file_dir = []
     for ci in sc.list_case:
         for vi in sc.list_ver:
             file_dir.append([ci, vi, os.path.join(dir_output, ci, vi)])
     #create shot
-    for item in file_dir:
+    if cb is not None:
+        cb(5)
+    ss_num = float(len(file_dir))
+    for ss_idx, item in enumerate(file_dir):
+        if cb is not None:
+            cb(ss_idx / ss_num * 90 + 5)
         case_name = item[0]
         ver_name = item[1]
         case_files = item[2]
@@ -477,6 +467,8 @@ def create_screenshots(sc):
                 print("Updating screenshots for {}/{}/{}".format(case_name, ver_name, alg))
                 total_num += ss.create_shot(file_list, cam_list, pic_out_dir , alg,
                                             case_name, ver_name)
+    if cb is not None:
+        cb(100)
     return total_num
 
 
@@ -487,7 +479,6 @@ def create_screenshots(sc):
 def create_hausdorff_shot(sc):
     print("Creating hausdorf distance screenshots")
     print("Case: {}".format(sc.list_case))
-    camera_type = g_config.config_val("ss_default_camera_type", "4_quadrant")
     
     dir_input = sc.dir_i
     dir_output = sc.dir_o
@@ -498,78 +489,89 @@ def create_hausdorff_shot(sc):
 
     total_num = 0
     for case in sc.list_case:
+        tmp_dir = os.path.join(dir_output, case)
         i_list = get_file(dir_input, case)
-        out_dir = os.path.join(dir_output, case, "hausdorff_A2B")
+        out_dir = os.path.join(tmp_dir, "hausdorff_A2B")
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
-        out_dir2 = os.path.join(dir_output, case, "hausdorff_B2A")
+        out_dir2 = os.path.join(tmp_dir, "hausdorff_B2A")
         if not os.path.exists(out_dir2):
             os.makedirs(out_dir2)
-        (v0, v1, hd) = show_hausdorff_dist(i_list, sc)
+        (v0, v1, hd) = show_hausdorff_dist_from_name_list(i_list)
         if v0 is None:
             continue
         set_default_view_display(v0)
         set_default_view_display(v1)
-        out0 = OutputPort(hd, 0)
-        out1 = OutputPort(hd, 1)
         sd0 = servermanager.Fetch(hd, idx=0)
         sd1 = servermanager.Fetch(hd, idx=1)
-        # findout filename str
         f_0 = i_list[0]
         f_1 = i_list[1]
-        if "{}_test_name".format(case) in sc.config_map:
-            f_0 = sc.config_map["{}_test_name".format(case)]
-        if "{}_ref_name".format(case) in sc.config_map:
-            f_1 = sc.config_map["{}_ref_name".format(case)]
-        write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), f_0, sc)
-        write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), f_1, sc)
-        ss = ScreenShotHelper(sc)
-        # standard
-        std_cam = []
-        co = CameraObject()
-        if camera_type == "6_axis":
-            co.create_default_cam_angle(out0, "x+")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "x-")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "y+")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "y-")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "z+")
-            std_cam.append(co.generate_camera_str())
-            co.create_default_cam_angle(out0, "z-")
-            std_cam.append(co.generate_camera_str())
-        else:
-            co.create_4_cam_angle(out0, "x+y+")
-            std_cam.append(co.generate_camera_str())
-            co.create_4_cam_angle(out0, "x+y-")
-            std_cam.append(co.generate_camera_str())
-            co.create_4_cam_angle(out0, "x-y+")
-            std_cam.append(co.generate_camera_str())
-            co.create_4_cam_angle(out0, "x-y-")
-            std_cam.append(co.generate_camera_str())
-
-        std_cam_num = len(std_cam)
-        for i in range(0, std_cam_num):
-            ss.take_shot(v0, std_cam[i],
-                         "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
-            ss.take_shot(v1, std_cam[i],
-                         "{}/ss___hd_v{}.png".format(out_dir2, i).replace("\\", "/"))
-        total_num = total_num + std_cam_num * 2
+        # findout filename str
+        write_dist_statistics(sd0, "{}/dist.sts".format(out_dir), f_0)
+        write_dist_statistics(sd1, "{}/dist.sts".format(out_dir2), f_1)
         cam_file = os.path.join(dir_input, case, "config.txt")
         cam_list = read_cam(cam_file)
-        if len(cam_list) > 0:
-            for i in range(0, len(cam_list)):
-                ss.take_shot(v0, cam_list[i],
-                             "{}/ss___hd_v{}.png".format(out_dir, i + std_cam_num).replace("\\", "/"))
-                ss.take_shot(v1, cam_list[i],
-                             "{}/ss___hd_v{}.png".format(out_dir2, i + std_cam_num).replace("\\", "/"))
-        total_num = total_num + len(cam_list) * 2
+        total_num += create_shot_for_hd(hd, v0, v1, tmp_dir, cam_list)
         Delete(v0)
         Delete(v1)
         del v0
         del v1
+    return total_num
+
+        
+def create_shot_for_hd(hd, v0, v1, tmp_dir, cam_list):
+    out_dir = os.path.join(tmp_dir, "hausdorff_A2B")
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    out_dir2 = os.path.join(tmp_dir, "hausdorff_B2A")
+    if not os.path.exists(out_dir2):
+        os.makedirs(out_dir2)
+
+    camera_type = g_config.config_val("ss_default_camera_type", "4_quadrant")
+    total_num = 0
+    out0 = OutputPort(hd, 0)
+    out1 = OutputPort(hd, 1)
+    ss = ScreenShotHelper()
+    # standard
+    std_cam = []
+    co = CameraObject()
+    if camera_type == "6_axis":
+        co.create_default_cam_angle(out0, "x+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "x-")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "y+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "y-")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "z+")
+        std_cam.append(co.generate_camera_str())
+        co.create_default_cam_angle(out0, "z-")
+        std_cam.append(co.generate_camera_str())
+    else:
+        co.create_4_cam_angle(out0, "x+y+")
+        std_cam.append(co.generate_camera_str())
+        co.create_4_cam_angle(out0, "x+y-")
+        std_cam.append(co.generate_camera_str())
+        co.create_4_cam_angle(out0, "x-y+")
+        std_cam.append(co.generate_camera_str())
+        co.create_4_cam_angle(out0, "x-y-")
+        std_cam.append(co.generate_camera_str())
+
+    std_cam_num = len(std_cam)
+    for i in range(0, std_cam_num):
+        ss.take_shot(v0, std_cam[i],
+                     "{}/ss___hd_v{}.png".format(out_dir, i).replace("\\", "/"))
+        ss.take_shot(v1, std_cam[i],
+                     "{}/ss___hd_v{}.png".format(out_dir2, i).replace("\\", "/"))
+    total_num = total_num + std_cam_num * 2
+    if len(cam_list) > 0:
+        for i in range(0, len(cam_list)):
+            ss.take_shot(v0, cam_list[i],
+                         "{}/ss___hd_v{}.png".format(out_dir, i + std_cam_num).replace("\\", "/"))
+            ss.take_shot(v1, cam_list[i],
+                         "{}/ss___hd_v{}.png".format(out_dir2, i + std_cam_num).replace("\\", "/"))
+    total_num = total_num + len(cam_list) * 2
     return total_num
 
 

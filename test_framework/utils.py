@@ -17,6 +17,8 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.chart import LineChart, Reference
 from openpyxl.chart.axis import DateAxis
+from shutil import copy2
+
 if sys.platform == "win32":
     import winreg as wr
 
@@ -25,18 +27,24 @@ def get_py_in_reg():
     for reg in [wr.HKEY_CURRENT_USER, wr.HKEY_LOCAL_MACHINE]:
         try:
             reg_table = wr.ConnectRegistry(None, reg)
-            for ver in ["3.6", "3.7"]:
-                rp = r"Software\Python\PythonCore\3.6\InstallPath".format(ver)
-                key = wr.OpenKey(reg_table, rp, 0, wr.KEY_READ)
+            for ver in ["3.6", "3.7", "3.8"]:
+                rp = r"Software\Python\PythonCore\{}\InstallPath".format(ver)
+                key = None
                 try:
+                    key = wr.OpenKey(reg_table, rp, 0, wr.KEY_READ)
                     exe_py, _ = wr.QueryValueEx(key, "ExecutablePath")
                     if exe_py is not None and exists(exe_py):
                         wr.CloseKey(key)
+                        print("Found Python({}) interpreter at {}".format(ver, exe_py))
                         return exe_py
+                except FileNotFoundError:
+                    continue
                 finally:
-                    wr.CloseKey(key)
+                    if key is not None:
+                        wr.CloseKey(key)
         except WindowsError:
             pass
+    return ""
 
 def set_reg_item(type_str, val):
     reg = wr.ConnectRegistry(None, wr.HKEY_CURRENT_USER)
@@ -115,6 +123,15 @@ def try_create_dir(str_dir):
         return False
 
 
+def try_copy_file(str_from, str_to):
+    if not os.path.exists(str_from):
+        return False
+    try:
+        copy2(str_from, str_to)
+        return True
+    except OSError:
+        return False
+
 def get_sys_table(dir_o, case, ver):
     sys = {}
     dir_log = join(dir_o, case, ver, "logs")
@@ -125,6 +142,8 @@ def get_sys_table(dir_o, case, ver):
     with open(file_sys, encoding="utf-8") as f:
         content = f.readlines()
     str_list = [l.strip() for l in content if len(l) > 4]
+    if len(str_list) < 1:
+        print("Warning! No enough System info in {}/{}".format(case, ver))
     for line in str_list:
         name, v = line.split(" ", 1)
         sys[name] = v
@@ -257,10 +276,11 @@ def get_stem_list(folder):
         if isdir(join(folder, name)):
             continue
         stem, ext = os.path.splitext(name)
-        if not any(ext in e for e in support_ext):
+        if not any(ext.casefold() in e for e in support_ext):
             continue
         res.append(stem)
     return res
+
 
 def get_file_list(folder):
     res = []
@@ -269,18 +289,11 @@ def get_file_list(folder):
     for name in os.listdir(folder):
         if isdir(join(folder, name)):
             continue
-        stem, ext = os.path.splitext(name)
+        ext = os.path.splitext(name)[1].casefold()
         if not any(ext in e for e in support_ext):
             continue
         res.append(join(folder, name))
     return res
-
-# def get_file_list(folder):
-#     stem_list = get_stem_list(folder)
-#     res = []
-#     for stem in stem_list:
-#         res.append(join(folder, stem))
-#     return res
 
 
 def get_selected_item(qlv):
@@ -501,8 +514,8 @@ def create_chart(in_list, sp_list, ws):
     for f_in in in_list:
         with open(f_in, encoding="utf-8") as f:
             content = f.readlines()
-        cur_mem = []
-        cur_cpu = []
+        cur_mem = ['0', '0']
+        cur_cpu = ['0', '0']
         str_list = [l.strip() for l in content if len(l) > 4]
         for line in str_list:
             cpu, mem = line.split(" ", 1)
@@ -564,7 +577,7 @@ def create_chart(in_list, sp_list, ws):
     for se in lc_mem.series:
         se.graphicalProperties.line.dashStyle = "sysDot"
     lc_cpu += lc_mem
-    ws.add_chart(lc_cpu, "{}1".format(chr(ord('A') + f_num * 2 + 2)))
+    ws.add_chart(lc_cpu)#, "{}1".format(chr(ord('A') + f_num * 2 + 2)))
     return 0
 
 # global config

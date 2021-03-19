@@ -10,8 +10,8 @@ import subprocess
 import xml.etree.ElementTree as ET
 from openpyxl import Workbook
 
-from PyQt5.QtWidgets import (QListView, QFileDialog, QMessageBox,
-                             QInputDialog, QLineEdit, QPushButton,
+from PyQt5.QtWidgets import (QApplication, QListView, QFileDialog, QMessageBox,
+                             QInputDialog, QLineEdit, QPushButton, QProgressDialog,
                              QAbstractItemView)
 from PyQt5.QtCore import QItemSelectionModel, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -102,7 +102,7 @@ def slot_generate_docx(ui):
     elif doc_type == "CPU_MEM_statistics":
         return generate_proc_docx(ui)
     else:
-        return generate_hausdorf_docx(ui)
+        return generate_hausdorff_docx(ui)
 
 
 def generate_ss_docx(ui):
@@ -120,6 +120,8 @@ def generate_ss_docx(ui):
     l_case = get_checked_items(p_obj._case, p_obj._dCaseCheck)
     l_ver = get_checked_items(p_obj._ver, p_obj._dVerCheck)
     l_alg = get_checked_items(p_obj._alg, p_obj._dAlgCheck)
+    #if "input" in l_ver:
+        #l_alg.insert(0, "input")
     gd = generate_docx.DocxGenerator(dir_i, dir_o, l_case, l_ver, l_alg)
     gd.generate_docx(file_save, p_obj._configFile)
     ui.add_hist_item("doc", 1)
@@ -178,6 +180,9 @@ def generate_proc_docx(ui):
         wb.save(file_save)
     except PermissionError:
         res = 1
+    except ValueError:
+        QMessageBox.about(ui, "Message", "Fail to write MEM/CPU doc")
+        return
     if res == 0:
         ui.add_hist_item("doc", 1)
         QMessageBox.about(ui, "Message", "Docx wrote to {}!".format(file_save))
@@ -185,7 +190,7 @@ def generate_proc_docx(ui):
         QMessageBox.about(ui, "Error", "Cannot wrote to {}!".format(file_save))
 
 
-def generate_hausdorf_docx(ui):
+def generate_hausdorff_docx(ui):
     # create hausdorff shot
     ui._p = ui.collect_ui_info()
     p_obj = ui._p
@@ -212,7 +217,7 @@ def generate_hausdorf_docx(ui):
     l_alg = ["__hd"] # reserved alg_name for hausdorff dist
     gd = generate_docx.DocxGenerator(p_obj._dirInput, p_obj._dirOutput, sc.list_case,
                                      l_ver, l_alg)
-    gd.generate_docx(file_save, p_obj._configFile)
+    gd.generate_hausdorff_docx(file_save, p_obj._configFile)
     ui.add_hist_item("doc", 1)
     QMessageBox.about(ui, "Message", "Hausdorff Docx wrote to {}!".format(file_save))
     
@@ -257,7 +262,13 @@ def slot_create_screenshots(ui):
         ret = qm.question(ui, "", "No FileNames checked, Continue?", qm.Yes | qm.Cancel)
         if ret == qm.Cancel:
             return
-    total_num = create_screenshots.create_screenshots(sc)
+    pg = QProgressDialog("Creating ScreenShots...", "Cancel", 0, 100, ui)
+    pg.setWindowTitle("Please Wait")
+    pg.setWindowModality(Qt.WindowModal)
+    pg.setCancelButton(None)
+    pg.setValue(1)
+    pg.show()
+    total_num = create_screenshots.create_screenshots(sc, pg.setValue)
     if total_num > 0:
         ui.add_hist_item("ss", total_num)
     QMessageBox.about(ui, "Message", "Create Screenshots Completed! {} file generated".format(total_num))
@@ -599,9 +610,13 @@ def slot_ss_manage(ui):
         return
     case_name = sl[0].data()
     dir_case = os.path.join(p_obj._dirInput, case_name)
+    if not os.path.exists(dir_case):
+        print("Warning: Input Dir {} does not exists! Try create.".format(dir_case))
+        utils.try_create_dir(dir_case)
+        return
     dir_case_out= os.path.join(p_obj._dirOutput, case_name)
-    if not os.path.exists(dir_case_out):
-        os.makedirs(dir_case_out)
+    if not utils.try_create_dir(dir_case_out):
+        QMessageBox.about(ui, "Error:", "Fail creating dir {}.".format(dir_case_out))
     # default directory show in file dialog
     dir_default = dir_case
     if utils.g_config.config_val("ss_default_reference_directory", "Input") == "Output":
@@ -856,9 +871,10 @@ def slot_project_list_filter(ui):
 
 def fill_dict(d, l_item):
     for item in l_item:
-        if item in d:
+        lc = item.casefold()
+        if lc in d:
             continue
-        d[item] = 1
+        d[lc] = 1
 
 
 # get all avaliable filenames in output dir
