@@ -383,6 +383,7 @@ class ProcessMonitor:
         return self.check_execution_state()
 
     def is_running(self):
+        # subprocess.poll: check is running
         return psutil.pid_exists(self.p.pid) and self.p.poll() is None
 
     def check_execution_state(self):
@@ -475,7 +476,7 @@ def indent_xml(elem, level=0):
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
 
-
+# get all smp file for input case/version pairs
 def create_f_lists(dir_o, l_case, l_ver, f_list, sp_list):
     for case in l_case:
         for ver in l_ver:
@@ -496,6 +497,7 @@ def create_chart(in_list, sp_list, ws):
     # prepare data
     mem_smp = []
     cpu_smp = []
+    smp_mrk = []
     for f_in in in_list:
         with open(f_in, encoding="utf-8") as f:
             content = f.readlines()
@@ -508,15 +510,27 @@ def create_chart(in_list, sp_list, ws):
             cur_cpu.append(cpu)
         mem_smp.append(cur_mem)
         cpu_smp.append(cur_cpu)
+        f_mrk = fin[0:-4] + ".mrk"
+        cur_mrk = [str(i) for i in range(0, len(cur_cpu))]
+        with open(f_mrk, encoding="utf-8") as f:
+            for line in f.readlines():
+                idx, mark_str = line.strip().split(" ", 1)
+                if idx > len(cur_cpu):
+                    continue
+                cur_mrk[idx] = mark_str
+        smp_mrk.append(cur_mrk)
+
     # create xlsx data table
     max_row = 0
     for f in range(0, f_num):
         cur_mem = mem_smp[f]
         cur_cpu = cpu_smp[f]
+        cur_mrk = smp_mrk[f]
         c = f + 1
         r_num = len(cur_cpu)
         if r_num > max_row:  # assersion: len(cpu) equal to len(mem)
             max_row = r_num
+        title_mrk = "name"
         title_cpu = "cpu"
         title_mem = "mem"
         if len(sp_list) > f:
